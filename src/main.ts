@@ -1,439 +1,24 @@
 import * as THREE from "three";
-
-interface WeatherPreset {
-  name: string;
-  sky: number;
-  fogN: number;
-  fogF: number;
-  hemiSky: number;
-  hemiGnd: number;
-  hemiI: number;
-  sunC: number;
-  sunI: number;
-  sunPos: [number, number, number];
-  gnd?: number;
-  rain?: number;
-  lightning?: boolean;
-  stars?: boolean;
-  torch?: number;
-}
-
-interface ObstacleBox {
-  min: THREE.Vector3;
-  max: THREE.Vector3;
-}
-
-interface TreeCollider {
-  x: number;
-  z: number;
-  r: number;
-}
-
-type HitFlashMaterial = THREE.MeshStandardMaterial & { userData: { base: number } };
-
-interface EnemyLimbs {
-  armL: THREE.Group;
-  armR: THREE.Group;
-  legL: THREE.Group;
-  legR: THREE.Group;
-}
-
-interface Enemy {
-  group: THREE.Group;
-  mats: HitFlashMaterial[];
-  hp: number;
-  hpMax: number;
-  speed: number;
-  hitTimer: number;
-  limbs: EnemyLimbs;
-  phase: number;
-}
-
-interface Tracer {
-  mesh: THREE.Mesh<THREE.CylinderGeometry, THREE.MeshBasicMaterial>;
-  life: number;
-}
-
-interface PlayerState {
-  pos: THREE.Vector3;
-  vel: THREE.Vector3;
-  yaw: number;
-  pitch: number;
-  onGround: boolean;
-  hp: number;
-  radius: number;
-}
-
-interface GameDebugApi {
-  readonly player: PlayerState;
-  readonly enemies: readonly Enemy[];
-  readonly ammo: number;
-  readonly score: number;
-  readonly wave: number;
-  readonly gameOver: boolean;
-  readonly reloading: boolean;
-  readonly weatherName: string;
-  setWeather(i: number): void;
-  tryShoot(): void;
-  reload(): void;
-  hurtPlayer(dmg: number): void;
-  damageEnemy(en: Enemy, dmg: number): void;
-}
+import { camera, collide, ground, renderer, scene } from "./world";
+import { getWeather, initWeather, setWeatherByIndex, updateWeatherFx } from "./weather";
+import { damageEnemy, enemies, setOnEnemyKilled, spawnEnemy } from "./enemies";
+import {
+  overlay,
+  refreshHealth,
+  setAmmoText,
+  setScore,
+  setVignette,
+  setWave,
+  showOverlay,
+  startBtn,
+} from "./ui";
+import { gameOverMsg, t } from "./i18n";
+import type { GameDebugApi, PlayerState, Tracer } from "./types";
 
 declare global {
   interface Window {
     __game: GameDebugApi;
   }
-}
-
-function requiredElement<T extends HTMLElement>(selector: string): T {
-  const el = document.querySelector<T>(selector);
-  if (!el) throw new Error(`Required element missing: ${selector}`);
-  return el;
-}
-
-const scene = new THREE.Scene();
-const skyColor = new THREE.Color(0x87b5d9);
-scene.background = skyColor;
-const fog = new THREE.Fog(0x87b5d9, 40, 140);
-scene.fog = fog;
-
-const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 300);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-document.body.appendChild(renderer.domElement);
-
-function makeCanvasTexture(
-  size: number,
-  draw: (ctx: CanvasRenderingContext2D, s: number) => void,
-  repeat = 1
-): THREE.CanvasTexture {
-  const c = document.createElement("canvas");
-  c.width = c.height = size;
-  const ctx = c.getContext("2d");
-  if (!ctx) throw new Error("2D canvas context unavailable");
-  draw(ctx, size);
-  const tex = new THREE.CanvasTexture(c);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(repeat, repeat);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
-
-addEventListener("resize", () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
-
-const hemi = new THREE.HemisphereLight(0xcfe8ff, 0x3a4a35, 1.1);
-scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xfff2d8, 1.6);
-sun.position.set(30, 60, 20);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.camera.left = -70;
-sun.shadow.camera.right = 70;
-sun.shadow.camera.top = 70;
-sun.shadow.camera.bottom = -70;
-scene.add(sun);
-
-const groundTex = makeCanvasTexture(
-  256,
-  (ctx, s) => {
-    ctx.fillStyle = "#57753f";
-    ctx.fillRect(0, 0, s, s);
-    for (let i = 0; i < 3500; i++) {
-      const g = 95 + Math.random() * 60;
-      ctx.fillStyle = `rgb(${(g * 0.68) | 0},${g | 0},${(g * 0.42) | 0})`;
-      ctx.fillRect(Math.random() * s, Math.random() * s, 2, 2);
-    }
-  },
-  48
-);
-const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(400, 400),
-  new THREE.MeshStandardMaterial({ map: groundTex, roughness: 1 })
-);
-ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
-scene.add(ground);
-
-const grid = new THREE.GridHelper(400, 100, 0x000000, 0x000000);
-const gridMaterial = grid.material as THREE.LineBasicMaterial;
-gridMaterial.opacity = 0.08;
-gridMaterial.transparent = true;
-grid.position.y = 0.01;
-scene.add(grid);
-
-const WEATHERS: WeatherPreset[] = [
-  {
-    name: "Sunny",
-    sky: 0x87b5d9,
-    fogN: 40,
-    fogF: 140,
-    hemiSky: 0xcfe8ff,
-    hemiGnd: 0x3a4a35,
-    hemiI: 1.1,
-    sunC: 0xfff2d8,
-    sunI: 1.6,
-    sunPos: [30, 60, 20],
-    gnd: 0xffffff,
-    torch: 0,
-  },
-  {
-    name: "Cloudy",
-    sky: 0x9aa5ad,
-    fogN: 25,
-    fogF: 110,
-    hemiSky: 0xb8c0c6,
-    hemiGnd: 0x4a4f45,
-    hemiI: 0.9,
-    sunC: 0xdde3e8,
-    sunI: 0.7,
-    sunPos: [20, 50, 10],
-    gnd: 0xcfd4d8,
-    torch: 40,
-  },
-  {
-    name: "Rainy",
-    sky: 0x6b7a88,
-    fogN: 18,
-    fogF: 90,
-    hemiSky: 0x93a3b0,
-    hemiGnd: 0x39414a,
-    hemiI: 0.75,
-    sunC: 0xaebfcf,
-    sunI: 0.5,
-    sunPos: [10, 50, -10],
-    gnd: 0xb9c4cc,
-    rain: 1400,
-    torch: 100,
-  },
-  {
-    name: "Thunderstorm",
-    sky: 0x2e3742,
-    fogN: 12,
-    fogF: 70,
-    hemiSky: 0x55606c,
-    hemiGnd: 0x23282e,
-    hemiI: 0.55,
-    sunC: 0x8fa2b5,
-    sunI: 0.35,
-    sunPos: [-20, 50, 10],
-    gnd: 0x9aa5ad,
-    rain: 2400,
-    lightning: true,
-    torch: 150,
-  },
-  {
-    name: "Night",
-    sky: 0x0a1020,
-    fogN: 20,
-    fogF: 100,
-    hemiSky: 0x2c3a5c,
-    hemiGnd: 0x141a26,
-    hemiI: 0.6,
-    sunC: 0xaec4f2,
-    sunI: 0.7,
-    sunPos: [-40, 60, -30],
-    gnd: 0x5a6a8a,
-    stars: true,
-    torch: 240,
-  },
-  {
-    name: "Beach Sunset",
-    sky: 0xff9e6d,
-    fogN: 30,
-    fogF: 130,
-    hemiSky: 0xffc4a3,
-    hemiGnd: 0x5a4a3a,
-    hemiI: 0.95,
-    sunC: 0xffb36b,
-    sunI: 1.5,
-    sunPos: [60, 15, -20],
-    gnd: 0xe8d5a8,
-    torch: 30,
-  },
-  {
-    name: "Underground",
-    sky: 0x14100c,
-    fogN: 3,
-    fogF: 28,
-    hemiSky: 0x4a3f33,
-    hemiGnd: 0x1a140e,
-    hemiI: 0.5,
-    sunC: 0x6b5d43,
-    sunI: 0.3,
-    sunPos: [0, 40, 0],
-    gnd: 0x6e6258,
-    torch: 320,
-  },
-];
-let weather: WeatherPreset = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
-requiredElement<HTMLSpanElement>("#weather").textContent = weather.name;
-
-let stars: THREE.Points | null = null;
-if (weather.stars) {
-  const sp: number[] = [];
-  for (let i = 0; i < 700; i++) {
-    const th = Math.random() * Math.PI * 2;
-    const ph = Math.random() * Math.PI * 0.45;
-    const r = 180;
-    sp.push(r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph) + 5, r * Math.sin(ph) * Math.sin(th));
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.Float32BufferAttribute(sp, 3));
-  stars = new THREE.Points(
-    g,
-    new THREE.PointsMaterial({ color: 0xdde8ff, size: 2, sizeAttenuation: false, fog: false })
-  );
-  scene.add(stars);
-}
-
-let rain: THREE.Points | null = null;
-const rainSpeed = 24;
-if (weather.rain !== undefined) {
-  const count = weather.rain;
-  const pos = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    pos[i * 3] = (Math.random() - 0.5) * 80;
-    pos[i * 3 + 1] = Math.random() * 30;
-    pos[i * 3 + 2] = (Math.random() - 0.5) * 80;
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-  rain = new THREE.Points(
-    g,
-    new THREE.PointsMaterial({ color: 0xaac3dd, size: 0.09, transparent: true, opacity: 0.65 })
-  );
-  scene.add(rain);
-}
-let boltTimer = 2 + Math.random() * 4;
-let flashT = 0;
-const flashColor = new THREE.Color(0xdfe9ff);
-
-const obstacles: ObstacleBox[] = [];
-function facadeTexture(w: number, h: number, base: string): THREE.CanvasTexture {
-  return makeCanvasTexture(256, (ctx, s) => {
-    ctx.fillStyle = base;
-    ctx.fillRect(0, 0, s, s);
-    for (let i = 0; i < 900; i++) {
-      ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.09})`;
-      ctx.fillRect(Math.random() * s, Math.random() * s, 3, 3);
-    }
-    const cols = Math.max(2, Math.round(w / 1.6));
-    const rows = Math.max(1, Math.round(h / 1.8));
-    const cw = s / cols;
-    const rh = s / rows;
-    for (let i = 0; i < cols; i++) {
-      for (let j = 0; j < rows; j++) {
-        ctx.fillStyle = "rgba(0,0,0,.55)";
-        ctx.fillRect(i * cw + cw * 0.18, j * rh + rh * 0.18, cw * 0.64, rh * 0.64);
-        ctx.fillStyle = Math.random() < 0.22 ? "#ffd98a" : "#26333f";
-        ctx.fillRect(i * cw + cw * 0.24, j * rh + rh * 0.24, cw * 0.52, rh * 0.52);
-      }
-    }
-  });
-}
-function addBuilding(x: number, z: number, w: number, h: number, d: number, base: string): void {
-  const roofMat = new THREE.MeshStandardMaterial({ color: 0x3a3e44, roughness: 0.95 });
-  function wallMat(tw: number, th: number): THREE.MeshStandardMaterial {
-    return new THREE.MeshStandardMaterial({ map: facadeTexture(tw, th, base), roughness: 0.9 });
-  }
-  const mx = wallMat(d, h);
-  const mz = wallMat(w, h);
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), [mx, mx, roofMat, roofMat, mz, mz]);
-  m.position.set(x, h / 2, z);
-  m.castShadow = m.receiveShadow = true;
-  scene.add(m);
-  obstacles.push({
-    min: new THREE.Vector3(x - w / 2, 0, z - d / 2),
-    max: new THREE.Vector3(x + w / 2, h, z + d / 2),
-  });
-}
-const crateSpots: Array<[number, number, number, number, number]> = [
-  [-18, -12, 6, 5, 6],
-  [22, 15, 8, 7, 5],
-  [10, -25, 5, 4, 12],
-  [-28, 20, 10, 3, 4],
-  [30, -18, 4, 9, 4],
-  [-8, 30, 12, 4, 5],
-  [0, 0, 3, 2, 3],
-  [-40, -30, 7, 6, 7],
-  [42, 32, 6, 8, 6],
-];
-const palettes = ["#8a6f52", "#6e7681", "#9c5a48", "#75808a", "#96795c"];
-crateSpots.forEach(([x, z, w, h, d], i) => addBuilding(x, z, w, h, d, palettes[i % palettes.length]));
-
-function mulberry32(seed: number): () => number {
-  return function () {
-    seed |= 0;
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-const rng = mulberry32(20260821);
-
-function makeTree(scale: number): THREE.Group {
-  const g = new THREE.Group();
-  const trunkH = 1.7 * scale;
-  const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.16 * scale, 0.3 * scale, trunkH, 8),
-    new THREE.MeshStandardMaterial({ color: 0x63452c, roughness: 1 })
-  );
-  trunk.position.y = trunkH / 2;
-  g.add(trunk);
-  let y = trunkH * 0.8;
-  for (let i = 0; i < 3; i++) {
-    const r = (1.6 - i * 0.42) * scale;
-    const ch = (2.0 - i * 0.35) * scale;
-    const cone = new THREE.Mesh(
-      new THREE.ConeGeometry(r, ch, 9),
-      new THREE.MeshStandardMaterial({
-        color: new THREE.Color().setHSL(0.33, 0.45, 0.18 + rng() * 0.09),
-        roughness: 1,
-      })
-    );
-    cone.position.y = y + ch / 2;
-    cone.rotation.y = rng() * Math.PI;
-    g.add(cone);
-    y += ch * 0.55;
-  }
-  return g;
-}
-
-const treeColliders: TreeCollider[] = [];
-for (let i = 0; i < 60; i++) {
-  const s = 0.8 + rng() * 0.9;
-  const t = makeTree(s);
-  let x: number;
-  let z: number;
-  let ok: boolean;
-  do {
-    x = (rng() - 0.5) * 180;
-    z = (rng() - 0.5) * 180;
-    ok = true;
-    for (const o of obstacles) {
-      if (x > o.min.x - 2 && x < o.max.x + 2 && z > o.min.z - 2 && z < o.max.z + 2) {
-        ok = false;
-        break;
-      }
-    }
-  } while (!ok);
-  t.position.set(x, 0, z);
-  t.rotation.y = rng() * Math.PI * 2;
-  t.traverse((o) => {
-    if (o instanceof THREE.Mesh) o.castShadow = true;
-  });
-  scene.add(t);
-  treeColliders.push({ x, z, r: 0.4 * s });
 }
 
 const player: PlayerState = {
@@ -451,17 +36,6 @@ addEventListener("keyup", (e) => (keys[e.code] = false));
 
 let locked = false;
 let playing = false;
-const overlay = requiredElement<HTMLDivElement>("#overlay");
-const overlayTitle = requiredElement<HTMLHeadingElement>("#overlay h1");
-const overlayMsg = requiredElement<HTMLParagraphElement>("#overlay-msg");
-const startBtn = requiredElement<HTMLButtonElement>("#start-btn");
-
-function showOverlay(title: string, msg: string, btnText: string): void {
-  overlayTitle.textContent = title;
-  overlayMsg.innerHTML = msg;
-  startBtn.textContent = btnText;
-  overlay.classList.remove("hidden");
-}
 
 startBtn.addEventListener("click", () => {
   playing = true;
@@ -487,7 +61,7 @@ document.addEventListener("pointerlockchange", () => {
   } else if (playing && !gameOver) {
     playing = false;
     renderer.domElement.style.cursor = "default";
-    showOverlay("PAUSED", "Pointer lock was released. Click to resume.", "RESUME");
+    showOverlay("pausedTitle", t("pausedLockMsg"), t("resume"));
   }
 });
 document.addEventListener("mousemove", (e) => {
@@ -500,7 +74,7 @@ addEventListener("keydown", (e) => {
   if (e.code === "Escape" && playing && !locked) {
     playing = false;
     renderer.domElement.style.cursor = "default";
-    showOverlay("PAUSED", "Click to resume.", "RESUME");
+    showOverlay("pausedTitle", t("pausedMsg"), t("resume"));
   }
 });
 
@@ -543,32 +117,6 @@ const muzzleFlash = new THREE.PointLight(0xffaa33, 0, 8);
 muzzleFlash.position.copy(gun.position).add(new THREE.Vector3(0, 0, -0.6));
 camera.add(muzzleFlash);
 
-const flashlight = new THREE.SpotLight(0xfff4d6, 100, 80, 0.5, 0.55, 1.2);
-flashlight.position.set(0.2, -0.15, -0.9);
-const flashTarget = new THREE.Object3D();
-flashTarget.position.set(0.2, -0.15, -14);
-camera.add(flashTarget);
-flashlight.target = flashTarget;
-camera.add(flashlight);
-
-function applyWeather(w: WeatherPreset): void {
-  skyColor.set(w.sky);
-  fog.color.set(w.sky);
-  fog.near = w.fogN;
-  fog.far = w.fogF;
-  hemi.color.set(w.hemiSky);
-  hemi.groundColor.set(w.hemiGnd);
-  hemi.intensity = w.hemiI;
-  sun.color.set(w.sunC);
-  sun.intensity = w.sunI;
-  sun.position.set(...w.sunPos);
-  ground.material.color.set(w.gnd ?? 0xffffff);
-  if (stars) stars.visible = !!w.stars;
-  if (rain) rain.visible = !!w.rain;
-  flashlight.intensity = w.torch ?? 60;
-}
-applyWeather(weather);
-
 const raycaster = new THREE.Raycaster();
 const tracerGeo = new THREE.CylinderGeometry(0.015, 0.015, 1, 5);
 tracerGeo.translate(0, 0.5, 0);
@@ -576,93 +124,16 @@ tracerGeo.rotateX(Math.PI / 2);
 const tracers: Tracer[] = [];
 function shootTracer(from: THREE.Vector3, to: THREE.Vector3): void {
   const len = from.distanceTo(to);
-  const t = new THREE.Mesh(
+  const tracerMesh = new THREE.Mesh(
     tracerGeo,
     new THREE.MeshBasicMaterial({ color: 0xffdd66, transparent: true, opacity: 0.9 })
   );
-  t.position.copy(from);
-  t.lookAt(to);
-  t.scale.z = len;
-  scene.add(t);
-  tracers.push({ mesh: t, life: 0.08 });
+  tracerMesh.position.copy(from);
+  tracerMesh.lookAt(to);
+  tracerMesh.scale.z = len;
+  scene.add(tracerMesh);
+  tracers.push({ mesh: tracerMesh, life: 0.08 });
 }
-
-const enemies: Enemy[] = [];
-
-function spawnEnemy(wave: number): void {
-  const g = new THREE.Group();
-  const speed = 2.2 + wave * 0.25 + Math.random();
-  const hpMax = 3 + Math.floor(wave / 2);
-  const suit: HitFlashMaterial = Object.assign(
-    new THREE.MeshStandardMaterial({ color: 0xb23232, roughness: 0.7 }),
-    { userData: { base: 0xb23232 } }
-  );
-  const dark: HitFlashMaterial = Object.assign(
-    new THREE.MeshStandardMaterial({ color: 0x2e323a, roughness: 0.55, metalness: 0.35 }),
-    { userData: { base: 0x2e323a } }
-  );
-
-  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.34, 0.55, 4, 10), suit);
-  torso.position.y = 1.15;
-  const chestPlate = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.34, 0.14), dark);
-  chestPlate.position.set(0, 1.28, 0.22);
-  const pelvis = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.24, 0.3), dark);
-  pelvis.position.y = 0.76;
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 12), suit);
-  head.position.y = 1.74;
-  const visor = new THREE.Mesh(
-    new THREE.BoxGeometry(0.32, 0.09, 0.06),
-    new THREE.MeshBasicMaterial({ color: 0xffdd33 })
-  );
-  visor.position.set(0, 1.76, 0.21);
-  const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.22, 5), dark);
-  antenna.position.set(0.14, 2.0, 0);
-
-  function limb(len: number, r: number, mat: THREE.Material): THREE.Group {
-    const pivot = new THREE.Group();
-    const seg = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 3, 6), mat);
-    seg.position.y = -(len / 2 + r);
-    pivot.add(seg);
-    return pivot;
-  }
-  const armL = limb(0.42, 0.09, suit);
-  armL.position.set(-0.44, 1.42, 0);
-  const armR = limb(0.42, 0.09, suit);
-  armR.position.set(0.44, 1.42, 0);
-  const legL = limb(0.52, 0.11, dark);
-  legL.position.set(-0.16, 0.7, 0);
-  const legR = limb(0.52, 0.11, dark);
-  legR.position.set(0.16, 0.7, 0);
-
-  g.add(torso, chestPlate, pelvis, head, visor, antenna, armL, armR, legL, legR);
-  g.traverse((o) => {
-    if (o instanceof THREE.Mesh) o.castShadow = true;
-  });
-
-  const ang = Math.random() * Math.PI * 2;
-  const dist = 45 + Math.random() * 20;
-  g.position.set(player.pos.x + Math.cos(ang) * dist, 0, player.pos.z + Math.sin(ang) * dist);
-
-  scene.add(g);
-  enemies.push({
-    group: g,
-    mats: [suit, dark],
-    hp: hpMax,
-    hpMax,
-    speed,
-    hitTimer: 0,
-    limbs: { armL, armR, legL, legR },
-    phase: Math.random() * 10,
-  });
-}
-
-const hitmarkerEl = requiredElement<HTMLDivElement>("#hitmarker");
-const healthBar = requiredElement<HTMLDivElement>("#health-bar");
-const healthText = requiredElement<HTMLSpanElement>("#health-text");
-const ammoEl = requiredElement<HTMLDivElement>("#ammo");
-const scoreEl = requiredElement<HTMLSpanElement>("#score");
-const waveEl = requiredElement<HTMLSpanElement>("#wave");
-const vignette = requiredElement<HTMLDivElement>("#damage-vignette");
 
 let ammo = 30;
 const magSize = 30;
@@ -674,6 +145,11 @@ let spawnTimer = 0;
 let gameOver = false;
 let shootCooldown = 0;
 let recoil = 0;
+
+setOnEnemyKilled(() => {
+  score += 100;
+  setScore(score);
+});
 
 function reload(): void {
   if (reloading || ammo === magSize) return;
@@ -713,8 +189,8 @@ function tryShoot(): void {
   raycaster.far = 200;
 
   const meshes: THREE.Mesh[] = [];
-  enemies.forEach((e) =>
-    e.group.traverse((o) => {
+  enemies.forEach((en) =>
+    en.group.traverse((o) => {
       if (o instanceof THREE.Mesh) meshes.push(o);
     })
   );
@@ -729,8 +205,8 @@ function tryShoot(): void {
     end = hit.point;
     let root: THREE.Object3D = hit.object;
     while (root.parent && !enemies.some((en) => en.group === root)) root = root.parent;
-    const en = enemies.find((en) => en.group === root);
-    if (en) damageEnemy(en, 1);
+    const target = enemies.find((en) => en.group === root);
+    if (target) damageEnemy(target, 1);
   }
 
   const origin = camera
@@ -739,37 +215,14 @@ function tryShoot(): void {
   shootTracer(origin, end);
 }
 
-function damageEnemy(en: Enemy, dmg: number): void {
-  en.hp -= dmg;
-  en.mats.forEach((m) => m.color.setHex(0xffffff));
-  en.hitTimer = 0.08;
-  hitmarkerEl.classList.add("show");
-  setTimeout(() => hitmarkerEl.classList.remove("show"), 120);
-  if (en.hp <= 0) killEnemy(en);
-}
-
-function killEnemy(en: Enemy): void {
-  score += 100;
-  scoreEl.textContent = String(score);
-  scene.remove(en.group);
-  enemies.splice(enemies.indexOf(en), 1);
-}
-
 function hurtPlayer(dmg: number): void {
   if (gameOver) return;
   player.hp -= dmg;
-  vignette.style.opacity = String(Math.min(1, (100 - player.hp) / 70));
+  setVignette((100 - player.hp) / 70);
   setTimeout(() => {
-    vignette.style.opacity = String(Math.max(0, (100 - player.hp - 10) / 70));
+    setVignette((100 - player.hp - 10) / 70);
   }, 150);
-  healthBar.style.width = `${Math.max(0, player.hp)}%`;
-  healthText.textContent = String(Math.max(0, Math.round(player.hp)));
-  healthBar.style.background =
-    player.hp > 50
-      ? "linear-gradient(90deg,#33cc44,#7dff88)"
-      : player.hp > 25
-        ? "linear-gradient(90deg,#ccaa22,#ffdd55)"
-        : "linear-gradient(90deg,#cc2222,#ff5544)";
+  refreshHealth(player.hp);
   if (player.hp <= 0) endGame();
 }
 
@@ -778,37 +231,8 @@ function endGame(): void {
   playing = false;
   document.exitPointerLock();
   renderer.domElement.style.cursor = "default";
-  showOverlay("GAME OVER", `Final score: <b>${score}</b> · Reached wave <b>${wave}</b>`, "PLAY AGAIN");
+  showOverlay("gameOverTitle", gameOverMsg(score, wave), t("playAgain"));
   startBtn.onclick = () => location.reload();
-}
-
-function collide(pos: THREE.Vector3, radius: number): void {
-  for (const o of obstacles) {
-    if (pos.y - 1.7 >= o.max.y) continue;
-    const cx = Math.max(o.min.x, Math.min(pos.x, o.max.x));
-    const cz = Math.max(o.min.z, Math.min(pos.z, o.max.z));
-    const dx = pos.x - cx;
-    const dz = pos.z - cz;
-    const d2 = dx * dx + dz * dz;
-    if (d2 < radius * radius) {
-      const d = Math.sqrt(d2) || 0.001;
-      pos.x = cx + (dx / d) * radius;
-      pos.z = cz + (dz / d) * radius;
-    }
-  }
-  for (const c of treeColliders) {
-    const dx = pos.x - c.x;
-    const dz = pos.z - c.z;
-    const rr = c.r + radius;
-    const d2 = dx * dx + dz * dz;
-    if (d2 < rr * rr && d2 > 1e-6) {
-      const d = Math.sqrt(d2);
-      pos.x = c.x + (dx / d) * rr;
-      pos.z = c.z + (dz / d) * rr;
-    }
-  }
-  pos.x = Math.max(-190, Math.min(190, pos.x));
-  pos.z = Math.max(-190, Math.min(190, pos.z));
 }
 
 const clock = new THREE.Clock();
@@ -859,17 +283,17 @@ function animate(): void {
     recoil = Math.max(0, recoil - dt * 8);
     muzzleFlash.intensity = Math.max(0, muzzleFlash.intensity - dt * 40);
     shootCooldown = Math.max(0, shootCooldown - dt);
-    ammoEl.textContent = reloading ? "RELOADING..." : `${ammo} / ∞`;
+    setAmmoText(reloading ? t("reloading") : `${ammo} / ∞`);
 
     spawnTimer -= dt;
     if (enemiesToSpawn > 0 && spawnTimer <= 0) {
-      spawnEnemy(wave);
+      spawnEnemy(player.pos, wave);
       enemiesToSpawn--;
       spawnTimer = 1.2;
     }
     if (enemiesToSpawn === 0 && enemies.length === 0) {
       wave++;
-      waveEl.textContent = String(wave);
+      setWave(wave);
       enemiesToSpawn = 4 + wave * 2;
       spawnTimer = 2;
       player.hp = Math.min(100, player.hp + 20);
@@ -910,36 +334,13 @@ function animate(): void {
     }
   }
 
-  if (rain) {
-    const positionAttr = rain.geometry.getAttribute("position") as THREE.BufferAttribute;
-    const arr = positionAttr.array as Float32Array;
-    for (let i = 0; i < arr.length; i += 3) {
-      arr[i + 1] -= rainSpeed * dt;
-      if (arr[i + 1] < 0) arr[i + 1] = 30;
-    }
-    positionAttr.needsUpdate = true;
-    rain.position.set(player.pos.x, 0, player.pos.z);
-  }
-  if (weather.lightning) {
-    boltTimer -= dt;
-    if (boltTimer <= 0) {
-      flashT = 0.22;
-      boltTimer = 2.5 + Math.random() * 7;
-    }
-    if (flashT > 0) {
-      flashT -= dt;
-      const f = Math.max(flashT, 0) / 0.22;
-      hemi.intensity = weather.hemiI + f * 2.2;
-      skyColor.set(weather.sky).lerp(flashColor, f * 0.8);
-      fog.color.copy(skyColor);
-    } else {
-      hemi.intensity = weather.hemiI;
-    }
-  }
+  updateWeatherFx(dt, player.pos.x, player.pos.z);
 
   renderer.render(scene, camera);
 }
-animate();
+
+initWeather();
+refreshHealth(player.hp);
 
 window.__game = {
   get player() {
@@ -964,17 +365,14 @@ window.__game = {
     return reloading;
   },
   get weatherName() {
-    return weather.name;
+    return getWeather().name;
   },
   setWeather(i: number): void {
-    const preset = WEATHERS[i];
-    if (!preset) throw new RangeError(`Unknown weather index: ${i}`);
-    weather = preset;
-    applyWeather(weather);
-    requiredElement<HTMLSpanElement>("#weather").textContent = weather.name;
+    setWeatherByIndex(i);
   },
   tryShoot,
   reload,
   hurtPlayer,
   damageEnemy,
 };
+animate();

@@ -184,3 +184,35 @@ canvas {
   background: #ff7744;
   transform: scale(1.05);
 }
+
+#lang-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 30;
+  pointer-events: auto;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+}
+#lang-btn:hover {
+  background: rgba(255, 85, 51, 0.7);
+}
+
+@media (max-width: 640px) {
+  #health-wrap {
+    width: min(220px, 46vw);
+  }
+  #ammo {
+    font-size: 20px;
+  }
+  #overlay h1 {
+    font-size: 40px;
+    letter-spacing: 3px;
+  }
+}

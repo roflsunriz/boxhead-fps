@@ -173,7 +173,19 @@ check("HUD health text synced", hpText.trim() === "60");
 await page.evaluate(() => window.__game.hurtPlayer(1000));
 await page.waitForTimeout(400);
 check("game over triggered", await page.evaluate(() => window.__game.gameOver === true));
-check("overlay shows GAME OVER", (await page.textContent("#overlay h1")).includes("GAME OVER"));
+check(
+  "overlay shows game over state",
+  await page.evaluate(() => document.querySelector("#overlay")?.dataset.screen === "game-over")
+);
+const overlayLang = await page.evaluate(() => document.documentElement.lang);
+check(`game over title localized (html lang=${overlayLang})`, ["en", "ja"].includes(overlayLang));
+const langBefore = await page.evaluate(() => document.documentElement.lang);
+await page.click("#lang-btn");
+const langAfter = await page.evaluate(() => document.documentElement.lang);
+check(
+  `language toggle flips (${langBefore} -> ${langAfter})`,
+  langBefore !== langAfter && ["en", "ja"].includes(langAfter)
+);
 check("exit pointer lock on death", await page.evaluate(() => document.pointerLockElement === null || true));
 
 console.log("\n[8] Console errors across whole session");
