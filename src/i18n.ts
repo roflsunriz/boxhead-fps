@@ -64,6 +64,13 @@ export function getLang(): Lang {
   return lang;
 }
 
+type I18nListener = () => void;
+const listeners: I18nListener[] = [];
+
+export function onChange(fn: I18nListener): void {
+  listeners.push(fn);
+}
+
 export function gameOverMsg(score: number, wave: number): string {
   return lang === "ja"
     ? `最終スコア: <b>${score}</b> · 到達ウェーブ <b>${wave}</b>`
@@ -91,4 +98,5 @@ export function toggleLang(): void {
     /* localStorage unavailable: language resets on reload */
   }
   applyI18n();
+  listeners.forEach((fn) => fn());
 }

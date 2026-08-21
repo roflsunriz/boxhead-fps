@@ -1,5 +1,5 @@
 import { requiredElement } from "./dom";
-import { t, applyI18n, toggleLang } from "./i18n";
+import { t, applyI18n, toggleLang, onChange } from "./i18n";
 
 export const hitmarkerEl = requiredElement<HTMLDivElement>("#hitmarker");
 export const healthBar = requiredElement<HTMLDivElement>("#health-bar");
@@ -21,17 +21,34 @@ requiredElement<HTMLButtonElement>("#lang-btn").addEventListener("click", () => 
   toggleLang();
 });
 
-export function showOverlay(
-  titleKey: "pausedTitle" | "gameOverTitle",
-  msgHtml: string,
-  btnText: string
-): void {
-  overlayTitle.textContent = t(titleKey);
-  overlayMsg.innerHTML = msgHtml;
-  startBtn.textContent = btnText;
-  overlay.dataset.screen = titleKey === "gameOverTitle" ? "game-over" : "paused";
+export type OverlayScreen = "pausedTitle" | "gameOverTitle";
+
+interface OverlaySpec {
+  screen: OverlayScreen;
+  msg: () => string;
+  btnKey: "resume" | "playAgain";
+}
+
+let currentOverlay: OverlaySpec | null = null;
+
+function renderOverlay(): void {
+  if (!currentOverlay) return;
+  overlayTitle.textContent = t(currentOverlay.screen);
+  overlayMsg.innerHTML = currentOverlay.msg();
+  startBtn.textContent = t(currentOverlay.btnKey);
+}
+
+export function showOverlay(screen: OverlayScreen, msg: () => string, btnKey: "resume" | "playAgain"): void {
+  currentOverlay = { screen, msg, btnKey };
+  renderOverlay();
+  overlay.dataset.screen = screen === "gameOverTitle" ? "game-over" : "paused";
   overlay.classList.remove("hidden");
 }
+
+onChange(() => {
+  applyI18n();
+  if (!overlay.classList.contains("hidden")) renderOverlay();
+});
 
 export function setAmmoText(text: string): void {
   ammoEl.textContent = text;

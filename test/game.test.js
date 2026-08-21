@@ -180,11 +180,17 @@ check(
 const overlayLang = await page.evaluate(() => document.documentElement.lang);
 check(`game over title localized (html lang=${overlayLang})`, ["en", "ja"].includes(overlayLang));
 const langBefore = await page.evaluate(() => document.documentElement.lang);
+const titleBeforeToggle = await page.textContent("#overlay h1");
 await page.click("#lang-btn");
 const langAfter = await page.evaluate(() => document.documentElement.lang);
 check(
   `language toggle flips (${langBefore} -> ${langAfter})`,
   langBefore !== langAfter && ["en", "ja"].includes(langAfter)
+);
+const titleAfterToggle = await page.textContent("#overlay h1");
+check(
+  `overlay title re-renders immediately on toggle ("${titleBeforeToggle}" -> "${titleAfterToggle}")`,
+  titleBeforeToggle !== titleAfterToggle && titleAfterToggle.trim().length > 0
 );
 check("exit pointer lock on death", await page.evaluate(() => document.pointerLockElement === null || true));
 

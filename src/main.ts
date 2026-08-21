@@ -12,7 +12,7 @@ import {
   showOverlay,
   startBtn,
 } from "./ui";
-import { gameOverMsg, t } from "./i18n";
+import { gameOverMsg, t, onChange } from "./i18n";
 import type { GameDebugApi, PlayerState, Tracer } from "./types";
 
 declare global {
@@ -61,7 +61,7 @@ document.addEventListener("pointerlockchange", () => {
   } else if (playing && !gameOver) {
     playing = false;
     renderer.domElement.style.cursor = "default";
-    showOverlay("pausedTitle", t("pausedLockMsg"), t("resume"));
+    showOverlay("pausedTitle", () => t("pausedLockMsg"), "resume");
   }
 });
 document.addEventListener("mousemove", (e) => {
@@ -74,7 +74,7 @@ addEventListener("keydown", (e) => {
   if (e.code === "Escape" && playing && !locked) {
     playing = false;
     renderer.domElement.style.cursor = "default";
-    showOverlay("pausedTitle", t("pausedMsg"), t("resume"));
+    showOverlay("pausedTitle", () => t("pausedMsg"), "resume");
   }
 });
 
@@ -231,7 +231,7 @@ function endGame(): void {
   playing = false;
   document.exitPointerLock();
   renderer.domElement.style.cursor = "default";
-  showOverlay("gameOverTitle", gameOverMsg(score, wave), t("playAgain"));
+  showOverlay("gameOverTitle", () => gameOverMsg(score, wave), "playAgain");
   startBtn.onclick = () => location.reload();
 }
 
@@ -341,6 +341,7 @@ function animate(): void {
 
 initWeather();
 refreshHealth(player.hp);
+onChange(() => setAmmoText(reloading ? t("reloading") : `${ammo} / ∞`));
 
 window.__game = {
   get player() {
