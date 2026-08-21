@@ -38,18 +38,19 @@ bun run preview
 
 ```powershell
 bun run type-check   # tsc --noEmit、any 禁止・strict
-bun run lint         # ESLint (typescript-eslint flat config)
+bun run lint         # ESLint (typescript-eslint flat config、src/ と test/ 両方)
 bun run format       # Prettier 整形
 bun run audit        # bun audit による依存脆弱性スキャン
-bun run test         # Playwright E2E、29 項目すべて PASS すること
+bun run test         # Playwright E2E、31 項目すべて PASS すること
+node test/responsive.js   # 4 ビューポートのレイアウト検証(ALL VIEWPORTS OK が出ること)
 ```
 
-テストはビルド済み `dist/` を配信したサーバに対して実行すること(ソース直配信ではなく成果物を検証する)。ヘッドレス環境ではポインタロックをスタブして実行する設計。
+テストはビルド済み `dist/` を配信したサーバに対して実行すること(ソース直配信ではなく成果物を検証する)。ヘッドレス環境ではポインタロックをスタブして実行する設計。UI 文言は言語設定で変わるため、テストの画面判定は翻訳文字列ではなく `data-screen` / `data-i18n` 属性と要素構造で行うこと。
 
 ## ロールバック/復旧方針
 
-- ソースは `index.html` / `style.css` / `src/main.ts` の 3 ファイル。問題発生時は Git の該当コミットへ戻せば復旧する。
+- ソースは `index.html` / `style.css` / `src/`(9 モジュール)。構成は README.md の表を参照。問題発生時は Git の該当コミットへ戻せば復旧する。
 - ビルド成果物 `dist/` は生成物であり手編集しない。壊れたら `bun run build` で再生成する。
 - three.js は npm 依存(bundler 解決)のため CDN 障害の影響を受けない。
 - typescript-eslint は TS 7 未対応のため、`typescript` は 6.x に固定している。TS 7 対応後の更新時は `typescript-eslint` の対応状況を先に確認すること。
-- テストが失敗した場合はまず `test/run.log` の失敗項目名と、8787 ポートで `dist/` が配信されているかを確認すること。
+- テストが失敗した場合はまず `test/run.log` の失敗項目名と、8787 ポートで `dist/` が配信されているかを確認すること。UI 文言関連の失敗時は、言語設定(ja/en)の違いが原因ではないかを確認すること。
