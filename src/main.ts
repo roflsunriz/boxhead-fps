@@ -114,8 +114,12 @@ gun.position.set(0.22, -0.2, -0.45);
 gun.scale.setScalar(0.85);
 
 const muzzleFlash = new THREE.PointLight(0xffaa33, 0, 8);
-muzzleFlash.position.copy(gun.position).add(new THREE.Vector3(0, 0, -0.6));
-camera.add(muzzleFlash);
+gun.add(muzzleFlash);
+
+const muzzle = new THREE.Object3D();
+muzzle.position.set(0, 0.02, -0.68);
+gun.add(muzzle);
+muzzleFlash.position.set(0, 0.02, -0.6);
 
 const raycaster = new THREE.Raycaster();
 const tracerGeo = new THREE.CylinderGeometry(0.015, 0.015, 1, 5);
@@ -145,6 +149,7 @@ let spawnTimer = 0;
 let gameOver = false;
 let shootCooldown = 0;
 let recoil = 0;
+let lastTracerOrigin: { x: number; y: number; z: number } | null = null;
 
 setOnEnemyKilled(() => {
   score += 100;
@@ -209,9 +214,8 @@ function tryShoot(): void {
     if (target) damageEnemy(target, 1);
   }
 
-  const origin = camera
-    .getWorldPosition(new THREE.Vector3())
-    .add(new THREE.Vector3(0.15, -0.12, 0).applyQuaternion(camera.quaternion));
+  const origin = muzzle.getWorldPosition(new THREE.Vector3());
+  lastTracerOrigin = { x: origin.x, y: origin.y, z: origin.z };
   shootTracer(origin, end);
 }
 
@@ -367,6 +371,9 @@ window.__game = {
   },
   get weatherName() {
     return getWeather().name;
+  },
+  get lastTracerOrigin() {
+    return lastTracerOrigin;
   },
   setWeather(i: number): void {
     setWeatherByIndex(i);

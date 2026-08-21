@@ -73,6 +73,7 @@ export interface GameDebugApi {
   readonly gameOver: boolean;
   readonly reloading: boolean;
   readonly weatherName: string;
+  readonly lastTracerOrigin: { x: number; y: number; z: number } | null;
   setWeather(i: number): void;
   tryShoot(): void;
   reload(): void;

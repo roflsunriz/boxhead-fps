@@ -107,10 +107,19 @@ await page.evaluate(() => {
   g.player.pitch = 0;
 });
 const a0 = await page.evaluate(() => window.__game.ammo);
-await page.evaluate(() => window.__game.tryShoot());
+const muzzleDist = await page.evaluate(() => {
+  window.__game.tryShoot();
+  const o = window.__game.lastTracerOrigin;
+  const p = window.__game.player.pos;
+  return o ? Math.hypot(o.x - p.x, o.y - p.y, o.z - p.z) : -1;
+});
 await page.waitForTimeout(50);
 const a1 = await page.evaluate(() => window.__game.ammo);
 check(`ammo decrements (${a0} -> ${a1})`, a1 === a0 - 1);
+check(
+  `tracer originates at gun muzzle, not camera (eye -> origin = ${muzzleDist.toFixed(2)})`,
+  muzzleDist > 0.8 && muzzleDist < 1.4
+);
 
 console.log("\n[5] Enemy spawn, damage, kill, score");
 await page.evaluate(() => window.__game.hurtPlayer(0));
