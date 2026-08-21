@@ -13,8 +13,11 @@ if (!locked) {
     document.dispatchEvent(new Event("pointerlockchange"));
   });
 }
-for (const [i, name] of [[4, "night"], [6, "underground"]]) {
-  await page.evaluate(i => window.__game.setWeather(i), i);
+for (const [i, name] of [
+  [4, "night"],
+  [6, "underground"],
+]) {
+  await page.evaluate((i) => window.__game.setWeather(i), i);
   await page.waitForTimeout(600);
   await page.screenshot({ path: `test/visual-${name}.png` });
 }

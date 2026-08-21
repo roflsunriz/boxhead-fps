@@ -36,6 +36,10 @@ out.viewDirX = await page.evaluate(() => {
 });
 
 console.log(JSON.stringify(out, null, 2));
-console.log("right sweep delta:", (out.yawAfterRight - out.yaw0).toFixed(4), "(expect NEGATIVE = turning right)");
+console.log(
+  "right sweep delta:",
+  (out.yawAfterRight - out.yaw0).toFixed(4),
+  "(expect NEGATIVE = turning right)"
+);
 console.log("left sweep delta:", (out.yawAfterLeft - out.yawAfterRight).toFixed(4), "(expect POSITIVE)");
 await browser.close();

@@ -1,39 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Boxhead FPS</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div id="hud">
-  <div id="crosshair">
-    <span class="ch v"></span><span class="ch h"></span>
-  </div>
-  <div id="hitmarker">✕</div>
-  <div id="damage-vignette"></div>
-  <div id="stats">
-    <div id="health-wrap"><div id="health-bar"></div><span id="health-text">100</span></div>
-    <div id="ammo">30 / ∞</div>
-    <div id="score-row"><span id="score">0</span> pts &nbsp;·&nbsp; Wave <span id="wave">1</span></div>
-    <div id="weather-row">Atmosphere: <span id="weather">—</span></div>
-  </div>
-</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Boxhead FPS</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="hud">
+      <div id="crosshair"><span class="ch v"></span><span class="ch h"></span></div>
+      <div id="hitmarker">✕</div>
+      <div id="damage-vignette"></div>
+      <div id="stats">
+        <div id="health-wrap">
+          <div id="health-bar"></div>
+          <span id="health-text">100</span>
+        </div>
+        <div id="ammo">30 / ∞</div>
+        <div id="score-row"><span id="score">0</span> pts &nbsp;·&nbsp; Wave <span id="wave">1</span></div>
+        <div id="weather-row">Atmosphere: <span id="weather">—</span></div>
+      </div>
+    </div>
 
-<div id="overlay">
-  <h1>BOXHEAD<span>FPS</span></h1>
-  <p id="overlay-msg">WASD move · Mouse aim · Click shoot · R reload · Shift sprint · Space jump</p>
-  <button id="start-btn">CLICK TO PLAY</button>
-</div>
+    <div id="overlay">
+      <h1>BOXHEAD<span>FPS</span></h1>
+      <p id="overlay-msg">WASD move · Mouse aim · Click shoot · R reload · Shift sprint · Space jump</p>
+      <button id="start-btn">CLICK TO PLAY</button>
+    </div>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
-  }
-}
-</script>
-<script type="module" src="game.js"></script>
-</body>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>
