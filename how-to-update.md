@@ -3,31 +3,53 @@
 ## 前提
 
 - Node.js 26.x または Bun 1.3.x がインストールされていること
-- 初回のみ依存関係をインストールする: `bun install`(または `npm install`)
+- 初回のみ依存関係をインストールする: `bun install`
 - Playwright のブラウザが必要な場合: `bunx playwright install chromium`
 
-## 起動方法
+## 開発サーバ(Vite)
 
-ES Modules をローカルサーバ経由で配信する必要があるため、静的サーバで起動する。
+ソースを直接配信する開発モード。HMR 付き。
 
 ```powershell
-bunx serve -l 8787 .
+bun run dev
 ```
 
-起動後、ブラウザで `http://localhost:8787` を開く。「CLICK TO PLAY」で開始する。
+`http://localhost:8787` で起動する(port 8787 固定)。
+
+## ビルドと本番確認
+
+バンドラは Bun のもの(`bun build`)を使用する。rollup / rolldown は使わない。
+
+```powershell
+bun run build
+```
+
+`dist/` に成果物が出力される。バンドル済み成果物の動作確認は:
+
+```powershell
+bun run preview
+```
+
+(`http://localhost:8787` で `dist/` を配信)
 
 ## 検証方法
 
-サーバ起動状態で以下を実行する。29 項目すべて PASS すること。
+`bun run preview`(または任意の静的サーバで `dist/` を 8787 番ポートに配信)した状態で:
 
 ```powershell
-node test/game.test.js
+bun run type-check   # tsc --noEmit、any 禁止・strict
+bun run lint         # ESLint (typescript-eslint flat config)
+bun run format       # Prettier 整形
+bun run audit        # bun audit による依存脆弱性スキャン
+bun run test         # Playwright E2E、29 項目すべて PASS すること
 ```
 
-視点操作の個別検証には `test/look.js`、任意タイミングのスクリーンショットには `test/shot.js` を使える。
+テストはビルド済み `dist/` を配信したサーバに対して実行すること(ソース直配信ではなく成果物を検証する)。ヘッドレス環境ではポインタロックをスタブして実行する設計。
 
 ## ロールバック/復旧方針
 
-- ゲーム本体は `index.html` / `style.css` / `game.js` の 3 ファイルのみで、外部ビルド工程はない。問題発生時は Git の該当コミットへ戻せば復旧する。
-- Three.js は CDN(importmap で unpkg の three@0.160.0)から読み込む。オフライン環境や CDN 障害時に起動しない場合は、同バージョンをローカル同梱に切り替えることを検討すること。
-- テストはポインタロックが使えないヘッドレス環境では `document.pointerLockElement` をスタブして実行する設計になっている。テストが失敗した場合はまず `test/run.log` の失敗項目名と、サーバが 8787 ポートで起動しているかを確認すること。
+- ソースは `index.html` / `style.css` / `src/main.ts` の 3 ファイル。問題発生時は Git の該当コミットへ戻せば復旧する。
+- ビルド成果物 `dist/` は生成物であり手編集しない。壊れたら `bun run build` で再生成する。
+- three.js は npm 依存(bundler 解決)のため CDN 障害の影響を受けない。
+- typescript-eslint は TS 7 未対応のため、`typescript` は 6.x に固定している。TS 7 対応後の更新時は `typescript-eslint` の対応状況を先に確認すること。
+- テストが失敗した場合はまず `test/run.log` の失敗項目名と、8787 ポートで `dist/` が配信されているかを確認すること。
