@@ -1,6 +1,6 @@
+dist/
 node_modules/
-subagents/
+bun.lock
 test/*.png
 test/run.log
-dist/
 package-lock.json
