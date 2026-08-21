@@ -1,0 +1,4 @@
+node_modules/
+subagents/
+test/*.png
+test/run.log

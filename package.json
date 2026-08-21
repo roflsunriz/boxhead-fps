@@ -1,0 +1,8 @@
+{
+  "name": "fps-test",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  }
+}

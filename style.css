@@ -1,0 +1,87 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #000;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  user-select: none;
+}
+
+canvas { display: block; }
+
+#hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+
+#crosshair {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px; height: 24px;
+}
+.ch { position: absolute; background: #fff; opacity: .85; }
+.ch.v { width: 2px; height: 8px; left: 11px; }
+.ch.v:first-child { top: 0; } .ch.v:last-of-type { bottom: 0; }
+.ch.h { height: 2px; width: 8px; top: 11px; }
+.ch.h:first-of-type { left: 0; } .ch.h:last-of-type { right: 0; }
+
+#hitmarker {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(1.4);
+  color: #ff5533; font-size: 22px; font-weight: bold;
+  opacity: 0; transition: opacity .15s;
+}
+#hitmarker.show { opacity: 1; transition: none; }
+
+#damage-vignette {
+  position: absolute; inset: 0;
+  box-shadow: inset 0 0 120px rgba(255, 0, 0, .9);
+  opacity: 0; transition: opacity .4s;
+}
+
+#stats {
+  position: absolute; left: 20px; bottom: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+  color: #fff; text-shadow: 0 1px 3px #000;
+}
+
+#health-wrap {
+  position: relative; width: 220px; height: 22px;
+  background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.35);
+}
+#health-bar {
+  height: 100%; width: 100%;
+  background: linear-gradient(90deg, #33cc44, #7dff88);
+  transition: width .2s, background .3s;
+}
+#health-text {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+}
+
+#ammo { font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+#score-row { font-size: 14px; opacity: .9; }
+#score { font-weight: 700; }
+
+#overlay {
+  position: fixed; inset: 0; z-index: 20;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 18px;
+  background: rgba(6, 10, 18, .82);
+  color: #fff; text-align: center;
+  backdrop-filter: blur(4px);
+}
+#overlay.hidden { display: none; }
+
+#overlay h1 { font-size: 64px; letter-spacing: 6px; }
+#overlay h1 span { color: #ff5533; margin-left: 12px; }
+#overlay-msg { opacity: .75; max-width: 520px; line-height: 1.6; }
+
+#start-btn {
+  pointer-events: auto;
+  padding: 14px 42px;
+  font-size: 18px; font-weight: 700; letter-spacing: 2px;
+  color: #fff; background: #ff5533;
+  border: none; cursor: pointer;
+  transition: transform .1s, background .2s;
+}
+#start-btn:hover { background: #ff7744; transform: scale(1.05); }
