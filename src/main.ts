@@ -2,8 +2,22 @@ import * as THREE from "three";
 import { camera, collide, ground, renderer, scene, updateEnvironment, debugEnvSummary } from "./world";
 import { getWeather, initWeather, setWeatherByIndex, updateWeatherFx } from "./weather";
 import { bots, damageBot, initBots, setOnBotKilled, updateBots } from "./enemies";
-import { overlay, refreshHealth, setAmmoText, setMatchScore, setVignette, showOverlay, startBtn } from "./ui";
+import {
+  overlay,
+  refreshHealth,
+  refreshShield,
+  setActionProgress,
+  setAmmoText,
+  setInventory,
+  setMatchScore,
+  setVignette,
+  showDamageDirection,
+  showOverlay,
+  startBtn,
+} from "./ui";
 import { matchResultMsg, t, onChange } from "./i18n";
+import { initAudio, playHurt, playShieldCharge, playShot } from "./audio";
+import { pickupCount, spawnPickups, throwPlayerGrenade, updateItems } from "./items";
 import type { GameDebugApi, PlayerState, TeamId, Tracer } from "./types";
 
 declare global {
@@ -19,6 +33,10 @@ const player: PlayerState = {
   pitch: 0,
   onGround: true,
   hp: 100,
+  shield: 100,
+  shieldCells: 2,
+  grenades: 3,
+  stance: "stand",
   radius: 0.5,
   dead: false,
 };
@@ -30,6 +48,7 @@ let locked = false;
 let playing = false;
 
 startBtn.addEventListener("click", () => {
+  initAudio();
   playing = true;
   overlay.classList.add("hidden");
   renderer.domElement.style.cursor = "none";
@@ -51,6 +70,7 @@ document.addEventListener("pointerlockchange", () => {
   if (locked) {
     overlay.classList.add("hidden");
   } else if (playing && !gameOver) {
+    triggerHeld = false;
     playing = false;
     renderer.domElement.style.cursor = "default";
     showOverlay("pausedTitle", () => t("pausedLockMsg"), "resume");
@@ -67,6 +87,18 @@ addEventListener("keydown", (e) => {
     playing = false;
     renderer.domElement.style.cursor = "default";
     showOverlay("pausedTitle", () => t("pausedMsg"), "resume");
+  }
+  if (!playing || gameOver || player.dead || e.repeat) return;
+  if (e.code === "KeyC") {
+    player.stance = player.stance === "crouch" ? "stand" : "crouch";
+    setInventory(player.shieldCells, player.grenades, player.stance);
+  } else if (e.code === "KeyX") {
+    player.stance = player.stance === "prone" ? "stand" : "prone";
+    setInventory(player.shieldCells, player.grenades, player.stance);
+  } else if (e.code === "KeyF") {
+    useShieldCell();
+  } else if (e.code === "KeyG") {
+    throwGrenade();
   }
 });
 
@@ -105,6 +137,32 @@ scene.add(camera);
 gun.position.set(0.22, -0.2, -0.45);
 gun.scale.setScalar(0.85);
 
+const shieldDevice = new THREE.Group();
+const cellBody = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.065, 0.065, 0.3, 12),
+  new THREE.MeshStandardMaterial({
+    color: 0x1588ff,
+    emissive: 0x0755bb,
+    emissiveIntensity: 1.8,
+    metalness: 0.4,
+  })
+);
+cellBody.rotation.z = Math.PI / 2;
+const cellCapMat = new THREE.MeshStandardMaterial({
+  color: 0xd8f8ff,
+  emissive: 0x66ddff,
+  emissiveIntensity: 1.3,
+});
+const cellCapA = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.025, 12), cellCapMat);
+const cellCapB = cellCapA.clone();
+cellCapA.rotation.z = cellCapB.rotation.z = Math.PI / 2;
+cellCapA.position.x = -0.16;
+cellCapB.position.x = 0.16;
+shieldDevice.add(cellBody, cellCapA, cellCapB);
+shieldDevice.position.set(0, -0.31, -0.58);
+shieldDevice.visible = false;
+camera.add(shieldDevice);
+
 const muzzleFlash = new THREE.PointLight(0xffaa33, 0, 8);
 gun.add(muzzleFlash);
 
@@ -137,6 +195,10 @@ let reloading = false;
 let shootCooldown = 0;
 let recoil = 0;
 let lastTracerOrigin: { x: number; y: number; z: number } | null = null;
+let triggerHeld = false;
+let healingShield = false;
+let shieldHealT = 0;
+const shieldHealDuration = 2.1;
 
 const teamScore: Record<TeamId, number> = { red: 0, blue: 0 };
 let killTarget = 20;
@@ -157,10 +219,14 @@ setOnBotKilled((victim, killerTeam) => {
 function respawnPlayer(): void {
   player.dead = false;
   player.hp = 100;
+  player.shield = 100;
+  player.stance = "stand";
   player.pos.set(66 + Math.random() * 8, 1.7, 66 + Math.random() * 8);
   player.vel.set(0, 0, 0);
   gun.visible = true;
   refreshHealth(100);
+  refreshShield(100);
+  setInventory(player.shieldCells, player.grenades, player.stance);
   setVignette(0);
 }
 
@@ -174,7 +240,7 @@ function endMatch(winner: TeamId): void {
 }
 
 function reload(): void {
-  if (reloading || ammo === magSize) return;
+  if (reloading || ammo === magSize || healingShield) return;
   reloading = true;
   setTimeout(() => {
     ammo = magSize;
@@ -184,14 +250,59 @@ function reload(): void {
 
 addEventListener("mousedown", (e) => {
   if (!playing || e.button !== 0) return;
+  triggerHeld = true;
+  initAudio();
   tryShoot();
+});
+addEventListener("mouseup", (e) => {
+  if (e.button === 0) triggerHeld = false;
+});
+addEventListener("blur", () => {
+  triggerHeld = false;
 });
 addEventListener("keydown", (e) => {
   if (e.code === "KeyR") reload();
 });
 
+function useShieldCell(): void {
+  if (healingShield || player.dead || player.shield >= 100 || player.shieldCells <= 0) return;
+  healingShield = true;
+  shieldHealT = 0;
+  reloading = false;
+  triggerHeld = false;
+  shieldDevice.visible = true;
+  gun.visible = false;
+  playShieldCharge();
+}
+
+function updateShieldHeal(dt: number): void {
+  if (!healingShield) return;
+  shieldHealT += dt;
+  const progress = Math.min(1, shieldHealT / shieldHealDuration);
+  shieldDevice.rotation.y += dt * 4;
+  shieldDevice.position.y = -0.31 + Math.sin(shieldHealT * 8) * 0.025;
+  shieldDevice.scale.setScalar(0.9 + Math.sin(shieldHealT * 14) * 0.035);
+  setActionProgress(t("chargingBarrier"), progress);
+  if (progress >= 1) {
+    player.shieldCells--;
+    player.shield = Math.min(100, player.shield + 50);
+    healingShield = false;
+    shieldDevice.visible = false;
+    gun.visible = !player.dead;
+    refreshShield(player.shield);
+    setInventory(player.shieldCells, player.grenades, player.stance);
+    setActionProgress(null);
+    playShieldCharge();
+  }
+}
+
+function throwGrenade(): void {
+  if (!playing || player.dead || gameOver || healingShield || player.grenades <= 0) return;
+  throwPlayerGrenade(player);
+}
+
 function tryShoot(): void {
-  if (shootCooldown > 0 || reloading || gameOver || player.dead) return;
+  if (shootCooldown > 0 || reloading || healingShield || gameOver || player.dead) return;
   if (ammo <= 0) {
     reload();
     return;
@@ -200,6 +311,7 @@ function tryShoot(): void {
   shootCooldown = 0.11;
   recoil = 1;
   muzzleFlash.intensity = 3;
+  playShot(0.7);
 
   const dir = new THREE.Vector3();
   camera.getWorldDirection(dir);
@@ -236,14 +348,32 @@ function tryShoot(): void {
   shootTracer(origin, end);
 }
 
-function hurtPlayer(dmg: number): void {
+function hurtPlayer(dmg: number, source?: THREE.Vector3, bypassShield = false): void {
   if (gameOver || player.dead || dmg <= 0) return;
-  player.hp -= dmg;
+  let healthDamage = dmg;
+  if (!bypassShield && player.shield > 0) {
+    const absorbed = Math.min(player.shield, healthDamage);
+    player.shield -= absorbed;
+    healthDamage -= absorbed;
+    refreshShield(player.shield);
+  }
+  player.hp -= healthDamage;
+  playHurt();
+  if (source) {
+    const worldBearing = Math.atan2(source.x - player.pos.x, -(source.z - player.pos.z));
+    let relative = worldBearing - player.yaw;
+    while (relative > Math.PI) relative -= Math.PI * 2;
+    while (relative < -Math.PI) relative += Math.PI * 2;
+    showDamageDirection(relative);
+  }
   setVignette(Math.min(1, (100 - player.hp) / 70));
   refreshHealth(player.hp);
   if (player.hp <= 0) {
     player.dead = true;
     respawnT = 3;
+    healingShield = false;
+    shieldDevice.visible = false;
+    setActionProgress(null);
     gun.visible = false;
     scoreKill("red");
   }
@@ -251,14 +381,17 @@ function hurtPlayer(dmg: number): void {
 
 const clock = new THREE.Clock();
 let bobTime = 0;
+let currentEyeOffset = 0;
 
 function animate(): void {
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.05);
 
   if (playing && !gameOver) {
-    const sprint = keys["ShiftLeft"] ? 1.6 : 1;
-    const speed = 8 * sprint;
+    const stanceMultiplier = player.stance === "stand" ? 1 : player.stance === "crouch" ? 0.62 : 0.32;
+    const sprint = keys["ShiftLeft"] && player.stance === "stand" && !healingShield ? 1.6 : 1;
+    const healMultiplier = healingShield ? 0.55 : 1;
+    const speed = 8 * sprint * stanceMultiplier * healMultiplier;
     const forward = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
     const right = new THREE.Vector3(-forward.z, 0, forward.x);
     const move = new THREE.Vector3();
@@ -270,7 +403,7 @@ function animate(): void {
 
     player.vel.x = move.x;
     player.vel.z = move.z;
-    if (keys["Space"] && player.onGround) {
+    if (keys["Space"] && player.onGround && player.stance !== "prone" && !healingShield) {
       player.vel.y = 7;
       player.onGround = false;
     }
@@ -284,10 +417,12 @@ function animate(): void {
     }
     collide(player.pos, player.radius);
 
-    bobTime += dt * (move.lengthSq() > 0 ? sprint * 9 : 0);
-    const bobY = Math.sin(bobTime) * 0.03;
+    bobTime += dt * (move.lengthSq() > 0 ? sprint * 9 * stanceMultiplier : 0);
+    const bobY = Math.sin(bobTime) * 0.03 * stanceMultiplier;
+    const targetEyeOffset = player.stance === "stand" ? 0 : player.stance === "crouch" ? -0.55 : -1.08;
+    currentEyeOffset += (targetEyeOffset - currentEyeOffset) * Math.min(1, dt * 10);
 
-    camera.position.set(player.pos.x, player.pos.y + bobY, player.pos.z);
+    camera.position.set(player.pos.x, player.pos.y + currentEyeOffset + bobY, player.pos.z);
     camera.rotation.order = "YXZ";
     camera.rotation.y = player.yaw;
     camera.rotation.x = player.pitch - recoil * 0.04;
@@ -297,6 +432,8 @@ function animate(): void {
     recoil = Math.max(0, recoil - dt * 8);
     muzzleFlash.intensity = Math.max(0, muzzleFlash.intensity - dt * 40);
     shootCooldown = Math.max(0, shootCooldown - dt);
+    if (triggerHeld) tryShoot();
+    updateShieldHeal(dt);
     setAmmoText(reloading ? t("reloading") : `${ammo} / ∞`);
 
     if (player.dead) {
@@ -305,6 +442,7 @@ function animate(): void {
     }
 
     updateBots(dt, clock.elapsedTime);
+    updateItems(player, dt, clock.elapsedTime);
   }
 
   for (let i = tracers.length - 1; i >= 0; i--) {
@@ -324,8 +462,18 @@ function animate(): void {
 
 initWeather();
 refreshHealth(player.hp);
-onChange(() => setAmmoText(reloading ? t("reloading") : `${ammo} / ∞`));
-initBots({ x: 66, z: 66 }, { x: -66, z: -66 }, { player, onPlayerHit: hurtPlayer });
+refreshShield(player.shield);
+setInventory(player.shieldCells, player.grenades, player.stance);
+spawnPickups();
+onChange(() => {
+  setAmmoText(reloading ? t("reloading") : `${ammo} / ∞`);
+  setInventory(player.shieldCells, player.grenades, player.stance);
+});
+initBots(
+  { x: 66, z: 66 },
+  { x: -66, z: -66 },
+  { player, onPlayerHit: (dmg, source) => hurtPlayer(dmg, source) }
+);
 
 window.__game = {
   get player() {
@@ -349,6 +497,12 @@ window.__game = {
   get reloading() {
     return reloading;
   },
+  get healingShield() {
+    return healingShield;
+  },
+  get pickups() {
+    return pickupCount();
+  },
   get weatherName() {
     return getWeather().name;
   },
@@ -360,13 +514,21 @@ window.__game = {
   },
   setWeather(i: number): void {
     setWeatherByIndex(i);
+    spawnPickups();
   },
   setKillTarget(n: number): void {
     killTarget = n;
   },
   tryShoot,
   reload,
-  hurtPlayer,
+  hurtPlayer(dmg: number): void {
+    hurtPlayer(dmg, undefined, true);
+  },
+  hurtPlayerFrom(dmg: number, x: number, z: number): void {
+    hurtPlayer(dmg, new THREE.Vector3(x, player.pos.y, z));
+  },
+  useShieldCell,
+  throwGrenade,
   damageEnemy(en: (typeof bots)[number], dmg: number): void {
     damageBot(en, dmg, "blue");
   },

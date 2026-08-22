@@ -19,7 +19,11 @@ await page.evaluate(() => {
   g.player.yaw = Math.PI * 1.25;
   g.player.pitch = -0.05;
 });
-for (let i = 0; i < 8; i++) (await page.mouse.down(), page.waitForTimeout(50), page.mouse.up());
+for (let i = 0; i < 8; i++) {
+  await page.mouse.down();
+  await page.waitForTimeout(50);
+  await page.mouse.up();
+}
 await page.waitForTimeout(400);
 await page.screenshot({ path: "test/env-tdm.png" });
 const stats = await page.evaluate(() => {

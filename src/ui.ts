@@ -1,5 +1,6 @@
 import { requiredElement } from "./dom";
 import { t, applyI18n, toggleLang, onChange } from "./i18n";
+import type { Stance } from "./types";
 
 export const hitmarkerEl = requiredElement<HTMLDivElement>("#hitmarker");
 export const healthBar = requiredElement<HTMLDivElement>("#health-bar");
@@ -8,12 +9,22 @@ export const ammoEl = requiredElement<HTMLDivElement>("#ammo");
 const scoreEl = requiredElement<HTMLSpanElement>("#score");
 const waveEl = requiredElement<HTMLSpanElement>("#wave");
 export const vignette = requiredElement<HTMLDivElement>("#damage-vignette");
+const damageIndicator = requiredElement<HTMLDivElement>("#damage-indicator");
+const shieldBar = requiredElement<HTMLDivElement>("#shield-bar");
+const shieldText = requiredElement<HTMLSpanElement>("#shield-text");
+const shieldCells = requiredElement<HTMLSpanElement>("#shield-cells");
+const grenades = requiredElement<HTMLSpanElement>("#grenades");
+const stanceEl = requiredElement<HTMLSpanElement>("#stance");
+const actionWrap = requiredElement<HTMLDivElement>("#action-wrap");
+const actionLabel = requiredElement<HTMLDivElement>("#action-label");
+const actionProgress = requiredElement<HTMLDivElement>("#action-progress");
 export const overlay = requiredElement<HTMLDivElement>("#overlay");
 const overlayTitle = requiredElement<HTMLHeadingElement>("#overlay h1");
 const overlayMsg = requiredElement<HTMLParagraphElement>("#overlay-msg");
 export const startBtn = requiredElement<HTMLButtonElement>("#start-btn");
 
 let hitmarkerTimer: number | undefined;
+let damageTimer: number | undefined;
 
 applyI18n();
 
@@ -74,6 +85,34 @@ export function refreshHealth(hp: number): void {
       : hp > 25
         ? "linear-gradient(90deg,#ccaa22,#ffdd55)"
         : "linear-gradient(90deg,#cc2222,#ff5544)";
+}
+
+export function refreshShield(value: number): void {
+  const shield = Math.max(0, Math.min(100, value));
+  shieldBar.style.width = `${shield}%`;
+  shieldText.textContent = String(Math.round(shield));
+  shieldBar.classList.toggle("empty", shield <= 0);
+}
+
+export function setInventory(cells: number, grenadeCount: number, stance: Stance): void {
+  shieldCells.textContent = String(cells);
+  grenades.textContent = String(grenadeCount);
+  stanceEl.textContent = t(stance);
+}
+
+export function setActionProgress(label: string | null, progress = 0): void {
+  actionWrap.classList.toggle("show", label !== null);
+  actionLabel.textContent = label ?? "";
+  actionProgress.style.width = `${Math.max(0, Math.min(1, progress)) * 100}%`;
+}
+
+export function showDamageDirection(angleRadians: number): void {
+  damageIndicator.style.transform = `translate(-50%, -50%) rotate(${angleRadians}rad)`;
+  damageIndicator.classList.remove("show");
+  void damageIndicator.offsetWidth;
+  damageIndicator.classList.add("show");
+  if (damageTimer !== undefined) clearTimeout(damageTimer);
+  damageTimer = window.setTimeout(() => damageIndicator.classList.remove("show"), 650);
 }
 
 export function setVignette(opacity: number): void {

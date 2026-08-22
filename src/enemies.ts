@@ -8,7 +8,7 @@ let nextBotId = 1;
 
 export interface BotContext {
   player: PlayerState;
-  onPlayerHit: (dmg: number) => void;
+  onPlayerHit: (dmg: number, source: THREE.Vector3) => void;
 }
 
 let ctx: BotContext | null = null;
@@ -350,7 +350,7 @@ function tryFire(bot: Enemy, time: number): void {
   const isPlayerTarget = t.id === -1;
   const dmg = 18 + bot.skill.accuracy * 22;
   if (hitRoll < baseHit * (1 - Math.min(aimErr, 0.8))) {
-    if (isPlayerTarget && ctx) ctx.onPlayerHit(dmg);
+    if (isPlayerTarget && ctx) ctx.onPlayerHit(dmg, bot.pos);
     else if (!isPlayerTarget) {
       const victim = bots.find((b) => b.id === t.id);
       if (victim) damageBot(victim, dmg, bot.team);

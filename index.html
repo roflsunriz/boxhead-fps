@@ -14,12 +14,25 @@
       </div>
       <div id="hitmarker">✕</div>
       <div id="damage-vignette"></div>
+      <div id="damage-indicator"><div id="damage-arc"></div></div>
+      <div id="action-wrap">
+        <div id="action-label"></div>
+        <div id="action-track"><div id="action-progress"></div></div>
+      </div>
       <div id="stats">
+        <div id="shield-wrap">
+          <div id="shield-bar"></div>
+          <span id="shield-text">100</span>
+        </div>
         <div id="health-wrap">
           <div id="health-bar"></div>
           <span id="health-text">100</span>
         </div>
         <div id="ammo">30 / ∞</div>
+        <div id="inventory">
+          <span id="stance">STAND</span> · F ◈ <span id="shield-cells">2</span> · G ●
+          <span id="grenades">3</span>/5
+        </div>
         <div id="score-row">
           <span id="score">0</span> <span data-i18n="pts">pts</span> &nbsp;·&nbsp;
           <span data-i18n="wave">Wave</span> <span id="wave">1</span>
@@ -35,7 +48,7 @@
     <div id="overlay">
       <h1>BOXHEAD<span>FPS</span></h1>
       <p id="overlay-msg" data-i18n="msgStart">
-        WASD move · Mouse aim · Click shoot · R reload · Shift sprint · Space jump
+        WASD move · Mouse aim · Hold click full-auto · C crouch · X prone · F shield · G grenade
       </p>
       <button id="start-btn" type="button" data-i18n="play">CLICK TO PLAY</button>
     </div>

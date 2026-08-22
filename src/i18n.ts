@@ -15,11 +15,15 @@ type StringKey =
   | "redWins"
   | "blueWins"
   | "weatherLabel"
-  | "langBtn";
+  | "langBtn"
+  | "chargingBarrier"
+  | "stand"
+  | "crouch"
+  | "prone";
 
 const STRINGS: Record<Lang, Record<StringKey, string>> = {
   en: {
-    msgStart: "WASD move · Mouse aim · Click shoot · R reload · Shift sprint · Space jump",
+    msgStart: "WASD move · Mouse aim · Hold click full-auto · C crouch · X prone · F shield · G grenade",
     play: "CLICK TO PLAY",
     pausedTitle: "PAUSED",
     pausedLockMsg: "Pointer lock was released. Click to resume.",
@@ -34,9 +38,14 @@ const STRINGS: Record<Lang, Record<StringKey, string>> = {
     blueWins: "BLUE TEAM WINS",
     weatherLabel: "Atmosphere:",
     langBtn: "JA",
+    chargingBarrier: "CHARGING BARRIER",
+    stand: "STAND",
+    crouch: "CROUCH",
+    prone: "PRONE",
   },
   ja: {
-    msgStart: "WASD 移動 · マウス エイム · クリック 射撃 · R リロード · Shift ダッシュ · Space ジャンプ",
+    msgStart:
+      "WASD 移動 · マウス エイム · クリック長押し 連射 · C しゃがみ · X うつぶせ · F バリア · G グレネード",
     play: "クリックしてプレイ",
     pausedTitle: "一時停止",
     pausedLockMsg: "ポインタロックが解除されました。クリックで再開します。",
@@ -51,6 +60,10 @@ const STRINGS: Record<Lang, Record<StringKey, string>> = {
     blueWins: "青チームの勝利",
     weatherLabel: "大気:",
     langBtn: "EN",
+    chargingBarrier: "バリアを充填中",
+    stand: "立ち",
+    crouch: "しゃがみ",
+    prone: "うつぶせ",
   },
 };
 

@@ -102,7 +102,7 @@ console.log("\n[4] Shooting & ammo");
 await page.evaluate(() => {
   const g = window.__game;
   g.enemies.forEach((en) => {
-    en.pos.set(200, 0, 200);
+    en.pos.set(en.team === "red" ? 180 : -180, 0, en.team === "red" ? 180 : -180);
   });
   g.player.pos.set(0, 1.7, 25);
   g.player.yaw = Math.PI;
@@ -122,6 +122,71 @@ check(
   `tracer originates at gun muzzle, not camera (eye -> origin = ${muzzleDist.toFixed(2)})`,
   muzzleDist > 0.8 && muzzleDist < 1.4
 );
+
+await page.waitForTimeout(100);
+const auto0 = await page.evaluate(() => window.__game.ammo);
+await page.evaluate(() => window.dispatchEvent(new MouseEvent("mousedown", { button: 0 })));
+await page.waitForTimeout(480);
+await page.evaluate(() => window.dispatchEvent(new MouseEvent("mouseup", { button: 0 })));
+const auto1 = await page.evaluate(() => window.__game.ammo);
+check(`holding click fires full-auto (${auto0} -> ${auto1})`, auto0 - auto1 >= 3);
+
+console.log("\n[4b] Stances, barrier, grenade & pickups");
+await page.keyboard.press("KeyC");
+check("C toggles crouch", await page.evaluate(() => window.__game.player.stance === "crouch"));
+await page.keyboard.press("KeyC");
+check("C toggles crouch off", await page.evaluate(() => window.__game.player.stance === "stand"));
+await page.keyboard.press("KeyX");
+check("X toggles prone", await page.evaluate(() => window.__game.player.stance === "prone"));
+await page.keyboard.press("KeyX");
+check("X toggles prone off", await page.evaluate(() => window.__game.player.stance === "stand"));
+
+const shieldStart = await page.evaluate(() => {
+  const g = window.__game;
+  g.player.shield = 20;
+  g.player.shieldCells = 2;
+  g.useShieldCell();
+  return { shield: g.player.shield, cells: g.player.shieldCells, healing: g.healingShield };
+});
+check("F starts shield charging without consuming early", shieldStart.healing && shieldStart.cells === 2);
+await page.waitForTimeout(500);
+await page.screenshot({ path: "test/feature-shield-charge.png" });
+await page.waitForTimeout(1800);
+const shieldEnd = await page.evaluate(() => ({
+  shield: window.__game.player.shield,
+  cells: window.__game.player.shieldCells,
+  healing: window.__game.healingShield,
+}));
+check(
+  `shield charge completes (+50, one cell: ${JSON.stringify(shieldEnd)})`,
+  shieldEnd.shield === 70 && shieldEnd.cells === 1 && !shieldEnd.healing
+);
+
+const indicator = await page.evaluate(() => {
+  const g = window.__game;
+  g.player.shield = 100;
+  g.hurtPlayerFrom(10, g.player.pos.x + 10, g.player.pos.z);
+  const el = document.querySelector("#damage-indicator");
+  return { shown: el?.classList.contains("show"), transform: el?.style.transform ?? "" };
+});
+check(
+  "damage indicator shows the attack direction",
+  indicator.shown && indicator.transform.includes("rotate(")
+);
+await page.screenshot({ path: "test/feature-damage-direction.png" });
+
+const grenadeResult = await page.evaluate(() => {
+  const g = window.__game;
+  g.player.grenades = 5;
+  g.throwGrenade();
+  return {
+    grenades: g.player.grenades,
+    hud: document.querySelector("#grenades")?.textContent,
+    pickups: g.pickups,
+  };
+});
+check("G throws and consumes one grenade", grenadeResult.grenades === 4 && grenadeResult.hud === "4");
+check(`15 random pickups spawned (${grenadeResult.pickups})`, grenadeResult.pickups === 15);
 
 console.log("\n[5] Enemy spawn, damage, kill, score");
 await page.evaluate(() => window.__game.hurtPlayer(0));
@@ -148,10 +213,9 @@ console.log("\n[6] Bot reload & respawn");
 await page.evaluate(() => {
   const g = window.__game;
   g.enemies.forEach((en) => {
-    if (en.team === "red") {
-      en.skill.accuracy = 0;
-      en.pos.set(-200, 0, -200);
-    }
+    en.skill.accuracy = 0;
+    en.pos.set(en.team === "red" ? -180 : 180, 0, en.team === "red" ? -180 : 180);
+    en.target = null;
   });
 });
 const reloadInfo = await page.evaluate(() => {

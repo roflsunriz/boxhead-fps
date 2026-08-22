@@ -41,7 +41,7 @@ bun run type-check   # tsc --noEmit、any 禁止・strict
 bun run lint         # ESLint (typescript-eslint flat config、src/ と test/ 両方)
 bun run format       # Prettier 整形
 bun run audit        # bun audit による依存脆弱性スキャン
-bun run test         # Playwright E2E、41 項目すべて PASS すること
+bun run test         # Playwright E2E、51 項目すべて PASS すること
 node test/responsive.js   # 4 ビューポートのレイアウト検証(ALL VIEWPORTS OK が出ること)
 ```
 
@@ -49,7 +49,7 @@ node test/responsive.js   # 4 ビューポートのレイアウト検証(ALL VIE
 
 ## ロールバック/復旧方針
 
-- ソースは `index.html` / `style.css` / `src/`(9 モジュール)。構成は README.md の表を参照。問題発生時は Git の該当コミットへ戻せば復旧する。
+- ソースは `index.html` / `style.css` / `src/`。構成は README.md の表を参照。問題発生時は Git の該当コミットへ戻せば復旧する。
 - ビルド成果物 `dist/` は生成物であり手編集しない。壊れたら `bun run build` で再生成する。
 - three.js は npm 依存(bundler 解決)のため CDN 障害の影響を受けない。
 - typescript-eslint は TS 7 未対応のため、`typescript` は 6.x に固定している。TS 7 対応後の更新時は `typescript-eslint` の対応状況を先に確認すること。

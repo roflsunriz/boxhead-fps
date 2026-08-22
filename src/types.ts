@@ -22,6 +22,8 @@ export interface WeatherPreset {
 }
 
 export type TeamId = "red" | "blue";
+export type Stance = "stand" | "crouch" | "prone";
+export type PickupKind = "shield" | "health" | "grenade";
 
 export interface BotSkill {
   label: string;
@@ -105,6 +107,10 @@ export interface PlayerState {
   pitch: number;
   onGround: boolean;
   hp: number;
+  shield: number;
+  shieldCells: number;
+  grenades: number;
+  stance: Stance;
   radius: number;
   dead: boolean;
 }
@@ -117,6 +123,8 @@ export interface GameDebugApi {
   readonly wave: number;
   readonly gameOver: boolean;
   readonly reloading: boolean;
+  readonly healingShield: boolean;
+  readonly pickups: number;
   readonly weatherName: string;
   readonly lastTracerOrigin: { x: number; y: number; z: number } | null;
   setWeather(i: number): void;
@@ -124,6 +132,9 @@ export interface GameDebugApi {
   tryShoot(): void;
   reload(): void;
   hurtPlayer(dmg: number): void;
+  hurtPlayerFrom(dmg: number, x: number, z: number): void;
+  useShieldCell(): void;
+  throwGrenade(): void;
   damageEnemy(en: Enemy, dmg: number): void;
   debugEnvSummary(): Array<{ geo: string; x: number; y: number; z: number; visible: boolean }>;
 }

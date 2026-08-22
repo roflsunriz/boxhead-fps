@@ -811,6 +811,20 @@ export function collide(pos: THREE.Vector3, radius: number): void {
   pos.z = Math.max(-limit, Math.min(limit, pos.z));
 }
 
+export function randomWalkablePoint(margin = 1.5): THREE.Vector3 {
+  const limit = currentVariant === "underground" ? 72 : currentVariant === "beach" ? 72 : 82;
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const x = (Math.random() * 2 - 1) * limit;
+    const z = (Math.random() * 2 - 1) * limit;
+    const blockedByBox = obstacles.some(
+      (o) => x > o.min.x - margin && x < o.max.x + margin && z > o.min.z - margin && z < o.max.z + margin
+    );
+    const blockedByTree = treeColliders.some((c) => Math.hypot(x - c.x, z - c.z) < c.r + margin);
+    if (!blockedByBox && !blockedByTree) return new THREE.Vector3(x, 0.55, z);
+  }
+  return new THREE.Vector3(0, 0.55, 20);
+}
+
 export const flashlight = new THREE.SpotLight(0xfff4d6, 100, 80, 0.5, 0.55, 1.2);
 flashlight.position.set(0.2, -0.15, -0.9);
 const flashTarget = new THREE.Object3D();
