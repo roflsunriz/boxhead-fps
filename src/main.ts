@@ -32,11 +32,13 @@ import { pickupCount, spawnPickups, throwPlayerGrenade, updateItems } from "./it
 import {
   debugPopulatePersistentEffects,
   dropMagazine,
+  leaveBlastMark,
   leaveBulletMark,
   persistentEffectsSummary,
   updatePersistentEffects,
 } from "./persistent-effects";
 import { debugMinimapState, updateMinimap } from "./minimap";
+import { createCarbineModel, createPickupModel } from "./models/game-models";
 import type { DeathFallDirection, GameDebugApi, PlayerState, TeamId, Tracer } from "./types";
 
 declare global {
@@ -65,6 +67,7 @@ addEventListener("keyup", (e) => (keys[e.code] = false));
 
 let locked = false;
 let playing = false;
+let environmentDamageGraceUntil = 0;
 
 startBtn.addEventListener("click", () => {
   initAudio();
@@ -121,39 +124,9 @@ addEventListener("keydown", (e) => {
   }
 });
 
-const gun = new THREE.Group();
-const metalDark = new THREE.MeshStandardMaterial({ color: 0x1a1d22, metalness: 0.75, roughness: 0.35 });
-const metalMid = new THREE.MeshStandardMaterial({ color: 0x2e333b, metalness: 0.65, roughness: 0.45 });
-const polymer = new THREE.MeshStandardMaterial({ color: 0x14161a, roughness: 0.85 });
-const accent = new THREE.MeshStandardMaterial({ color: 0xff5533, roughness: 0.6 });
-
-function gunPart(
-  geo: THREE.BufferGeometry,
-  mat: THREE.Material,
-  x: number,
-  y: number,
-  z: number,
-  rx = 0
-): THREE.Mesh {
-  const m = new THREE.Mesh(geo, mat);
-  m.position.set(x, y, z);
-  m.rotation.x = rx;
-  gun.add(m);
-  return m;
-}
-gunPart(new THREE.BoxGeometry(0.055, 0.055, 0.5), metalMid, 0, 0.02, -0.36);
-gunPart(new THREE.CylinderGeometry(0.03, 0.03, 0.1, 10), metalDark, 0, 0.02, -0.63, Math.PI / 2);
-gunPart(new THREE.BoxGeometry(0.1, 0.13, 0.34), polymer, 0, 0, -0.08);
-gunPart(new THREE.BoxGeometry(0.06, 0.04, 0.18), metalDark, 0, 0.078, -0.12);
-gunPart(new THREE.BoxGeometry(0.045, 0.065, 0.05), metalDark, 0, 0.125, -0.14);
-gunPart(new THREE.BoxGeometry(0.009, 0.028, 0.009), accent, 0, 0.17, -0.14);
-gunPart(new THREE.BoxGeometry(0.07, 0.19, 0.09), polymer, 0, -0.15, 0.02, 0.25);
-const gunMagazine = gunPart(new THREE.BoxGeometry(0.05, 0.16, 0.07), metalMid, 0, -0.13, -0.16, -0.35);
-const magazineBand = new THREE.Mesh(new THREE.BoxGeometry(0.058, 0.025, 0.078), accent);
-magazineBand.position.y = -0.035;
-gunMagazine.add(magazineBand);
-gunPart(new THREE.BoxGeometry(0.08, 0.09, 0.22), polymer, 0, -0.01, 0.19);
-gunPart(new THREE.BoxGeometry(0.07, 0.05, 0.11), polymer, 0, -0.02, -0.27);
+const carbine = createCarbineModel();
+const gun = carbine.group;
+const gunMagazine = carbine.magazine;
 
 const reloadHand = new THREE.Group();
 const gloveMat = new THREE.MeshStandardMaterial({ color: 0x596451, roughness: 0.92 });
@@ -169,48 +142,27 @@ for (let i = 0; i < 3; i++) {
   reloadHand.add(finger);
 }
 reloadHand.position.set(-0.16, -0.18, -0.1);
+reloadHand.scale.setScalar(2.25);
 reloadHand.visible = false;
 gun.add(reloadHand);
 camera.add(gun);
 scene.add(camera);
-const gunBasePosition = new THREE.Vector3(0.22, -0.2, -0.45);
+const gunBasePosition = new THREE.Vector3(0.22, -0.24, -0.62);
 const magazineBaseY = gunMagazine.position.y;
 gun.position.copy(gunBasePosition);
-gun.scale.setScalar(0.85);
+gun.scale.setScalar(0.28);
 
-const shieldDevice = new THREE.Group();
-const cellBody = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.065, 0.065, 0.3, 12),
-  new THREE.MeshStandardMaterial({
-    color: 0x1588ff,
-    emissive: 0x0755bb,
-    emissiveIntensity: 1.8,
-    metalness: 0.4,
-  })
-);
-cellBody.rotation.z = Math.PI / 2;
-const cellCapMat = new THREE.MeshStandardMaterial({
-  color: 0xd8f8ff,
-  emissive: 0x66ddff,
-  emissiveIntensity: 1.3,
-});
-const cellCapA = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.025, 12), cellCapMat);
-const cellCapB = cellCapA.clone();
-cellCapA.rotation.z = cellCapB.rotation.z = Math.PI / 2;
-cellCapA.position.x = -0.16;
-cellCapB.position.x = 0.16;
-shieldDevice.add(cellBody, cellCapA, cellCapB);
+const shieldDevice = createPickupModel("shield");
 shieldDevice.position.set(0, -0.31, -0.58);
+shieldDevice.rotation.z = Math.PI / 2;
+shieldDevice.scale.setScalar(0.42);
 shieldDevice.visible = false;
 camera.add(shieldDevice);
 
 const muzzleFlash = new THREE.PointLight(0xffaa33, 0, 8);
-gun.add(muzzleFlash);
-
-const muzzle = new THREE.Object3D();
-muzzle.position.set(0, 0.02, -0.68);
-gun.add(muzzle);
-muzzleFlash.position.set(0, 0.02, -0.6);
+const muzzle = carbine.muzzle;
+muzzle.add(muzzleFlash);
+muzzleFlash.position.set(0, 0, -0.02);
 
 const raycaster = new THREE.Raycaster();
 const tracerGeo = new THREE.CylinderGeometry(0.015, 0.015, 1, 5);
@@ -234,9 +186,9 @@ let ammo = 30;
 const magSize = 30;
 let reloading = false;
 let reloadProgress = 0;
-let reloadStartedAt = 0;
+let reloadAnimationTime = 0;
 let reloadMagazineDropped = false;
-const reloadDuration = 1.25;
+const reloadDuration = 2.8;
 let shootCooldown = 0;
 let recoil = 0;
 let lastTracerOrigin: { x: number; y: number; z: number } | null = null;
@@ -365,7 +317,7 @@ function reload(): void {
   if (reloading || ammo === magSize || healingShield) return;
   reloading = true;
   reloadProgress = 0;
-  reloadStartedAt = performance.now();
+  reloadAnimationTime = 0.2;
   reloadMagazineDropped = false;
   triggerHeld = false;
 }
@@ -382,7 +334,7 @@ function updateReloadAnimation(): void {
     return;
   }
 
-  reloadProgress = Math.min(1, (performance.now() - reloadStartedAt) / 1000 / reloadDuration);
+  reloadProgress = Math.min(1, reloadAnimationTime / reloadDuration);
   const dip = Math.sin(reloadProgress * Math.PI);
   gun.position.y = gunBasePosition.y - dip * 0.1;
   gun.position.z = gunBasePosition.z + recoil * 0.08 + dip * 0.07;
@@ -390,7 +342,7 @@ function updateReloadAnimation(): void {
   gun.rotation.z = -dip * 0.18;
   reloadHand.visible = true;
 
-  if (reloadProgress >= 0.42 && !reloadMagazineDropped) {
+  if (reloadProgress >= 0.25 && !reloadMagazineDropped) {
     const position = gunMagazine.getWorldPosition(new THREE.Vector3());
     const quaternion = gunMagazine.getWorldQuaternion(new THREE.Quaternion());
     const forward = camera.getWorldDirection(new THREE.Vector3()).setY(0).normalize();
@@ -401,16 +353,16 @@ function updateReloadAnimation(): void {
     reloadMagazineDropped = true;
   }
 
-  if (reloadProgress < 0.42) {
-    const pull = THREE.MathUtils.smoothstep(reloadProgress, 0.08, 0.42);
+  if (reloadProgress < 0.25) {
+    const pull = THREE.MathUtils.smoothstep(reloadProgress, 0.04, 0.25);
     gunMagazine.visible = true;
-    gunMagazine.position.y = magazineBaseY - pull * 0.34;
+    gunMagazine.position.y = magazineBaseY - pull * 0.4;
     reloadHand.position.y = -0.18 - pull * 0.28;
-  } else if (reloadProgress < 0.54) {
+  } else if (reloadProgress < 0.35) {
     gunMagazine.visible = false;
     reloadHand.position.y = -0.46;
   } else {
-    const insert = THREE.MathUtils.smoothstep(reloadProgress, 0.54, 0.84);
+    const insert = THREE.MathUtils.smoothstep(reloadProgress, 0.35, 0.85);
     gunMagazine.visible = true;
     gunMagazine.position.y = THREE.MathUtils.lerp(-0.47, magazineBaseY, insert);
     reloadHand.position.y = THREE.MathUtils.lerp(-0.46, -0.18, insert);
@@ -533,6 +485,7 @@ function tryShoot(): void {
 
 function hurtPlayer(dmg: number, source?: THREE.Vector3, bypassShield = false): void {
   if (gameOver || player.dead || dmg <= 0) return;
+  if (!bypassShield && performance.now() < environmentDamageGraceUntil) return;
   let healthDamage = dmg;
   if (!bypassShield && player.shield > 0) {
     const absorbed = Math.min(player.shield, healthDamage);
@@ -566,64 +519,78 @@ function hurtPlayer(dmg: number, source?: THREE.Vector3, bypassShield = false): 
   }
 }
 
-const clock = new THREE.Clock();
+let lastFrameTimestamp = performance.now();
+let elapsedTime = 0;
 let bobTime = 0;
 let currentEyeOffset = 0;
 
-function animate(): void {
+function animate(timestamp = performance.now()): void {
   requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), 0.05);
+  const rawFrameDelta = Math.max(0, (timestamp - lastFrameTimestamp) / 1000);
+  lastFrameTimestamp = timestamp;
+  elapsedTime += rawFrameDelta;
+  const frameDelta = Math.min(rawFrameDelta, 0.5);
+  if (reloading) reloadAnimationTime += Math.min(frameDelta, 0.2);
+  const stepCount = Math.max(1, Math.ceil(frameDelta / 0.05));
+  const dt = frameDelta / stepCount;
 
-  if (playing && !gameOver) {
-    const stanceMultiplier = player.stance === "stand" ? 1 : player.stance === "crouch" ? 0.62 : 0.32;
-    const sprint = keys["ShiftLeft"] && player.stance === "stand" && !healingShield ? 1.6 : 1;
-    const healMultiplier = healingShield ? 0.55 : 1;
-    const speed = player.dead ? 0 : 8 * sprint * stanceMultiplier * healMultiplier;
-    const forward = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
-    const right = new THREE.Vector3(-forward.z, 0, forward.x);
-    const move = new THREE.Vector3();
-    if (keys["KeyW"]) move.add(forward);
-    if (keys["KeyS"]) move.sub(forward);
-    if (keys["KeyD"]) move.add(right);
-    if (keys["KeyA"]) move.sub(right);
-    if (move.lengthSq() > 0) move.normalize().multiplyScalar(speed);
+  for (let step = 0; step < stepCount; step++) {
+    if (playing && !gameOver) {
+      const stanceMultiplier = player.stance === "stand" ? 1 : player.stance === "crouch" ? 0.62 : 0.32;
+      const sprint = keys["ShiftLeft"] && player.stance === "stand" && !healingShield ? 1.6 : 1;
+      const healMultiplier = healingShield ? 0.55 : 1;
+      const speed = player.dead ? 0 : 8 * sprint * stanceMultiplier * healMultiplier;
+      const forward = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
+      const right = new THREE.Vector3(-forward.z, 0, forward.x);
+      const move = new THREE.Vector3();
+      if (keys["KeyW"]) move.add(forward);
+      if (keys["KeyS"]) move.sub(forward);
+      if (keys["KeyD"]) move.add(right);
+      if (keys["KeyA"]) move.sub(right);
+      if (move.lengthSq() > 0) move.normalize().multiplyScalar(speed);
 
-    player.vel.x = move.x;
-    player.vel.z = move.z;
-    if (keys["Space"] && !player.dead && player.onGround && player.stance !== "prone" && !healingShield) {
-      player.vel.y = 7;
-      player.onGround = false;
+      player.vel.x = move.x;
+      player.vel.z = move.z;
+      if (keys["Space"] && !player.dead && player.onGround && player.stance !== "prone" && !healingShield) {
+        player.vel.y = 7;
+        player.onGround = false;
+      }
+      player.vel.y -= 20 * dt;
+
+      player.pos.addScaledVector(player.vel, dt);
+      if (player.pos.y <= 1.7) {
+        player.pos.y = 1.7;
+        player.vel.y = 0;
+        player.onGround = true;
+      }
+      collide(player.pos, player.radius);
+
+      bobTime += dt * (move.lengthSq() > 0 ? sprint * 9 * stanceMultiplier : 0);
+      const bobY = Math.sin(bobTime) * 0.03 * stanceMultiplier;
+      const targetEyeOffset = player.stance === "stand" ? 0 : player.stance === "crouch" ? -0.55 : -1.08;
+      currentEyeOffset += (targetEyeOffset - currentEyeOffset) * Math.min(1, dt * 10);
+
+      camera.position.set(player.pos.x, player.pos.y + currentEyeOffset + bobY, player.pos.z);
+      camera.rotation.order = "YXZ";
+      camera.rotation.y = player.yaw;
+      camera.rotation.x = player.pitch - recoil * 0.04;
+      camera.rotation.z = 0;
+
+      updateReloadAnimation();
+      recoil = Math.max(0, recoil - dt * 8);
+      muzzleFlash.intensity = Math.max(0, muzzleFlash.intensity - dt * 40);
+      shootCooldown = Math.max(0, shootCooldown - dt);
+      if (triggerHeld) tryShoot();
+      updateShieldHeal(dt);
+      setAmmoText(reloading ? t("reloading") : `${ammo} / ∞`);
+
+      if (!gameOver) {
+        updateBots(dt, elapsedTime);
+        if (!player.dead) updateItems(player, dt, elapsedTime);
+      }
     }
-    player.vel.y -= 20 * dt;
 
-    player.pos.addScaledVector(player.vel, dt);
-    if (player.pos.y <= 1.7) {
-      player.pos.y = 1.7;
-      player.vel.y = 0;
-      player.onGround = true;
-    }
-    collide(player.pos, player.radius);
-
-    bobTime += dt * (move.lengthSq() > 0 ? sprint * 9 * stanceMultiplier : 0);
-    const bobY = Math.sin(bobTime) * 0.03 * stanceMultiplier;
-    const targetEyeOffset = player.stance === "stand" ? 0 : player.stance === "crouch" ? -0.55 : -1.08;
-    currentEyeOffset += (targetEyeOffset - currentEyeOffset) * Math.min(1, dt * 10);
-
-    camera.position.set(player.pos.x, player.pos.y + currentEyeOffset + bobY, player.pos.z);
-    camera.rotation.order = "YXZ";
-    camera.rotation.y = player.yaw;
-    camera.rotation.x = player.pitch - recoil * 0.04;
-    camera.rotation.z = 0;
-
-    updateReloadAnimation();
-    recoil = Math.max(0, recoil - dt * 8);
-    muzzleFlash.intensity = Math.max(0, muzzleFlash.intensity - dt * 40);
-    shootCooldown = Math.max(0, shootCooldown - dt);
-    if (triggerHeld) tryShoot();
-    updateShieldHeal(dt);
-    setAmmoText(reloading ? t("reloading") : `${ammo} / ∞`);
-
-    if (player.dead) {
+    if (player.dead && !gameOver) {
       updateDeathAnimation();
       respawnT = Math.max(0, playerRespawnDuration - (performance.now() - deathStartedAt) / 1000);
       if (respawnT <= 0) {
@@ -632,25 +599,20 @@ function animate(): void {
       }
     }
 
-    if (!gameOver) {
-      updateBots(dt, clock.elapsedTime);
-      if (!player.dead) updateItems(player, dt, clock.elapsedTime);
+    for (let i = tracers.length - 1; i >= 0; i--) {
+      tracers[i].life -= dt;
+      tracers[i].mesh.material.opacity = tracers[i].life / 0.08;
+      if (tracers[i].life <= 0) {
+        scene.remove(tracers[i].mesh);
+        tracers.splice(i, 1);
+      }
     }
-  }
 
-  for (let i = tracers.length - 1; i >= 0; i--) {
-    tracers[i].life -= dt;
-    tracers[i].mesh.material.opacity = tracers[i].life / 0.08;
-    if (tracers[i].life <= 0) {
-      scene.remove(tracers[i].mesh);
-      tracers.splice(i, 1);
-    }
+    updateWeatherFx(dt, player.pos.x, player.pos.z);
+    updateEnvironment(dt);
+    updatePersistentEffects(dt);
+    updateMinimap(player, bots);
   }
-
-  updateWeatherFx(dt, player.pos.x, player.pos.z);
-  updateEnvironment(dt);
-  updatePersistentEffects(dt);
-  updateMinimap(player, bots);
 
   renderer.render(scene, camera);
 }
@@ -708,6 +670,7 @@ window.__game = {
     return pickupCount();
   },
   get deathView() {
+    if (player.dead && !gameOver) updateDeathAnimation();
     return {
       direction: deathFallDirection,
       progress: Math.min(1, deathFallT / deathFallDuration),
@@ -728,6 +691,14 @@ window.__game = {
   get persistentEffects() {
     return persistentEffectsSummary();
   },
+  get renderInfo() {
+    return {
+      calls: renderer.info.render.calls,
+      triangles: renderer.info.render.triangles,
+      textures: renderer.info.memory.textures,
+      geometries: renderer.info.memory.geometries,
+    };
+  },
   debugEnvSummary() {
     return debugEnvSummary();
   },
@@ -740,6 +711,7 @@ window.__game = {
   setWeather(i: number): void {
     setWeatherByIndex(i);
     spawnPickups();
+    environmentDamageGraceUntil = performance.now() + 30000;
   },
   setKillTarget(n: number): void {
     killTarget = n;
@@ -750,7 +722,7 @@ window.__game = {
     hurtPlayer(dmg, undefined, true);
   },
   hurtPlayerFrom(dmg: number, x: number, z: number): void {
-    hurtPlayer(dmg, new THREE.Vector3(x, player.pos.y, z));
+    hurtPlayer(dmg, new THREE.Vector3(x, player.pos.y, z), true);
   },
   healPlayer(amount: number): void {
     if (amount <= 0 || player.dead) return;
@@ -765,6 +737,9 @@ window.__game = {
   debugPopulatePersistentEffects(kind, count): void {
     const source = bots.find((bot) => bot.alive)?.group ?? bots[0].group;
     debugPopulatePersistentEffects(kind, Math.max(0, Math.floor(count)), source);
+  },
+  debugLeaveBlastMark(x: number, z: number): void {
+    leaveBlastMark(new THREE.Vector3(x, 0, z), new THREE.Vector3(0, 1, 0));
   },
 };
 animate();

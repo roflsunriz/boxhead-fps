@@ -1,0 +1,187 @@
+{
+  "sourceImage": "C:\\Users\\UserName\\Documents\\fps-test\\art\\references\\fps-carbine.png",
+  "zonesDir": "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\detail-zones",
+  "detailInventory": {
+    "scanMethod": "component-zones",
+    "targetMinDetails": 10,
+    "details": [
+      {
+        "id": "stock-negative-space",
+        "kind": "hole",
+        "description": "ストック側板の大きな三角形肉抜きと小型長円穴。暗い内部が貫通して見える。",
+        "region": { "x": 0.03, "y": 0.2, "width": 0.27, "height": 0.43, "units": "normalized" },
+        "scale": "meso: stock高さの約45%",
+        "affects": "silhouette, topology, cavity AO",
+        "mapsTo": { "type": "component.localFeatures", "ref": "stock-shell.stock-cutouts" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/stock.png",
+        "confidence": 0.98
+      },
+      {
+        "id": "butt-pad-grooves",
+        "kind": "ridge",
+        "description": "ゴム製バットパッド外周の深い横溝と、接触面の丸いリブ。",
+        "region": { "x": 0.03, "y": 0.2, "width": 0.27, "height": 0.43, "units": "normalized" },
+        "scale": "micro-to-meso: 8本",
+        "affects": "geometry relief, roughness",
+        "mapsTo": { "type": "component.localFeatures", "ref": "butt-pad.pad-ridges" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/stock.png",
+        "confidence": 0.96
+      },
+      {
+        "id": "stock-contact-wear",
+        "kind": "scratch",
+        "description": "ストック上部ポリマーの浅い擦過傷と縁の明るい摩耗。",
+        "region": { "x": 0.03, "y": 0.2, "width": 0.27, "height": 0.43, "units": "normalized" },
+        "scale": "micro: 1〜10mm相当",
+        "affects": "albedo, roughness, normal",
+        "mapsTo": { "type": "material.localOverrides", "ref": "stock-polymer.contact-wear" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/stock.png",
+        "confidence": 0.9
+      },
+      {
+        "id": "receiver-ejection-port",
+        "kind": "hole",
+        "description": "上部レシーバー側面の深い長円矩形排莢ポート。内部ボルト面と操作突起が見える。",
+        "region": { "x": 0.27, "y": 0.23, "width": 0.34, "height": 0.4, "units": "normalized" },
+        "scale": "meso: receiver長の約28%",
+        "affects": "topology, cavity, mechanism readability",
+        "mapsTo": { "type": "component.localFeatures", "ref": "upper-receiver.ejection-port" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/receiver.png",
+        "confidence": 0.99
+      },
+      {
+        "id": "receiver-fastener-system",
+        "kind": "fastener",
+        "description": "レシーバー、ヒンジ、サイト基部に反復する円形ピン／六角ボルト。皿穴と頭頂の反射差がある。",
+        "region": { "x": 0.27, "y": 0.23, "width": 0.34, "height": 0.4, "units": "normalized" },
+        "scale": "micro: 12個以上",
+        "affects": "repetition, geometry, metal roughness",
+        "mapsTo": { "type": "component.localFeatures", "ref": "receiver-assembly.fastener-system" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/receiver.png",
+        "confidence": 0.95
+      },
+      {
+        "id": "receiver-panel-seams",
+        "kind": "seam",
+        "description": "upper/lower receiver、magwell、trigger guard境界の凹んだパネル線と段差。",
+        "region": { "x": 0.27, "y": 0.23, "width": 0.34, "height": 0.4, "units": "normalized" },
+        "scale": "micro: 幅1〜3mm相当",
+        "affects": "AO, geometry relief",
+        "mapsTo": { "type": "component.localFeatures", "ref": "receiver-assembly.panel-seams" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/receiver.png",
+        "confidence": 0.94
+      },
+      {
+        "id": "handguard-vent-system",
+        "kind": "hole",
+        "description": "ハンドガード側面の二段長円ベント列。開口からバレルと内壁が見える。",
+        "region": { "x": 0.57, "y": 0.25, "width": 0.27, "height": 0.28, "units": "normalized" },
+        "scale": "meso repetition: 8開口以上",
+        "affects": "silhouette, topology, cavity AO",
+        "mapsTo": { "type": "component.localFeatures", "ref": "handguard-shell.vent-system" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/handguard.png",
+        "confidence": 0.99
+      },
+      {
+        "id": "top-rail-teeth",
+        "kind": "ridge",
+        "description": "上面を連続する台形レール歯。各歯にベベルと溝間のAOがある。",
+        "region": { "x": 0.57, "y": 0.25, "width": 0.27, "height": 0.28, "units": "normalized" },
+        "scale": "micro repetition: 20歯以上",
+        "affects": "top silhouette, repeated geometry",
+        "mapsTo": { "type": "component.localFeatures", "ref": "top-rail.rail-teeth" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/handguard.png",
+        "confidence": 0.98
+      },
+      {
+        "id": "cyan-status-indicator",
+        "kind": "emissive",
+        "description": "ハンドガード後端の黒い台座に収まる細いcyan発光バー。",
+        "region": { "x": 0.57, "y": 0.25, "width": 0.27, "height": 0.28, "units": "normalized" },
+        "scale": "micro: handguard長の約9%",
+        "affects": "emissive, local color accent",
+        "mapsTo": { "type": "material.localOverrides", "ref": "indicator-emissive.cyan-strip" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/handguard.png",
+        "confidence": 0.99
+      },
+      {
+        "id": "handguard-edge-wear",
+        "kind": "scratch",
+        "description": "ハンドガードの露出稜線に沿う細い金属色の摩耗と局所傷。",
+        "region": { "x": 0.57, "y": 0.25, "width": 0.27, "height": 0.28, "units": "normalized" },
+        "scale": "micro: 稜線幅の約3%",
+        "affects": "albedo, roughness",
+        "mapsTo": { "type": "material.localOverrides", "ref": "gunmetal.edge-wear" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/handguard.png",
+        "confidence": 0.93
+      },
+      {
+        "id": "muzzle-port-system",
+        "kind": "hole",
+        "description": "円筒マズルブレーキの側面多角ポートと中央の暗い銃口穴。",
+        "region": { "x": 0.8, "y": 0.28, "width": 0.19, "height": 0.19, "units": "normalized" },
+        "scale": "meso: 3側面ポート + axial bore",
+        "affects": "topology, muzzle silhouette",
+        "mapsTo": { "type": "component.localFeatures", "ref": "muzzle-brake.port-system" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/barrel.png",
+        "confidence": 0.95
+      },
+      {
+        "id": "optic-lens-response",
+        "kind": "gloss",
+        "description": "サイトフード内の琥珀色レンズ。低roughnessで、フード内壁より明るい反射を持つ。",
+        "region": { "x": 0.4, "y": 0.1, "width": 0.22, "height": 0.27, "units": "normalized" },
+        "scale": "meso: hood開口の約70%",
+        "affects": "roughness, transmission, tint",
+        "mapsTo": { "type": "material.localOverrides", "ref": "optic-lens.amber-gloss" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/optic.png",
+        "confidence": 0.96
+      },
+      {
+        "id": "optic-fasteners",
+        "kind": "fastener",
+        "description": "サイト側板と基部の皿穴ボルト列。",
+        "region": { "x": 0.4, "y": 0.1, "width": 0.22, "height": 0.27, "units": "normalized" },
+        "scale": "micro: 6個以上",
+        "affects": "geometry, metallic highlight",
+        "mapsTo": { "type": "component.localFeatures", "ref": "optic-assembly.fastener-system" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/optic.png",
+        "confidence": 0.95
+      },
+      {
+        "id": "grip-stipple",
+        "kind": "ridge",
+        "description": "ピストルグリップ左右面の不規則な細粒stippleと縁取り溝。",
+        "region": { "x": 0.25, "y": 0.46, "width": 0.18, "height": 0.32, "units": "normalized" },
+        "scale": "micro: 0.5〜2mm相当",
+        "affects": "normal, roughness, tactile response",
+        "mapsTo": { "type": "material.localOverrides", "ref": "grip-polymer.stipple" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/grip.png",
+        "confidence": 0.98
+      },
+      {
+        "id": "magazine-rib-system",
+        "kind": "ridge",
+        "description": "曲面マガジンの横3段リブと縦パネル境界。",
+        "region": { "x": 0.48, "y": 0.46, "width": 0.17, "height": 0.43, "units": "normalized" },
+        "scale": "meso repetition: 横3段 + 縦2列",
+        "affects": "cross-section, geometry relief",
+        "mapsTo": { "type": "component.localFeatures", "ref": "magazine-shell.rib-system" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/magazine.png",
+        "confidence": 0.99
+      },
+      {
+        "id": "magazine-floorplate",
+        "kind": "bevel",
+        "description": "tan色の張り出した床板。外周ベベルと中央溝で本体から明確に分離。",
+        "region": { "x": 0.48, "y": 0.46, "width": 0.17, "height": 0.43, "units": "normalized" },
+        "scale": "meso: magazine高さの約9%",
+        "affects": "silhouette, bevel highlight, material boundary",
+        "mapsTo": { "type": "component.localFeatures", "ref": "magazine-floorplate.edge-treatment" },
+        "evidenceRef": "art/img2threejs/carbine/detail-zones/magazine.png",
+        "confidence": 0.98
+      }
+    ]
+  },
+  "authoringInstruction": "Open each zone crop under zonesDir and replace every detail stub's kind, description, scale, affects, mapsTo, and confidence with what is actually observed. Add more detail entries per zone if a single zone contains multiple distinct marks; do not leave stubs unfilled or unlinked (mapsTo must reference a real component.localFeatures or material.localOverrides entry)."
+}

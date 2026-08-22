@@ -1,0 +1,20 @@
+[
+  {
+    "id": "carbine-silhouette-and-negative-space",
+    "score": 0.68,
+    "visible": true,
+    "notes": "横長のcarbine輪郭、独立stock、下方grip/magazine、露出barrelを回復。stock外形とoptic高さは参照より単純。"
+  },
+  {
+    "id": "receiver-handguard-stock-assembly",
+    "score": 0.76,
+    "visible": true,
+    "notes": "receiver、実開口handguard、17歯rail、buffer tube、貫通stock、muzzle brakeが接続。右側面内部は単一画像からの近似。"
+  },
+  {
+    "id": "gunmetal-polymer-material-separation",
+    "score": 0.71,
+    "visible": true,
+    "notes": "gunmetal、polymer、rubber、tan、amber lens、cyan emissiveを独立。参考画像の局所傷位置と完全一致はしない。"
+  }
+]

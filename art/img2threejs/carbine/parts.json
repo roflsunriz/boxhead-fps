@@ -1,0 +1,451 @@
+{
+  "model": "fps-carbine",
+  "parts": [
+    {
+      "name": "receiver",
+      "kind": "part",
+      "module": "receiver",
+      "triangles": 0
+    },
+    {
+      "name": "handguard",
+      "kind": "part",
+      "module": "handguard",
+      "triangles": 0
+    },
+    {
+      "name": "rail",
+      "kind": "part",
+      "module": "rail",
+      "triangles": 0
+    },
+    {
+      "name": "barrel",
+      "kind": "part",
+      "module": "barrel",
+      "triangles": 0
+    },
+    {
+      "name": "stock",
+      "kind": "part",
+      "module": "stock",
+      "triangles": 0
+    },
+    {
+      "name": "grip",
+      "kind": "part",
+      "module": "grip",
+      "triangles": 0
+    },
+    {
+      "name": "magazine",
+      "kind": "part",
+      "module": "magazine",
+      "triangles": 0
+    },
+    {
+      "name": "optic",
+      "kind": "part",
+      "module": "optic",
+      "triangles": 0
+    },
+    {
+      "name": "root",
+      "kind": "part",
+      "module": "root",
+      "triangles": 0
+    },
+    {
+      "name": "fps-carbine",
+      "kind": "part",
+      "module": "fps-carbine",
+      "triangles": 0
+    },
+    {
+      "name": "receiver-assembly",
+      "kind": "part",
+      "module": "receiver-assembly",
+      "triangles": 0
+    },
+    {
+      "name": "lower-receiver",
+      "kind": "part",
+      "module": "lower-receiver",
+      "triangles": 0
+    },
+    {
+      "name": "upper-receiver",
+      "kind": "part",
+      "module": "upper-receiver",
+      "triangles": 0
+    },
+    {
+      "name": "rear-buffer-ring",
+      "kind": "part",
+      "module": "rear-buffer-ring",
+      "triangles": 0
+    },
+    {
+      "name": "ejection-port",
+      "kind": "part",
+      "module": "ejection-port",
+      "triangles": 0
+    },
+    {
+      "name": "bolt-carrier",
+      "kind": "part",
+      "module": "bolt-carrier",
+      "triangles": 0
+    },
+    {
+      "name": "magwell",
+      "kind": "part",
+      "module": "magwell",
+      "triangles": 0
+    },
+    {
+      "name": "trigger-guard-front",
+      "kind": "part",
+      "module": "trigger-guard-front",
+      "triangles": 0
+    },
+    {
+      "name": "trigger",
+      "kind": "part",
+      "module": "trigger",
+      "triangles": 0
+    },
+    {
+      "name": "fastener",
+      "kind": "part",
+      "module": "fastener",
+      "triangles": 0
+    },
+    {
+      "name": "fastener-slot",
+      "kind": "part",
+      "module": "fastener-slot",
+      "triangles": 0
+    },
+    {
+      "name": "handguard-assembly",
+      "kind": "part",
+      "module": "handguard-assembly",
+      "triangles": 0
+    },
+    {
+      "name": "vented-handguard",
+      "kind": "part",
+      "module": "vented-handguard",
+      "triangles": 0
+    },
+    {
+      "name": "inner-barrel-shadow",
+      "kind": "part",
+      "module": "inner-barrel-shadow",
+      "triangles": 0
+    },
+    {
+      "name": "top-rail",
+      "kind": "part",
+      "module": "top-rail",
+      "triangles": 0
+    },
+    {
+      "name": "rail-base",
+      "kind": "part",
+      "module": "rail-base",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-0",
+      "kind": "part",
+      "module": "rail-tooth-0",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-1",
+      "kind": "part",
+      "module": "rail-tooth-1",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-2",
+      "kind": "part",
+      "module": "rail-tooth-2",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-3",
+      "kind": "part",
+      "module": "rail-tooth-3",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-4",
+      "kind": "part",
+      "module": "rail-tooth-4",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-5",
+      "kind": "part",
+      "module": "rail-tooth-5",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-6",
+      "kind": "part",
+      "module": "rail-tooth-6",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-7",
+      "kind": "part",
+      "module": "rail-tooth-7",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-8",
+      "kind": "part",
+      "module": "rail-tooth-8",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-9",
+      "kind": "part",
+      "module": "rail-tooth-9",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-10",
+      "kind": "part",
+      "module": "rail-tooth-10",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-11",
+      "kind": "part",
+      "module": "rail-tooth-11",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-12",
+      "kind": "part",
+      "module": "rail-tooth-12",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-13",
+      "kind": "part",
+      "module": "rail-tooth-13",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-14",
+      "kind": "part",
+      "module": "rail-tooth-14",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-15",
+      "kind": "part",
+      "module": "rail-tooth-15",
+      "triangles": 0
+    },
+    {
+      "name": "rail-tooth-16",
+      "kind": "part",
+      "module": "rail-tooth-16",
+      "triangles": 0
+    },
+    {
+      "name": "barrel-assembly",
+      "kind": "part",
+      "module": "barrel-assembly",
+      "triangles": 0
+    },
+    {
+      "name": "gas-block",
+      "kind": "part",
+      "module": "gas-block",
+      "triangles": 0
+    },
+    {
+      "name": "muzzle-brake",
+      "kind": "part",
+      "module": "muzzle-brake",
+      "triangles": 0
+    },
+    {
+      "name": "muzzle-port",
+      "kind": "part",
+      "module": "muzzle-port",
+      "triangles": 0
+    },
+    {
+      "name": "muzzle-bore",
+      "kind": "part",
+      "module": "muzzle-bore",
+      "triangles": 0
+    },
+    {
+      "name": "muzzle-socket",
+      "kind": "part",
+      "module": "muzzle-socket",
+      "triangles": 0
+    },
+    {
+      "name": "stock-assembly",
+      "kind": "part",
+      "module": "stock-assembly",
+      "triangles": 0
+    },
+    {
+      "name": "buffer-tube",
+      "kind": "part",
+      "module": "buffer-tube",
+      "triangles": 0
+    },
+    {
+      "name": "stock-shell",
+      "kind": "part",
+      "module": "stock-shell",
+      "triangles": 0
+    },
+    {
+      "name": "stock-cheek-rest",
+      "kind": "part",
+      "module": "stock-cheek-rest",
+      "triangles": 0
+    },
+    {
+      "name": "butt-pad",
+      "kind": "part",
+      "module": "butt-pad",
+      "triangles": 0
+    },
+    {
+      "name": "butt-pad-ridge",
+      "kind": "part",
+      "module": "butt-pad-ridge",
+      "triangles": 0
+    },
+    {
+      "name": "grip-assembly",
+      "kind": "part",
+      "module": "grip-assembly",
+      "triangles": 0
+    },
+    {
+      "name": "pistol-grip",
+      "kind": "part",
+      "module": "pistol-grip",
+      "triangles": 0
+    },
+    {
+      "name": "grip-socket",
+      "kind": "part",
+      "module": "grip-socket",
+      "triangles": 0
+    },
+    {
+      "name": "magazine-assembly",
+      "kind": "part",
+      "module": "magazine-assembly",
+      "triangles": 0
+    },
+    {
+      "name": "magazine-shell",
+      "kind": "part",
+      "module": "magazine-shell",
+      "triangles": 0
+    },
+    {
+      "name": "magazine-rib",
+      "kind": "part",
+      "module": "magazine-rib",
+      "triangles": 0
+    },
+    {
+      "name": "magazine-floorplate",
+      "kind": "part",
+      "module": "magazine-floorplate",
+      "triangles": 0
+    },
+    {
+      "name": "optic-assembly",
+      "kind": "part",
+      "module": "optic-assembly",
+      "triangles": 0
+    },
+    {
+      "name": "optic-base",
+      "kind": "part",
+      "module": "optic-base",
+      "triangles": 0
+    },
+    {
+      "name": "optic-left",
+      "kind": "part",
+      "module": "optic-left",
+      "triangles": 0
+    },
+    {
+      "name": "optic-right",
+      "kind": "part",
+      "module": "optic-right",
+      "triangles": 0
+    },
+    {
+      "name": "optic-top",
+      "kind": "part",
+      "module": "optic-top",
+      "triangles": 0
+    },
+    {
+      "name": "optic-lens",
+      "kind": "part",
+      "module": "optic-lens",
+      "triangles": 0
+    },
+    {
+      "name": "status-indicator-base",
+      "kind": "part",
+      "module": "status-indicator-base",
+      "triangles": 0
+    },
+    {
+      "name": "status-indicator",
+      "kind": "part",
+      "module": "status-indicator",
+      "triangles": 0
+    },
+    {
+      "name": "handguard-shell",
+      "kind": "part",
+      "module": "handguard-shell",
+      "triangles": 0
+    },
+    {
+      "name": "barrel-core",
+      "kind": "part",
+      "module": "barrel-core",
+      "triangles": 0
+    },
+    {
+      "name": "trigger-guard",
+      "kind": "part",
+      "module": "trigger-guard",
+      "triangles": 0
+    },
+    {
+      "name": "optic-hood",
+      "kind": "part",
+      "module": "optic-hood",
+      "triangles": 0
+    }
+  ],
+  "unnamedMeshes": 0,
+  "integralMeshes": 72
+}

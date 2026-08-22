@@ -1,0 +1,322 @@
+{
+  "model": "fps-carbine",
+  "specifiedComponents": 22,
+  "builtParts": 74,
+  "errors": 0,
+  "warnings": 0,
+  "result": "pass",
+  "findings": [
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "barrel",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "bolt-carrier",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "butt-pad-ridge",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "ejection-port",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "fastener",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "fastener-slot",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "fps-carbine",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "gas-block",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "grip",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "grip-socket",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "handguard",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "inner-barrel-shadow",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "magazine",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "magazine-rib",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "magwell",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "muzzle-bore",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "muzzle-port",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "muzzle-socket",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "optic",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "optic-base",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "optic-left",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "optic-right",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "optic-top",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "pistol-grip",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-base",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-0",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-1",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-10",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-11",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-12",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-13",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-14",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-15",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-16",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-2",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-3",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-4",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-5",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-6",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-7",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-8",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rail-tooth-9",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "rear-buffer-ring",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "receiver",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "root",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "status-indicator-base",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "stock",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "stock-cheek-rest",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "trigger",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "trigger-guard-front",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "vented-handguard",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    }
+  ]
+}

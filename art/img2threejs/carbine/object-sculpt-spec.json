@@ -1,0 +1,3311 @@
+{
+  "targetName": "FPS Carbine",
+  "targetId": "fps-carbine",
+  "schemaVersion": "2.1",
+  "terminologyProfile": {
+    "domain": "real-time procedural Three.js asset",
+    "geometryTerms": [
+      "silhouette",
+      "topology",
+      "primitive",
+      "bevel",
+      "chamfer",
+      "taper",
+      "bend",
+      "boolean cut",
+      "edge loop",
+      "surface normal",
+      "displacement"
+    ],
+    "materialTerms": [
+      "albedo",
+      "baseColor",
+      "roughness",
+      "metalness",
+      "normal map",
+      "bump map",
+      "ambient occlusion",
+      "cavity dirt",
+      "edge wear",
+      "clearcoat"
+    ],
+    "lightingTerms": [
+      "key light",
+      "fill light",
+      "rim light",
+      "HDRI/environment reflection",
+      "contact shadow"
+    ],
+    "descriptionRule": "Use measurable 3D graphics terms. Avoid vague words unless they are paired with concrete geometry/material/shader parameters."
+  },
+  "sourceImage": "C:\\Users\\UserName\\Documents\\fps-test\\art\\references\\fps-carbine.png",
+  "referenceCamera": {
+    "solved": false,
+    "fovDegrees": 40.0,
+    "aspect": 1.0,
+    "orientation": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "positionHint": [0.0, 0.0, 3.0],
+    "note": "For likeness work, solve the reference camera (forge/stage1_intake/solve_camera_pose.py) so the review render aligns with the photo and the reference can be projected. Confirm by overlay review."
+  },
+  "suitability": "conditional",
+  "scores": {
+    "object_isolation": 0,
+    "silhouette_readability": 0,
+    "depth_inference": 0,
+    "primitive_decomposition": 0,
+    "material_procedurality": 0,
+    "occlusion_risk": 0,
+    "interaction_fit": 0
+  },
+  "preSpecAssessment": {
+    "objectClass": {
+      "primaryType": "modular-carbine",
+      "primaryDomain": "object",
+      "formLanguage": ["hard-surface", "mechanical", "geometric"],
+      "structureKind": ["compound-object", "articulated-assembly", "layered-shell", "repeated-modules"],
+      "motionPotential": ["whole-object-transform", "detachable", "effect-emitter"],
+      "materialFamilies": ["metal", "plastic", "rubber", "emissive"],
+      "notes": "単一3/4ビューから再構成する、ブランド非依存のゲーム用カービン。右側面・下面・内部機構は推定し、製造用精度は対象外とする。"
+    },
+    "complexity": {
+      "tier": "complex",
+      "scores": {
+        "silhouetteComplexity": 2,
+        "componentCount": 3,
+        "hierarchyDepth": 3,
+        "repetitionDensity": 2,
+        "materialLayerCount": 3,
+        "localDetailDensity": 3,
+        "occlusionRisk": 2,
+        "actionReadinessNeed": 3
+      },
+      "estimatedCounts": {
+        "macroComponents": 7,
+        "mesoComponents": 14,
+        "microFeatureGroups": 12,
+        "materialLayers": 5,
+        "repetitionSystems": 3
+      },
+      "reasoning": [
+        "上面レールから銃口までの直線的輪郭に対し、ストック、グリップ、曲面マガジンが大きな負形状を作る。",
+        "receiver、handguard、barrel、stock、grip、magazine、opticの7アセンブリと、それぞれのmeso部品が必要。",
+        "レール歯、ハンドガードベント、fastener列は反復システムとして実装する。",
+        "一人称射撃、リロード、マズルエフェクト、投棄弾倉へ接続するためaction-ready階層が必要。"
+      ]
+    },
+    "specDepthDecision": {
+      "requiredDepth": "complex",
+      "minimumComponentLevels": ["macro", "meso", "micro"],
+      "needsRepetitionSystems": true,
+      "needsMaterialLocalOverrides": true,
+      "needsMultipleReviewViews": true,
+      "needsActionReadyHierarchy": true,
+      "rationale": "複数アセンブリ、3階層、反復機構、独立PBR材質、ゲーム用ソケットを同時に必要とするためcomplexとする。"
+    },
+    "unknownsToResolveBeforeImplementation": [],
+    "detailInventory": {
+      "scanMethod": "component-zones",
+      "targetMinDetails": 10,
+      "note": "Enumerate every identity-defining small detail before authoring the spec. Each detail must map to a component.localFeatures entry or material.localOverrides entry, never prose only. Use forge/stage1_intake/build_detail_inventory.py to scan zones.",
+      "details": [
+        {
+          "id": "stock-negative-space",
+          "kind": "hole",
+          "description": "ストック側板の三角形肉抜きと長円穴",
+          "region": {
+            "x": 0.03,
+            "y": 0.2,
+            "width": 0.27,
+            "height": 0.43,
+            "units": "normalized"
+          },
+          "scale": "meso",
+          "affects": "silhouette, topology",
+          "mapsTo": {
+            "type": "component.localFeatures",
+            "ref": "stock-cutouts"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/stock.png",
+          "confidence": 0.98,
+          "realization": "unreported"
+        },
+        {
+          "id": "butt-pad-grooves",
+          "kind": "ridge",
+          "description": "ゴム製バットパッドの深い横溝",
+          "region": {
+            "x": 0.03,
+            "y": 0.2,
+            "width": 0.27,
+            "height": 0.43,
+            "units": "normalized"
+          },
+          "scale": "micro-to-meso",
+          "affects": "geometry relief, roughness",
+          "mapsTo": {
+            "type": "component.localFeatures",
+            "ref": "pad-ridges"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/stock.png",
+          "confidence": 0.96,
+          "realization": "unreported"
+        },
+        {
+          "id": "stock-contact-wear",
+          "kind": "scratch",
+          "description": "ストック上部の擦過傷と縁摩耗",
+          "region": {
+            "x": 0.03,
+            "y": 0.2,
+            "width": 0.27,
+            "height": 0.43,
+            "units": "normalized"
+          },
+          "scale": "micro",
+          "affects": "albedo, roughness, normal",
+          "mapsTo": {
+            "type": "material.localOverrides",
+            "ref": "contact-wear"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/stock.png",
+          "confidence": 0.9,
+          "realization": "unreported"
+        },
+        {
+          "id": "receiver-ejection-port",
+          "kind": "hole",
+          "description": "上部レシーバーの深い排莢ポート",
+          "region": {
+            "x": 0.27,
+            "y": 0.23,
+            "width": 0.34,
+            "height": 0.4,
+            "units": "normalized"
+          },
+          "scale": "meso",
+          "affects": "topology, cavity",
+          "mapsTo": {
+            "type": "component.localFeatures",
+            "ref": "ejection-port"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/receiver.png",
+          "confidence": 0.99,
+          "realization": "unreported"
+        },
+        {
+          "id": "receiver-fastener-system",
+          "kind": "fastener",
+          "description": "receiverとhingeの反復ピン／ボルト",
+          "region": {
+            "x": 0.27,
+            "y": 0.23,
+            "width": 0.34,
+            "height": 0.4,
+            "units": "normalized"
+          },
+          "scale": "micro repetition",
+          "affects": "geometry, metal roughness",
+          "mapsTo": {
+            "type": "component.localFeatures",
+            "ref": "fastener-system"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/receiver.png",
+          "confidence": 0.95,
+          "realization": "unreported"
+        },
+        {
+          "id": "receiver-panel-seams",
+          "kind": "seam",
+          "description": "upper/lower receiver境界の凹み線",
+          "region": {
+            "x": 0.27,
+            "y": 0.23,
+            "width": 0.34,
+            "height": 0.4,
+            "units": "normalized"
+          },
+          "scale": "micro",
+          "affects": "AO, geometry relief",
+          "mapsTo": {
+            "type": "component.localFeatures",
+            "ref": "panel-seams"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/receiver.png",
+          "confidence": 0.94,
+          "realization": "unreported"
+        },
+        {
+          "id": "handguard-vent-system",
+          "kind": "hole",
+          "description": "二段の長円ベント列",
+          "region": {
+            "x": 0.57,
+            "y": 0.25,
+            "width": 0.27,
+            "height": 0.28,
+            "units": "normalized"
+          },
+          "scale": "meso repetition",
+          "affects": "silhouette, topology, AO",
+          "mapsTo": {
+            "type": "component.localFeatures",
+            "ref": "vent-system"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/handguard.png",
+          "confidence": 0.99,
+          "realization": "unreported"
+        },
+        {
+          "id": "top-rail-teeth",
+          "kind": "ridge",
+          "description": "上面の反復レール歯",
+          "region": {
+            "x": 0.57,
+            "y": 0.25,
+            "width": 0.27,
+            "height": 0.28,
+            "units": "normalized"
+          },
+          "scale": "micro repetition",
+          "affects": "top silhouette, geometry",
+          "mapsTo": {
+            "type": "component.localFeatures",
+            "ref": "rail-teeth"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/handguard.png",
+          "confidence": 0.98,
+          "realization": "unreported"
+        },
+        {
+          "id": "cyan-status-indicator",
+          "kind": "emissive",
+          "description": "黒い台座内のcyan発光バー",
+          "region": {
+            "x": 0.57,
+            "y": 0.25,
+            "width": 0.27,
+            "height": 0.28,
+            "units": "normalized"
+          },
+          "scale": "micro",
+          "affects": "emissive, accent color",
+          "mapsTo": {
+            "type": "material.localOverrides",
+            "ref": "cyan-strip"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/handguard.png",
+          "confidence": 0.99,
+          "realization": "unreported"
+        },
+        {
+          "id": "handguard-edge-wear",
+          "kind": "scratch",
+          "description": "露出稜線の金属色摩耗",
+          "region": {
+            "x": 0.57,
+            "y": 0.25,
+            "width": 0.27,
+            "height": 0.28,
+            "units": "normalized"
+          },
+          "scale": "micro",
+          "affects": "albedo, roughness",
+          "mapsTo": {
+            "type": "material.localOverrides",
+            "ref": "edge-wear"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/handguard.png",
+          "confidence": 0.93,
+          "realization": "unreported"
+        },
+        {
+          "id": "muzzle-port-system",
+          "kind": "hole",
+          "description": "マズルブレーキの側面ポートと銃口穴",
+          "region": {
+            "x": 0.8,
+            "y": 0.28,
+            "width": 0.19,
+            "height": 0.19,
+            "units": "normalized"
+          },
+          "scale": "meso",
+          "affects": "topology, muzzle silhouette",
+          "mapsTo": {
+            "type": "component.localFeatures",
+            "ref": "port-system"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/barrel.png",
+          "confidence": 0.95,
+          "realization": "unreported"
+        },
+        {
+          "id": "optic-lens-response",
+          "kind": "gloss",
+          "description": "琥珀色の低roughnessレンズ",
+          "region": {
+            "x": 0.4,
+            "y": 0.1,
+            "width": 0.22,
+            "height": 0.27,
+            "units": "normalized"
+          },
+          "scale": "meso",
+          "affects": "roughness, transmission, tint",
+          "mapsTo": {
+            "type": "material.localOverrides",
+            "ref": "amber-gloss"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/optic.png",
+          "confidence": 0.96,
+          "realization": "unreported"
+        },
+        {
+          "id": "optic-fasteners",
+          "kind": "fastener",
+          "description": "サイト側板と基部の皿穴ボルト列",
+          "region": {
+            "x": 0.4,
+            "y": 0.1,
+            "width": 0.22,
+            "height": 0.27,
+            "units": "normalized"
+          },
+          "scale": "micro repetition",
+          "affects": "geometry, metal highlight",
+          "mapsTo": {
+            "type": "component.localFeatures",
+            "ref": "optic-fasteners"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/optic.png",
+          "confidence": 0.95,
+          "realization": "unreported"
+        },
+        {
+          "id": "grip-stipple",
+          "kind": "ridge",
+          "description": "グリップ面の不規則細粒stipple",
+          "region": {
+            "x": 0.25,
+            "y": 0.46,
+            "width": 0.18,
+            "height": 0.32,
+            "units": "normalized"
+          },
+          "scale": "micro",
+          "affects": "normal, roughness",
+          "mapsTo": {
+            "type": "material.localOverrides",
+            "ref": "stipple"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/grip.png",
+          "confidence": 0.98,
+          "realization": "unreported"
+        },
+        {
+          "id": "magazine-rib-system",
+          "kind": "ridge",
+          "description": "曲面マガジンの横3段リブと縦境界",
+          "region": {
+            "x": 0.48,
+            "y": 0.46,
+            "width": 0.17,
+            "height": 0.43,
+            "units": "normalized"
+          },
+          "scale": "meso repetition",
+          "affects": "cross-section, geometry relief",
+          "mapsTo": {
+            "type": "component.localFeatures",
+            "ref": "rib-system"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/magazine.png",
+          "confidence": 0.99,
+          "realization": "unreported"
+        },
+        {
+          "id": "magazine-floorplate",
+          "kind": "bevel",
+          "description": "tan床板の張り出しと外周ベベル",
+          "region": {
+            "x": 0.48,
+            "y": 0.46,
+            "width": 0.17,
+            "height": 0.43,
+            "units": "normalized"
+          },
+          "scale": "meso",
+          "affects": "silhouette, material boundary",
+          "mapsTo": {
+            "type": "component.localFeatures",
+            "ref": "floorplate-edge"
+          },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/magazine.png",
+          "confidence": 0.98,
+          "realization": "unreported"
+        }
+      ]
+    },
+    "anatomy": {
+      "applies": false,
+      "styleHeads": 0.0,
+      "proportions": {
+        "headUnit": 0.0,
+        "torso": 0.0,
+        "legs": 0.0,
+        "shoulderWidth": 0.0,
+        "hipWidth": 0.0
+      },
+      "pose": {
+        "type": "unassessed",
+        "jointAngles": {}
+      },
+      "faceLandmarks": {
+        "eyeLine": 0.0,
+        "eyeSpacing": 0.0,
+        "noseBase": 0.0,
+        "mouthLine": 0.0,
+        "hairline": 0.0
+      },
+      "features": [],
+      "confidence": 0.0,
+      "note": "Only meaningful when objectClass.primaryDomain is character or hybrid. Set applies=true and fill from forge/stage1_intake/extract_landmarks.py. See grimoire/character/reconstruction.md and grimoire/character/likeness_maximization.md."
+    },
+    "sourceImage": "C:\\Users\\UserName\\Documents\\fps-test\\art\\references\\fps-carbine.png"
+  },
+  "qualityContract": {
+    "qualityBar": "complex",
+    "definitionOfDone": [
+      "一人称3/4ビューとボット側面ビューの双方でオリジナルの短銃身カービンとして即座に読める。",
+      "主要7アセンブリが物理的に接続され、マガジン、マズル、グリップの既存ゲームソケットを維持する。",
+      "銃口側と上面から見ても平面押し出しではない断面を持ち、金属、ポリマー、ゴム、emissiveが独立したPBR応答を示す。"
+    ],
+    "minimumSpecDepth": {
+      "macroComponents": 7,
+      "mesoComponents": 12,
+      "microFeatureGroups": 10,
+      "materialLayers": 5,
+      "repetitionSystems": 3,
+      "reviewViewpoints": 5
+    },
+    "featureGroups": [
+      {
+        "id": "overall-silhouette",
+        "name": "Overall silhouette and proportions",
+        "required": true,
+        "qualityCriteria": [
+          "Bounding shape, dominant curves, negative spaces, and scale relationships are explicitly described."
+        ],
+        "evidenceRefs": ["full-object"],
+        "failureModes": [
+          "model reads as a generic placeholder instead of the reference object",
+          "major proportions are guessed without evidence"
+        ]
+      },
+      {
+        "id": "primary-structure",
+        "name": "Primary structure and hierarchy",
+        "required": true,
+        "qualityCriteria": [
+          "Major parts, joints, seams, contact points, and parent-child relationships are named before code generation."
+        ],
+        "evidenceRefs": ["full-object"],
+        "failureModes": [
+          "large visible parts are merged into one mesh",
+          "component hierarchy is too shallow for the observed complexity"
+        ]
+      },
+      {
+        "id": "attachment-joint-correctness",
+        "name": "Attachment and joint correctness",
+        "required": true,
+        "qualityCriteria": [
+          "Every visible child appendage, branch, limb, handle, connector, tube, cable, horn, wing, leg, or hinged part has an attachment contract with parent socket, localStart/localEnd, contact type, embed/overlap, and gap tolerance."
+        ],
+        "evidenceRefs": ["full-object"],
+        "failureModes": [
+          "child part root floats away from the parent",
+          "branch/limb/tube is centered in space instead of pivoting from its root",
+          "parent-child transform mixes world and local coordinates"
+        ]
+      },
+      {
+        "id": "surface-material-response",
+        "name": "Surface material response",
+        "required": true,
+        "qualityCriteria": [
+          "Albedo zones, roughness, normal/bump/displacement intent, cavity dirt, edge wear, and local overrides are specified where visible.",
+          "Important materials define independent albedo, roughness, height/normal, and AO responses instead of reusing one texture for unrelated PBR channels.",
+          "Surface response is decomposed into macro, meso, and micro frequency bands with scale and amplitude tied to object scale."
+        ],
+        "evidenceRefs": ["full-object"],
+        "failureModes": [
+          "surface looks like flat plastic",
+          "local material variation is missing or not tied to image evidence"
+        ]
+      },
+      {
+        "id": "reference-lookdev",
+        "name": "Reference color, material, and lighting response",
+        "required": true,
+        "qualityCriteria": [
+          "Material-pass names the reference-derived albedo palette, roughness variation, tactile normal/bump/displacement response, and local masks.",
+          "When a source image is available, run reference PBR extraction and require confidence >= 0.7 before treating maps as implementation-ready.",
+          "Lighting-pass names key/fill/rim or environment light, exposure, tone mapping, background, and contact shadow behavior.",
+          "Neutral, grazing-angle, and reference-matched renders prove that surface relief survives relighting and is not painted into albedo."
+        ],
+        "evidenceRefs": ["full-object"],
+        "failureModes": [
+          "model has acceptable shape but reads as flat shaded or plastic",
+          "colors are a generic average instead of reference-observed local color zones",
+          "lighting is evenly ambient and cannot reproduce the source value range"
+        ]
+      }
+    ],
+    "visualDeltaChecks": [
+      "silhouette and negative-space delta",
+      "component hierarchy depth delta",
+      "repetition density and distribution delta",
+      "material albedo/roughness/normal response delta",
+      "local feature placement and scale delta"
+    ],
+    "antiShallowSpecRules": [
+      "Do not proceed to code if qualityContract.qualityBar is unassessed.",
+      "Do not proceed to code if the spec only contains a root component for a moderate or complex object.",
+      "Do not proceed to code if required featureGroups are not represented by componentTree, materials, or repetitionSystems.",
+      "Do not proceed to code if visible local features are described only in prose and not attached to components/materials/evidenceRefs.",
+      "Do not proceed past structural-pass if attached child parts lack attachment.parentSocket, localStart, localEnd, embedDepth/overlap, and gapTolerance.",
+      "Do not pass material look-dev when albedo is reused as roughness, height, normal, or AO.",
+      "Do not pass material look-dev without macro, meso, and micro surface frequency bands for close-up materials.",
+      "Do not pass reference-fidelity material look-dev from a source image without usable referencePbr maps or an explicit documented limitation.",
+      "Do not patch a spec with extracted PBR maps when extraction confidence is below the target threshold unless the user explicitly accepts lower fidelity.",
+      "Do not place adjacent separate-geometry parts below 0.02 world-unit seam overlap (source: grimoire/build/geometry_patterns.md).",
+      "Do not satisfy raised or recessed relief, fasteners, or grip structure with a map alone when the feature affects form; use geometry or displacement (source: grimoire/build/geometry_patterns.md).",
+      "Adjacent components must overlap by at least 0.02 world units at shared seams (source: grimoire/build/geometry_patterns.md).",
+      "Raised or recessed relief and fasteners must be geometry, instanced micro-parts, or displacement; a map alone is an approximation (source: grimoire/build/geometry_patterns.md)."
+    ],
+    "mustNotDo": [
+      "Do not proceed to code if qualityContract.qualityBar is unassessed.",
+      "Do not proceed to code if the spec only contains a root component for a moderate or complex object.",
+      "Do not proceed to code if required featureGroups are not represented by componentTree, materials, or repetitionSystems.",
+      "Do not proceed to code if visible local features are described only in prose and not attached to components/materials/evidenceRefs.",
+      "Do not proceed past structural-pass if attached child parts lack attachment.parentSocket, localStart, localEnd, embedDepth/overlap, and gapTolerance.",
+      "Do not pass material look-dev when albedo is reused as roughness, height, normal, or AO.",
+      "Do not pass material look-dev without macro, meso, and micro surface frequency bands for close-up materials.",
+      "Do not pass reference-fidelity material look-dev from a source image without usable referencePbr maps or an explicit documented limitation.",
+      "Do not patch a spec with extracted PBR maps when extraction confidence is below the target threshold unless the user explicitly accepts lower fidelity.",
+      "Do not place adjacent separate-geometry parts below 0.02 world-unit seam overlap (source: grimoire/build/geometry_patterns.md).",
+      "Do not satisfy raised or recessed relief, fasteners, or grip structure with a map alone when the feature affects form; use geometry or displacement (source: grimoire/build/geometry_patterns.md).",
+      "Adjacent components must overlap by at least 0.02 world units at shared seams (source: grimoire/build/geometry_patterns.md).",
+      "Raised or recessed relief and fasteners must be geometry, instanced micro-parts, or displacement; a map alone is an approximation (source: grimoire/build/geometry_patterns.md)."
+    ]
+  },
+  "qualityTargets": {
+    "targetFidelity": 0.7,
+    "mustMatch": [
+      "macro silhouette and proportions",
+      "primary material albedo/roughness response",
+      "reference-derived PBR material response at or above 0.7 confidence when source pixels are usable",
+      "most recognizable local features"
+    ],
+    "niceToHave": ["micro scratches, stains, chips, and dirt masks", "secondary lighting match"],
+    "fpsTarget": 60,
+    "reviewViewpoints": ["front", "three-quarter", "side", "thickness-axis", "long-axis"]
+  },
+  "selfCorrectLoop": {
+    "enabled": true,
+    "visualAcceptance": {
+      "reviewer": "ai-vision",
+      "threshold": 0.7,
+      "comparisonArtifactRequired": true,
+      "layerScoresRequired": true,
+      "codePixelDiffIsAcceptanceAuthority": false,
+      "scoringRule": "AI vision must inspect a side-by-side reference/render sheet and score the current pass from 0 to 1. Pixel-diff code may assist diagnostics but cannot approve a pass.",
+      "requiredLayerScores": [
+        "silhouetteProportion",
+        "componentStructure",
+        "formDetail",
+        "materialSurface",
+        "lightingCamera"
+      ],
+      "featureReviewPolicy": {
+        "enabled": true,
+        "reviewUnit": "semantic-subsystem",
+        "maxCriticalFeaturesPerPass": 5,
+        "maxImportantFeaturesPerPass": 3,
+        "criticalDefaultThreshold": 0.8,
+        "importantAverageThreshold": 0.65,
+        "adaptiveEscalation": true,
+        "singleImagePairOnly": true,
+        "selectionRule": "Choose only the most visually salient, identity-defining, user-prioritized, or high-risk semantic systems. Group repeated parts instead of reviewing every mesh. AI vision scores every selected feature from the same full reference/render pair."
+      }
+    },
+    "reviewAfterPasses": [
+      "blockout",
+      "structural-pass",
+      "form-refinement",
+      "material-pass",
+      "surface-pass",
+      "lighting-pass",
+      "interaction-pass",
+      "optimization-pass"
+    ],
+    "allowedActions": ["continue", "refine-spec", "refine-code", "request-input", "stop"],
+    "specRefineTriggers": [
+      "missing component",
+      "wrong primitive family",
+      "wrong proportions",
+      "material layer under-specified",
+      "local feature not traceable to viewEvidence",
+      "reference ambiguity discovered during implementation"
+    ],
+    "codeRefineTriggers": [
+      "spec is adequate but generated geometry/material does not match",
+      "browser render differs from reference",
+      "performance budget exceeded",
+      "lighting hides geometry or material response"
+    ],
+    "stopCriteria": [
+      "target fidelity reached or user accepts current approximation",
+      "remaining gaps require new reference images or manual art"
+    ],
+    "screenshotPolicy": {
+      "requiredForPasses": [
+        "blockout",
+        "structural-pass",
+        "form-refinement",
+        "material-pass",
+        "surface-pass",
+        "lighting-pass",
+        "interaction-pass"
+      ],
+      "preferredCapture": "in-app-browser-screenshot",
+      "fallbackCapture": "user-supplied-screenshot-path",
+      "minimumEvidence": "Each visual pass needs a reference image, rendered screenshot, side-by-side comparison sheet, AI vision score, layer scores, and critique before choosing continue.",
+      "reviewPairRule": "Compare the same camera/viewpoint whenever possible; do not judge a front reference against a random render angle.",
+      "acceptanceAuthority": "AI vision review of the comparison sheet. Code-generated pixel similarity is not sufficient evidence."
+    }
+  },
+  "featureReviewTargets": [
+    {
+      "id": "carbine-silhouette-and-negative-space",
+      "name": "Carbine stock, grip, magazine, handguard, and muzzle silhouette",
+      "tier": "critical",
+      "passIds": ["blockout"],
+      "minimumScore": 0.8,
+      "mustPass": true,
+      "componentRefs": ["root"],
+      "evidenceRefs": ["full-object"]
+    },
+    {
+      "id": "receiver-handguard-stock-assembly",
+      "name": "Receiver, vented handguard, and triangular stock assembly",
+      "tier": "critical",
+      "passIds": ["structural-pass", "form-refinement"],
+      "minimumScore": 0.8,
+      "mustPass": true,
+      "componentRefs": ["root"],
+      "evidenceRefs": ["full-object"]
+    },
+    {
+      "id": "gunmetal-polymer-material-separation",
+      "name": "Gunmetal, molded polymer, rubber, lens, and emissive material separation",
+      "tier": "critical",
+      "passIds": ["material-pass", "surface-pass"],
+      "minimumScore": 0.75,
+      "mustPass": true,
+      "componentRefs": ["root"],
+      "evidenceRefs": ["full-object"]
+    }
+  ],
+  "sculptPipeline": {
+    "passGateMode": "locked-sequential",
+    "passOrder": [
+      "blockout",
+      "structural-pass",
+      "form-refinement",
+      "material-pass",
+      "surface-pass",
+      "lighting-pass",
+      "interaction-pass",
+      "optimization-pass"
+    ],
+    "currentPass": "blockout",
+    "completedPasses": [],
+    "lastCompletedPass": "",
+    "blockedReason": "",
+    "nextRequiredEvidence": [
+      "Silhouette reads correctly without materials.",
+      "Quality contract has named all required macro feature groups before code generation.",
+      "AI vision comparison score meets selfCorrectLoop.visualAcceptance.threshold.",
+      "browser render screenshot from your agent's browser/screenshot tool",
+      "side-by-side reference/render comparison sheet for AI vision review",
+      "AI vision score at or above the visual acceptance threshold",
+      "all critical semantic feature scores from the shared image pair at or above their thresholds",
+      "self-correction review appended with action=continue before the next pass"
+    ]
+  },
+  "lookDevTargets": {
+    "qualityPriority": "reference-fidelity",
+    "materialPass": {
+      "albedoPaletteRequired": true,
+      "roughnessVariationRequired": true,
+      "normalOrBumpRequired": true,
+      "localOverridesRequired": true,
+      "minimumTextureResolution": 1024,
+      "preferredTextureResolution": 2048,
+      "independentMapChannels": ["albedo", "roughness", "height", "normal", "ambient-occlusion"],
+      "requiredSurfaceFrequencyBands": ["macro", "meso", "micro"],
+      "geometryReliefRequiredWhenSilhouetteAffected": true,
+      "referencePbrExtraction": {
+        "requiredWhenSourceImagePresent": true,
+        "targetThreshold": 0.7,
+        "stopOnLowConfidence": true,
+        "script": "forge/stage1_intake/extract_pbr_evidence.py",
+        "acceptedLimitation": "single-image extraction is reference-derived inference, not exact photogrammetry"
+      },
+      "mustAvoid": [
+        "single flat albedo per material",
+        "uniform roughness",
+        "albedo texture reused as roughness/height/normal/AO",
+        "single-frequency random noise",
+        "plastic-looking smooth bark, stone, cloth, foliage, or aged material",
+        "local color/detail described only in prose without material masks",
+        "claiming exact PBR recovery when confidence is below the target threshold"
+      ]
+    },
+    "lightingPass": {
+      "requiredTerms": [
+        "key light",
+        "fill light",
+        "rim or environment light",
+        "exposure",
+        "tone mapping",
+        "background",
+        "contact shadow"
+      ],
+      "mustAvoid": [
+        "ambient-only lighting",
+        "flat value range",
+        "missing contact shadow",
+        "reference lighting copied without separating material readability"
+      ]
+    },
+    "screenshotReview": [
+      "Compare albedo palette and local color zones.",
+      "Compare roughness/normal/bump response under light.",
+      "Compare cavity dirt, edge wear, stains, moss, scratches, or other local masks.",
+      "Compare key/fill/rim structure, exposure, tone mapping, background, and contact shadows.",
+      "Capture a neutral-light render to verify material readability without reference lighting.",
+      "Capture a grazing-light close-up to expose flat normals, uniform roughness, tiling, and plastic highlights.",
+      "Capture a reference-matched render from the same camera framing as the source."
+    ]
+  },
+  "actionReadiness": {
+    "contract": "Every macro/meso component should be generated as a stable named Object3D pivot node with a mesh child, action metadata, optional sockets, collider proxy, and destruction metadata.",
+    "defaultRigType": "action-ready-static-rig",
+    "rootMotionNode": "root",
+    "requiredComponentFields": [
+      "id",
+      "parent",
+      "transform",
+      "attachment for child appendages, connectors, limbs, tubes, handles, legs, horns, wings, branches, or cables",
+      "actionProfile.animationRole",
+      "actionProfile.pivot",
+      "actionProfile.collider",
+      "actionProfile.destruction"
+    ],
+    "transformChannels": [
+      "translate",
+      "rotate",
+      "scale",
+      "bend",
+      "twist",
+      "detach",
+      "visibility",
+      "material-state"
+    ],
+    "authoringRules": [
+      "Do not collapse independently movable parts into one mesh.",
+      "Put transforms on component pivot groups, not only on raw meshes.",
+      "For attached child parts, put the pivot at the semantic root/socket and build visible geometry from localStart to localEnd.",
+      "Represent hinge, socket, detachable, and breakable intent even when no animation is implemented yet.",
+      "Use simplified collider proxies for runtime physics instead of visual mesh colliders by default."
+    ],
+    "destructionPolicy": {
+      "defaultBreakable": false,
+      "fractureGroupNaming": "Use stable semantic names such as body-shell, left-hinge, glass-panel, branch-segment.",
+      "debrisStrategy": "Prefer detachable component groups and a small number of procedural fragments over random mesh explosion."
+    }
+  },
+  "assumptions": [
+    "右側面の操作部は左3/4参照と機械的に矛盾しない簡略形状として実装する。",
+    "内部機構はゲーム中に見える排莢ポート、銃口、magwellだけを造形する。",
+    "断面幅は銃口・上面レビューで平面化しない範囲へ推定する。",
+    "傷位置は参照の頻度と方向を保つ決定論的procedural wearで近似する。"
+  ],
+  "coordinateFrame": {
+    "front": "camera-facing side in the reference image",
+    "up": "image up direction",
+    "scaleReference": "unit scale; adjust after first browser render"
+  },
+  "silhouette": {
+    "boundingShape": "",
+    "aspectRatios": [],
+    "symmetry": "",
+    "dominantCurves": [],
+    "negativeSpaces": [],
+    "landmarks": []
+  },
+  "viewEvidence": [
+    {
+      "id": "full-object",
+      "view": "primary",
+      "imageRegion": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1.0,
+        "height": 1.0,
+        "units": "normalized"
+      },
+      "observations": [],
+      "confidence": 0.5
+    },
+    {
+      "id": "art/img2threejs/carbine/detail-zones/stock.png",
+      "view": "stock-detail",
+      "imageRegion": {
+        "x": 0.03,
+        "y": 0.2,
+        "width": 0.27,
+        "height": 0.43,
+        "units": "normalized"
+      },
+      "observations": ["triangular cutout", "rubber grooves", "contact wear"],
+      "confidence": 0.94
+    },
+    {
+      "id": "art/img2threejs/carbine/detail-zones/receiver.png",
+      "view": "receiver-detail",
+      "imageRegion": {
+        "x": 0.27,
+        "y": 0.23,
+        "width": 0.34,
+        "height": 0.4,
+        "units": "normalized"
+      },
+      "observations": ["ejection port", "panel seams", "fasteners"],
+      "confidence": 0.96
+    },
+    {
+      "id": "art/img2threejs/carbine/detail-zones/handguard.png",
+      "view": "handguard-detail",
+      "imageRegion": {
+        "x": 0.57,
+        "y": 0.25,
+        "width": 0.27,
+        "height": 0.28,
+        "units": "normalized"
+      },
+      "observations": ["vent rows", "top rail teeth", "cyan indicator", "edge wear"],
+      "confidence": 0.97
+    },
+    {
+      "id": "art/img2threejs/carbine/detail-zones/barrel.png",
+      "view": "muzzle-detail",
+      "imageRegion": {
+        "x": 0.8,
+        "y": 0.28,
+        "width": 0.19,
+        "height": 0.19,
+        "units": "normalized"
+      },
+      "observations": ["barrel rings", "muzzle brake ports", "axial bore"],
+      "confidence": 0.9
+    },
+    {
+      "id": "art/img2threejs/carbine/detail-zones/grip.png",
+      "view": "grip-detail",
+      "imageRegion": {
+        "x": 0.25,
+        "y": 0.46,
+        "width": 0.18,
+        "height": 0.32,
+        "units": "normalized"
+      },
+      "observations": ["grip taper", "stipple panel", "edge polish"],
+      "confidence": 0.97
+    },
+    {
+      "id": "art/img2threejs/carbine/detail-zones/magazine.png",
+      "view": "magazine-detail",
+      "imageRegion": {
+        "x": 0.48,
+        "y": 0.46,
+        "width": 0.17,
+        "height": 0.43,
+        "units": "normalized"
+      },
+      "observations": ["curved shell", "rib grid", "tan floorplate"],
+      "confidence": 0.97
+    },
+    {
+      "id": "art/img2threejs/carbine/detail-zones/optic.png",
+      "view": "optic-detail",
+      "imageRegion": {
+        "x": 0.4,
+        "y": 0.1,
+        "width": 0.22,
+        "height": 0.27,
+        "units": "normalized"
+      },
+      "observations": ["box hood", "amber lens", "fastener pattern"],
+      "confidence": 0.95
+    }
+  ],
+  "componentTree": [
+    {
+      "id": "root",
+      "name": "FPS Carbine",
+      "level": "macro",
+      "role": "body",
+      "importance": 1.0,
+      "confidence": 0.92,
+      "primitive": "box",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "中央レシーバーは数えられる平面と実ベベルを持つ剛体アセンブリで、他の全アセンブリの基準座標を提供する。",
+      "geometryDescriptor": {
+        "topologyIntent": "low-poly blockout with bevel-ready edges",
+        "edgeTreatment": {
+          "type": "none",
+          "bevelRadius": 0.0,
+          "segments": 1
+        },
+        "deformationStack": [],
+        "uvStrategy": "generated procedural coordinates",
+        "normalStrategy": "vertex normals from generated geometry"
+      },
+      "parent": null,
+      "attachment": null,
+      "dimensions": {
+        "width": 1.7,
+        "height": 0.62,
+        "depth": 0.48,
+        "units": "relative",
+        "confidence": 0.5
+      },
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "root",
+        "pivot": {
+          "mode": "center",
+          "localPosition": [0, 0, 0],
+          "axis": [0, 1, 0],
+          "confidence": 0.5
+        },
+        "transformChannels": {
+          "translate": true,
+          "rotate": true,
+          "scale": true,
+          "bend": false,
+          "twist": false,
+          "detach": false,
+          "visibility": true,
+          "materialState": true
+        },
+        "sockets": [],
+        "collider": {
+          "type": "box",
+          "offset": [0, 0, 0],
+          "scale": [1, 1, 1],
+          "isTrigger": false,
+          "notes": "Replace with sphere/capsule/compound proxy when the object shape demands it."
+        },
+        "constraints": [],
+        "destruction": {
+          "breakable": false,
+          "fractureGroup": "root",
+          "seamRefs": [],
+          "detachableFragments": [],
+          "breakImpulse": 0.0,
+          "debrisMaterial": "base"
+        }
+      },
+      "material": "base",
+      "materialLayers": ["base"],
+      "deformations": [],
+      "joints": [],
+      "seams": [],
+      "localFeatures": [
+        {
+          "id": "panel-seams",
+          "type": "recessed-groove",
+          "width": 0.015,
+          "depth": 0.008
+        },
+        {
+          "id": "fastener-system",
+          "type": "instanced-fasteners",
+          "count": 8
+        }
+      ],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(69, 69, 70, 1.0)",
+        "secondaryAlbedo": "rgba(43, 43, 43, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.94
+      },
+      "surfaceDetail": {
+        "macroRoughness": 0.0,
+        "microRoughness": 0.0,
+        "bumpAmplitude": 0.0,
+        "normalPattern": "",
+        "displacementPattern": "",
+        "occlusionPattern": "",
+        "edgeWearPattern": "",
+        "notes": ""
+      },
+      "evidenceRefs": ["full-object"],
+      "details": [],
+      "fidelityTier": "hero-game-prop"
+    },
+    {
+      "id": "receiver-assembly",
+      "name": "receiver assembly",
+      "level": "macro",
+      "role": "static-part",
+      "importance": 1.0,
+      "confidence": 0.96,
+      "primitive": "box",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "upper/lower receiverとmagwellをまとめた中央の横長剛体ボリューム。",
+      "parent": "root",
+      "dimensions": {
+        "width": 1.7,
+        "height": 0.62,
+        "depth": 0.48,
+        "units": "relative",
+        "confidence": 0.92
+      },
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1.7, 0.62, 0.48]
+      },
+      "actionProfile": {
+        "animationRole": "static-part",
+        "sockets": [
+          {
+            "id": "receiver-front",
+            "localPosition": [0.82, 0.02, 0]
+          },
+          {
+            "id": "magwell",
+            "localPosition": [0.28, -0.27, 0]
+          },
+          {
+            "id": "lower-receiver-grip",
+            "localPosition": [-0.42, -0.28, 0]
+          }
+        ]
+      },
+      "material": "gunmetal",
+      "materialLayers": ["gunmetal"],
+      "localFeatures": [],
+      "evidenceRefs": ["full-object"],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(69, 69, 70, 1.0)",
+        "secondaryAlbedo": "rgba(43, 43, 43, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.96
+      }
+    },
+    {
+      "id": "stock-assembly",
+      "name": "stock assembly",
+      "level": "macro",
+      "role": "static-part",
+      "importance": 0.9,
+      "confidence": 0.88,
+      "primitive": "box",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "成形ポリマー側板とゴムパッドから成る独立剛体アセンブリ。",
+      "parent": "root",
+      "dimensions": {
+        "width": 1.25,
+        "height": 0.72,
+        "depth": 0.38,
+        "units": "relative",
+        "confidence": 0.84
+      },
+      "transform": {
+        "position": [-1.43, 0.05, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1.25, 0.72, 0.38]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "stock-polymer",
+      "materialLayers": ["stock-polymer", "rubber"],
+      "localFeatures": [],
+      "evidenceRefs": ["art/img2threejs/carbine/detail-zones/stock.png"],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(78, 77, 75, 1.0)",
+        "secondaryAlbedo": "rgba(50, 49, 46, 1.0)",
+        "materialClass": "plastic",
+        "materialClassConfidence": 0.9
+      }
+    },
+    {
+      "id": "handguard-assembly",
+      "name": "handguard assembly",
+      "level": "macro",
+      "role": "static-part",
+      "importance": 0.96,
+      "confidence": 0.94,
+      "primitive": "box",
+      "topologyClass": "conforming-shell",
+      "topologyRationale": "バレルを囲う薄肉の有孔金属シェルで、上下レールと内壁を持つ。",
+      "parent": "root",
+      "dimensions": {
+        "width": 1.45,
+        "height": 0.52,
+        "depth": 0.42,
+        "units": "relative",
+        "confidence": 0.9
+      },
+      "transform": {
+        "position": [1.48, 0.04, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1.45, 0.52, 0.42]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "gunmetal",
+      "materialLayers": ["gunmetal"],
+      "localFeatures": [],
+      "evidenceRefs": ["art/img2threejs/carbine/detail-zones/handguard.png"],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(69, 69, 70, 1.0)",
+        "secondaryAlbedo": "rgba(43, 43, 43, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.96
+      }
+    },
+    {
+      "id": "barrel-assembly",
+      "name": "barrel assembly",
+      "level": "macro",
+      "role": "static-part",
+      "importance": 0.92,
+      "confidence": 0.84,
+      "primitive": "cylinder",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "同心円断面の鋼製バレルとマズル機構。",
+      "parent": "root",
+      "attachment": {
+        "parentId": "root",
+        "parentSocket": "receiver-front",
+        "localStart": [0.82, 0.02, 0],
+        "localEnd": [3.55, 0.02, 0],
+        "baseRadius": 0.11,
+        "endRadius": 0.19,
+        "overlap": 0.12,
+        "contactType": "socket",
+        "gapTolerance": 0.01,
+        "evidenceRefs": ["full-object"]
+      },
+      "dimensions": {
+        "radius": 0.13,
+        "length": 2.0,
+        "units": "relative",
+        "confidence": 0.78
+      },
+      "transform": {
+        "position": [2.5, 0.02, 0],
+        "rotation": [0, 0, 1.5708],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "effect-emitter"
+      },
+      "material": "dark-metal",
+      "materialLayers": ["dark-metal"],
+      "localFeatures": [],
+      "evidenceRefs": ["art/img2threejs/carbine/detail-zones/barrel.png"],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(35, 36, 38, 1.0)",
+        "secondaryAlbedo": "rgba(15, 15, 15, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.9
+      }
+    },
+    {
+      "id": "grip-assembly",
+      "name": "pistol grip assembly",
+      "level": "macro",
+      "role": "static-part",
+      "importance": 0.9,
+      "confidence": 0.95,
+      "primitive": "curve-sweep",
+      "topologyClass": "continuous-sculpt",
+      "topologyRationale": "前後にテーパーし掌側へ膨らむ連続断面の成形グリップ。",
+      "parent": "root",
+      "attachment": {
+        "parentId": "root",
+        "parentSocket": "lower-receiver-grip",
+        "localStart": [-0.42, -0.28, 0],
+        "localEnd": [-0.65, -1.24, 0],
+        "baseRadius": 0.23,
+        "endRadius": 0.18,
+        "embedDepth": 0.08,
+        "contactType": "embedded",
+        "gapTolerance": 0.01,
+        "evidenceRefs": ["full-object"]
+      },
+      "dimensions": {
+        "width": 0.42,
+        "height": 0.92,
+        "depth": 0.38,
+        "units": "relative",
+        "confidence": 0.9
+      },
+      "transform": {
+        "position": [-0.55, -0.78, 0],
+        "rotation": [0, 0, -0.24],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "grip"
+      },
+      "material": "grip-polymer",
+      "materialLayers": ["grip-polymer"],
+      "localFeatures": [
+        {
+          "id": "stipple",
+          "type": "independent-normal-roughness-field",
+          "coverage": 0.72
+        }
+      ],
+      "evidenceRefs": ["art/img2threejs/carbine/detail-zones/grip.png"],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(62, 62, 62, 1.0)",
+        "secondaryAlbedo": "rgba(44, 43, 43, 1.0)",
+        "materialClass": "plastic",
+        "materialClassConfidence": 0.97
+      }
+    },
+    {
+      "id": "magazine-assembly",
+      "name": "detachable curved magazine",
+      "level": "macro",
+      "role": "static-part",
+      "importance": 0.94,
+      "confidence": 0.96,
+      "primitive": "curve-sweep",
+      "topologyClass": "continuous-sculpt",
+      "topologyRationale": "下方へ向かい前へ曲がる可変断面の一体シェルで、平面箱では輪郭と厚みが一致しない。",
+      "parent": "root",
+      "attachment": {
+        "parentId": "root",
+        "parentSocket": "magwell",
+        "localStart": [0.28, -0.27, 0],
+        "localEnd": [0.45, -1.52, 0],
+        "baseRadius": 0.26,
+        "endRadius": 0.3,
+        "embedDepth": 0.12,
+        "contactType": "socket",
+        "gapTolerance": 0.01,
+        "evidenceRefs": ["full-object"]
+      },
+      "dimensions": {
+        "width": 0.52,
+        "height": 1.22,
+        "depth": 0.4,
+        "units": "relative",
+        "confidence": 0.9
+      },
+      "transform": {
+        "position": [0.32, -0.91, 0],
+        "rotation": [0, 0, -0.1],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "detachable-magazine"
+      },
+      "material": "grip-polymer",
+      "materialLayers": ["grip-polymer", "tan-polymer"],
+      "localFeatures": [],
+      "evidenceRefs": ["art/img2threejs/carbine/detail-zones/magazine.png"],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(45, 45, 45, 1.0)",
+        "secondaryAlbedo": "rgba(30, 30, 30, 1.0)",
+        "materialClass": "plastic",
+        "materialClassConfidence": 0.96
+      }
+    },
+    {
+      "id": "optic-assembly",
+      "name": "reflex optic assembly",
+      "level": "macro",
+      "role": "static-part",
+      "importance": 0.88,
+      "confidence": 0.94,
+      "primitive": "box",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "箱型フード、レンズ、基部、fastenerから成る独立機械アセンブリ。",
+      "parent": "root",
+      "dimensions": {
+        "width": 0.55,
+        "height": 0.58,
+        "depth": 0.45,
+        "units": "relative",
+        "confidence": 0.9
+      },
+      "transform": {
+        "position": [0.18, 0.64, 0],
+        "rotation": [0, 0, 0],
+        "scale": [0.55, 0.58, 0.45]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "gunmetal",
+      "materialLayers": ["gunmetal", "optic-lens"],
+      "localFeatures": [
+        {
+          "id": "optic-fasteners",
+          "type": "instanced-fasteners",
+          "count": 6
+        }
+      ],
+      "evidenceRefs": ["art/img2threejs/carbine/detail-zones/optic.png"],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(58, 59, 60, 1.0)",
+        "secondaryAlbedo": "rgba(32, 33, 34, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.94
+      }
+    },
+    {
+      "id": "stock-shell",
+      "name": "stock triangular shell",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.82,
+      "confidence": 0.9,
+      "primitive": "extrude",
+      "topologyClass": "conforming-shell",
+      "topologyRationale": "三角形肉抜きを持つ薄い側板プロファイル。",
+      "parent": "stock-assembly",
+      "dimensions": {
+        "width": 1.0,
+        "height": 0.58,
+        "depth": 0.11
+      },
+      "transform": {
+        "position": [-1.48, -0.02, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "tan-polymer",
+      "materialLayers": ["tan-polymer"],
+      "localFeatures": [
+        {
+          "id": "stock-cutouts",
+          "type": "profile-holes",
+          "count": 2
+        }
+      ],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(112, 109, 103, 1.0)",
+        "secondaryAlbedo": "rgba(78, 76, 70, 1.0)",
+        "materialClass": "plastic",
+        "materialClassConfidence": 0.88
+      }
+    },
+    {
+      "id": "butt-pad",
+      "name": "rubber butt pad",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.7,
+      "confidence": 0.94,
+      "primitive": "box",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "外周溝を持つ厚いゴム接触パッド。",
+      "parent": "stock-assembly",
+      "dimensions": {
+        "width": 0.16,
+        "height": 0.78,
+        "depth": 0.42
+      },
+      "transform": {
+        "position": [-2.07, 0.04, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "rubber",
+      "materialLayers": ["rubber"],
+      "localFeatures": [
+        {
+          "id": "pad-ridges",
+          "type": "repeated-ridges",
+          "count": 8
+        }
+      ],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(26, 26, 27, 1.0)",
+        "secondaryAlbedo": "rgba(45, 45, 46, 1.0)",
+        "materialClass": "rubber",
+        "materialClassConfidence": 0.96
+      }
+    },
+    {
+      "id": "buffer-tube",
+      "name": "buffer tube",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.65,
+      "confidence": 0.8,
+      "primitive": "cylinder",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "receiver後端とstockを繋ぐ同心円筒。",
+      "parent": "stock-assembly",
+      "attachment": {
+        "parentId": "stock-assembly",
+        "parentSocket": "stock-front",
+        "localStart": [-0.84, 0.11, 0],
+        "localEnd": [-1.55, 0.11, 0],
+        "baseRadius": 0.14,
+        "endRadius": 0.14,
+        "overlap": 0.1,
+        "contactType": "socket",
+        "gapTolerance": 0.01,
+        "evidenceRefs": ["full-object"]
+      },
+      "dimensions": {
+        "radius": 0.14,
+        "length": 0.8
+      },
+      "transform": {
+        "position": [-0.96, 0.11, 0],
+        "rotation": [0, 0, 1.5708],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "dark-metal",
+      "materialLayers": ["dark-metal"],
+      "localFeatures": [],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(35, 36, 38, 1.0)",
+        "secondaryAlbedo": "rgba(15, 15, 15, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.9
+      }
+    },
+    {
+      "id": "upper-receiver",
+      "name": "upper receiver",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.9,
+      "confidence": 0.95,
+      "primitive": "box",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "上面レールと側面排莢ポートを持つベベル箱型機構。",
+      "parent": "root",
+      "dimensions": {
+        "width": 1.7,
+        "height": 0.3,
+        "depth": 0.46
+      },
+      "transform": {
+        "position": [0, 0.18, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "gunmetal",
+      "materialLayers": ["gunmetal"],
+      "localFeatures": [
+        {
+          "id": "ejection-port",
+          "type": "recessed-cavity",
+          "depth": 0.09
+        }
+      ],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(69, 69, 70, 1.0)",
+        "secondaryAlbedo": "rgba(43, 43, 43, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.96
+      }
+    },
+    {
+      "id": "lower-receiver",
+      "name": "lower receiver",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.84,
+      "confidence": 0.9,
+      "primitive": "box",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "magwellと操作ピンを含む下側剛体ハウジング。",
+      "parent": "root",
+      "dimensions": {
+        "width": 1.18,
+        "height": 0.42,
+        "depth": 0.44
+      },
+      "transform": {
+        "position": [-0.12, -0.19, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "gunmetal",
+      "materialLayers": ["gunmetal"],
+      "localFeatures": [],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(61, 61, 62, 1.0)",
+        "secondaryAlbedo": "rgba(38, 38, 39, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.94
+      }
+    },
+    {
+      "id": "trigger-guard",
+      "name": "trigger guard",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.62,
+      "confidence": 0.86,
+      "primitive": "torus",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "trigger周囲を囲う独立したU字断面ガード。",
+      "parent": "root",
+      "dimensions": {
+        "radius": 0.25,
+        "depth": 0.12
+      },
+      "transform": {
+        "position": [-0.35, -0.44, 0],
+        "rotation": [1.5708, 0, 0],
+        "scale": [1.25, 0.65, 1]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "gunmetal",
+      "materialLayers": ["gunmetal"],
+      "localFeatures": [],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(55, 55, 56, 1.0)",
+        "secondaryAlbedo": "rgba(30, 30, 31, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.9
+      }
+    },
+    {
+      "id": "handguard-shell",
+      "name": "vented handguard shell",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.95,
+      "confidence": 0.96,
+      "primitive": "box",
+      "topologyClass": "conforming-shell",
+      "topologyRationale": "バレル周囲を囲い実開口を持つ薄肉シェル。",
+      "parent": "handguard-assembly",
+      "dimensions": {
+        "width": 1.45,
+        "height": 0.5,
+        "depth": 0.4
+      },
+      "transform": {
+        "position": [1.48, 0.02, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "gunmetal",
+      "materialLayers": ["gunmetal"],
+      "localFeatures": [
+        {
+          "id": "vent-system",
+          "type": "through-holes",
+          "count": 8
+        },
+        {
+          "id": "edge-wear",
+          "type": "edge-material-override"
+        }
+      ],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(69, 69, 70, 1.0)",
+        "secondaryAlbedo": "rgba(43, 43, 43, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.97
+      }
+    },
+    {
+      "id": "top-rail",
+      "name": "top rail",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.78,
+      "confidence": 0.95,
+      "primitive": "box",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "上面に載る直線基部と反復台形歯。",
+      "parent": "root",
+      "dimensions": {
+        "width": 3.0,
+        "height": 0.09,
+        "depth": 0.24
+      },
+      "transform": {
+        "position": [0.7, 0.47, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "dark-metal",
+      "materialLayers": ["dark-metal"],
+      "localFeatures": [
+        {
+          "id": "rail-teeth",
+          "type": "instanced-ridges",
+          "count": 24
+        }
+      ],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(35, 36, 38, 1.0)",
+        "secondaryAlbedo": "rgba(15, 15, 15, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.94
+      }
+    },
+    {
+      "id": "barrel-core",
+      "name": "barrel core",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.72,
+      "confidence": 0.82,
+      "primitive": "cylinder",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "handguard内部から突出する鋼製円筒。",
+      "parent": "barrel-assembly",
+      "attachment": {
+        "parentId": "barrel-assembly",
+        "parentSocket": "barrel-axis",
+        "localStart": [1.7, 0.02, 0],
+        "localEnd": [3.15, 0.02, 0],
+        "baseRadius": 0.11,
+        "endRadius": 0.11,
+        "overlap": 0.16,
+        "contactType": "embedded",
+        "gapTolerance": 0.005,
+        "evidenceRefs": ["full-object"]
+      },
+      "dimensions": {
+        "radius": 0.11,
+        "length": 1.8
+      },
+      "transform": {
+        "position": [2.45, 0.02, 0],
+        "rotation": [0, 0, 1.5708],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "dark-metal",
+      "materialLayers": ["dark-metal"],
+      "localFeatures": [],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(35, 36, 38, 1.0)",
+        "secondaryAlbedo": "rgba(15, 15, 15, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.92
+      }
+    },
+    {
+      "id": "muzzle-brake",
+      "name": "ported muzzle brake",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.8,
+      "confidence": 0.88,
+      "primitive": "cylinder",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "側面ポートと軸穴を持つ太い円筒金属部品。",
+      "parent": "barrel-assembly",
+      "attachment": {
+        "parentId": "barrel-assembly",
+        "parentSocket": "muzzle-thread",
+        "localStart": [3.05, 0.02, 0],
+        "localEnd": [3.58, 0.02, 0],
+        "baseRadius": 0.15,
+        "endRadius": 0.19,
+        "overlap": 0.1,
+        "contactType": "socket",
+        "gapTolerance": 0.005,
+        "evidenceRefs": ["full-object"]
+      },
+      "dimensions": {
+        "radius": 0.19,
+        "length": 0.55
+      },
+      "transform": {
+        "position": [3.28, 0.02, 0],
+        "rotation": [0, 0, 1.5708],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "effect-emitter"
+      },
+      "material": "dark-metal",
+      "materialLayers": ["dark-metal"],
+      "localFeatures": [
+        {
+          "id": "port-system",
+          "type": "through-holes",
+          "count": 4
+        }
+      ],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(42, 43, 44, 1.0)",
+        "secondaryAlbedo": "rgba(12, 12, 12, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.93
+      }
+    },
+    {
+      "id": "magazine-shell",
+      "name": "ribbed magazine shell",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.9,
+      "confidence": 0.95,
+      "primitive": "curve-sweep",
+      "topologyClass": "continuous-sculpt",
+      "topologyRationale": "曲率と前後テーパーを持つロフト状シェル。",
+      "parent": "magazine-assembly",
+      "attachment": {
+        "parentId": "magazine-assembly",
+        "parentSocket": "magazine-body",
+        "localStart": [0.29, -0.35, 0],
+        "localEnd": [0.44, -1.45, 0],
+        "baseRadius": 0.25,
+        "endRadius": 0.29,
+        "overlap": 0.1,
+        "contactType": "overlap",
+        "gapTolerance": 0.005,
+        "evidenceRefs": ["full-object"]
+      },
+      "dimensions": {
+        "width": 0.5,
+        "height": 1.15,
+        "depth": 0.38
+      },
+      "transform": {
+        "position": [0.32, -0.88, 0],
+        "rotation": [0, 0, -0.1],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "detachable-magazine"
+      },
+      "material": "grip-polymer",
+      "materialLayers": ["grip-polymer"],
+      "localFeatures": [
+        {
+          "id": "rib-system",
+          "type": "raised-grid",
+          "count": 7
+        }
+      ],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(45, 45, 45, 1.0)",
+        "secondaryAlbedo": "rgba(28, 28, 28, 1.0)",
+        "materialClass": "plastic",
+        "materialClassConfidence": 0.96
+      }
+    },
+    {
+      "id": "magazine-floorplate",
+      "name": "magazine floorplate",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.58,
+      "confidence": 0.95,
+      "primitive": "box",
+      "topologyClass": "assembled-solid",
+      "topologyRationale": "magazine下端から張り出す独立床板。",
+      "parent": "magazine-assembly",
+      "dimensions": {
+        "width": 0.58,
+        "height": 0.12,
+        "depth": 0.44
+      },
+      "transform": {
+        "position": [0.39, -1.5, 0],
+        "rotation": [0, 0, -0.1],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "tan-polymer",
+      "materialLayers": ["tan-polymer"],
+      "localFeatures": [
+        {
+          "id": "floorplate-edge",
+          "type": "chamfer",
+          "radius": 0.025
+        }
+      ],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(112, 109, 103, 1.0)",
+        "secondaryAlbedo": "rgba(78, 76, 70, 1.0)",
+        "materialClass": "plastic",
+        "materialClassConfidence": 0.9
+      }
+    },
+    {
+      "id": "optic-hood",
+      "name": "optic hood",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.78,
+      "confidence": 0.93,
+      "primitive": "box",
+      "topologyClass": "conforming-shell",
+      "topologyRationale": "レンズを囲う角丸箱型の薄肉フード。",
+      "parent": "optic-assembly",
+      "dimensions": {
+        "width": 0.52,
+        "height": 0.52,
+        "depth": 0.42
+      },
+      "transform": {
+        "position": [0.18, 0.67, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "gunmetal",
+      "materialLayers": ["gunmetal"],
+      "localFeatures": [],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(58, 59, 60, 1.0)",
+        "secondaryAlbedo": "rgba(32, 33, 34, 1.0)",
+        "materialClass": "metal",
+        "materialClassConfidence": 0.94
+      }
+    },
+    {
+      "id": "optic-lens",
+      "name": "amber optic lens",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.65,
+      "confidence": 0.92,
+      "primitive": "plane-card",
+      "topologyClass": "conforming-shell",
+      "topologyRationale": "フード内に嵌まる薄い透過面。",
+      "parent": "optic-assembly",
+      "dimensions": {
+        "width": 0.34,
+        "height": 0.34,
+        "depth": 0.01
+      },
+      "transform": {
+        "position": [0.2, 0.68, 0.18],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "optic-lens",
+      "materialLayers": ["optic-lens"],
+      "localFeatures": [],
+      "colorMaterialRecipe": {
+        "dominantAlbedo": "rgba(112, 88, 40, 0.75)",
+        "secondaryAlbedo": "rgba(44, 34, 18, 0.55)",
+        "materialClass": "glass",
+        "materialClassConfidence": 0.88
+      }
+    },
+    {
+      "id": "status-indicator",
+      "name": "cyan status indicator",
+      "level": "meso",
+      "role": "static-part",
+      "importance": 0.55,
+      "confidence": 0.98,
+      "primitive": "box",
+      "topologyClass": "material-only",
+      "topologyRationale": "handguard表面に載る発光バーで独立した体積は極小。",
+      "parent": "handguard-assembly",
+      "dimensions": {
+        "width": 0.22,
+        "height": 0.05,
+        "depth": 0.02
+      },
+      "transform": {
+        "position": [0.88, 0.2, 0.22],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "actionProfile": {
+        "animationRole": "static-part"
+      },
+      "material": "indicator-emissive",
+      "materialLayers": ["indicator-emissive"],
+      "localFeatures": []
+    }
+  ],
+  "materials": [
+    {
+      "id": "base",
+      "name": "Base material",
+      "qualityTier": "utility",
+      "type": "standard",
+      "transparent": true,
+      "opacity": 0.0,
+      "depthWrite": false,
+      "shaderModel": "MeshStandardMaterial / PBR approximation",
+      "baseColor": "#8A7A5F",
+      "color": "#8A7A5F",
+      "albedo": {
+        "dominant": "#8A7A5F",
+        "secondary": ["#6E614B", "#A08F70"],
+        "samplingNotes": "Use image-observed local color zones, not a single averaged color."
+      },
+      "colorVariation": {
+        "palette": ["#8A7A5F", "#6E614B", "#A08F70"],
+        "pattern": "mottled",
+        "amplitude": 0.15,
+        "heightCorrelation": 0.3
+      },
+      "textureResolution": 1024,
+      "textureProjection": {
+        "mode": "uv",
+        "repeat": [2.0, 2.0],
+        "anisotropy": 8,
+        "texelDensityIntent": "Preserve stable world/object-scale detail; do not stretch micro detail with component scale."
+      },
+      "surfaceFrequencyBands": [
+        {
+          "id": "macro",
+          "frequency": 2.0,
+          "amplitude": 0.42,
+          "role": "broad color and height breakup"
+        },
+        {
+          "id": "meso",
+          "frequency": 12.0,
+          "amplitude": 0.22,
+          "role": "ridges, pores, grain, dents, or equivalent visible relief"
+        },
+        {
+          "id": "micro",
+          "frequency": 56.0,
+          "amplitude": 0.08,
+          "role": "highlight breakup visible under grazing light"
+        }
+      ],
+      "roughness": {
+        "base": 0.75,
+        "variation": 0.15,
+        "map": "independent-procedural-field",
+        "localResponse": "higher roughness in cavities, lower roughness on worn edges"
+      },
+      "metalness": {
+        "base": 0.0,
+        "variation": 0.0
+      },
+      "normal": {
+        "pattern": "derived-from-independent-height-field",
+        "strength": 0.35,
+        "scale": 24.0,
+        "space": "tangent"
+      },
+      "bump": {
+        "pattern": "none",
+        "amplitude": 0.0,
+        "scale": 1.0
+      },
+      "displacement": {
+        "pattern": "none",
+        "amplitude": 0.0,
+        "scale": 1.0,
+        "silhouetteAffects": false
+      },
+      "ambientOcclusion": {
+        "cavityStrength": 0.25,
+        "contactShadowBias": 0.35,
+        "notes": "Darken creases, seams, intersections, and recessed local features."
+      },
+      "wear": {
+        "edgeWear": 0.0,
+        "scratches": [],
+        "chips": []
+      },
+      "dirt": {
+        "amount": 0.0,
+        "cavityBias": 0.0,
+        "color": "#2F2A22"
+      },
+      "localOverrides": [],
+      "shaderNotes": [
+        "Prefer MeshPhysicalMaterial when clearcoat, sheen, transmission, or thin-surface response is observed; otherwise use MeshStandardMaterial-compatible PBR channels.",
+        "Generate albedo, roughness, height/normal, and AO independently; never alias albedo into roughness.",
+        "Use normal/bump/displacement only when they map to observed surface relief.",
+        "Use displacement geometry when the observed relief changes the close-up silhouette; texture-only relief is insufficient there."
+      ],
+      "notes": "Generator互換用の未使用utility材質。"
+    },
+    {
+      "id": "gunmetal",
+      "name": "Parkerized gunmetal",
+      "type": "physical",
+      "shaderModel": "MeshPhysicalMaterial",
+      "baseColor": "#454546",
+      "color": "#454546",
+      "albedo": {
+        "dominant": "#454546",
+        "secondary": ["#2B2B2B", "#696A6A"],
+        "samplingNotes": "receiver crop median palette"
+      },
+      "colorVariation": {
+        "palette": ["#454546", "#2B2B2B", "#696A6A"],
+        "pattern": "directional-brush-and-edge-wear",
+        "amplitude": 0.12
+      },
+      "textureResolution": 1024,
+      "textureProjection": {
+        "mode": "triplanar",
+        "repeat": [3, 3],
+        "anisotropy": 8,
+        "texelDensityIntent": "all metal parts share object-scale micrograin"
+      },
+      "surfaceFrequencyBands": [
+        {
+          "id": "macro",
+          "frequency": 2,
+          "amplitude": 0.08,
+          "role": "broad finish drift"
+        },
+        {
+          "id": "meso",
+          "frequency": 18,
+          "amplitude": 0.05,
+          "role": "handling wear and seams"
+        },
+        {
+          "id": "micro",
+          "frequency": 96,
+          "amplitude": 0.025,
+          "role": "parkerized grain and brushing"
+        }
+      ],
+      "roughness": {
+        "base": 0.36,
+        "variation": 0.18,
+        "map": "gunmetal_roughness.png",
+        "localResponse": "worn edges smoother, cavities rougher"
+      },
+      "metalness": {
+        "base": 0.86,
+        "variation": 0.08
+      },
+      "normal": {
+        "pattern": "gunmetal_normal.png",
+        "strength": 0.26,
+        "scale": 96,
+        "space": "tangent"
+      },
+      "ambientOcclusion": {
+        "map": "gunmetal_ao.png",
+        "cavityStrength": 0.32,
+        "contactShadowBias": 0.3
+      },
+      "wear": {
+        "edgeWear": 0.18,
+        "scratches": ["directional handling scratches"],
+        "chips": []
+      },
+      "dirt": {
+        "amount": 0.06,
+        "cavityBias": 0.7,
+        "color": "#171717"
+      },
+      "localOverrides": [
+        {
+          "id": "edge-wear",
+          "region": "exposed handguard and receiver rims",
+          "roughness": 0.24,
+          "albedo": "#696A6A",
+          "evidenceRefs": ["art/img2threejs/carbine/detail-zones/handguard.png"]
+        }
+      ],
+      "referencePbr": {
+        "version": "1",
+        "sourceImage": "art/img2threejs/carbine/detail-zones/receiver.png",
+        "extractor": "extract_pbr_evidence.py",
+        "method": "single-image reference inference",
+        "verdict": "pass",
+        "hardLimit": "not inverse rendering truth",
+        "usable": true,
+        "confidence": 0.86,
+        "estimatedFidelity": 0.86,
+        "targetThreshold": 0.7,
+        "maps": {
+          "albedo": {
+            "path": "art/img2threejs/carbine/material-evidence/gunmetal/gunmetal_albedo.png",
+            "channel": "albedo"
+          },
+          "roughness": {
+            "path": "art/img2threejs/carbine/material-evidence/gunmetal/gunmetal_roughness.png",
+            "channel": "roughness"
+          },
+          "height": {
+            "path": "art/img2threejs/carbine/material-evidence/gunmetal/gunmetal_height.png",
+            "channel": "height"
+          },
+          "normal": {
+            "path": "art/img2threejs/carbine/material-evidence/gunmetal/gunmetal_normal.png",
+            "channel": "normal"
+          },
+          "ao": {
+            "path": "art/img2threejs/carbine/material-evidence/gunmetal/gunmetal_ao.png",
+            "channel": "ao"
+          }
+        }
+      }
+    },
+    {
+      "id": "grip-polymer",
+      "name": "Charcoal molded polymer",
+      "type": "standard",
+      "shaderModel": "MeshStandardMaterial",
+      "baseColor": "#3E3E3E",
+      "color": "#3E3E3E",
+      "albedo": {
+        "dominant": "#3E3E3E",
+        "secondary": ["#2C2B2B", "#525354"],
+        "samplingNotes": "grip crop palette"
+      },
+      "colorVariation": {
+        "palette": ["#3E3E3E", "#2C2B2B", "#525354"],
+        "pattern": "molded-mottle",
+        "amplitude": 0.1
+      },
+      "textureResolution": 1024,
+      "textureProjection": {
+        "mode": "triplanar",
+        "repeat": [4, 4],
+        "anisotropy": 8,
+        "texelDensityIntent": "stable stipple scale on grip and magazine"
+      },
+      "surfaceFrequencyBands": [
+        {
+          "id": "macro",
+          "frequency": 2,
+          "amplitude": 0.06,
+          "role": "molded color drift"
+        },
+        {
+          "id": "meso",
+          "frequency": 22,
+          "amplitude": 0.09,
+          "role": "stipple field and ribs"
+        },
+        {
+          "id": "micro",
+          "frequency": 110,
+          "amplitude": 0.035,
+          "role": "polymer grain"
+        }
+      ],
+      "roughness": {
+        "base": 0.7,
+        "variation": 0.14,
+        "map": "grip-polymer_roughness.png",
+        "localResponse": "handled high points slightly smoother"
+      },
+      "metalness": {
+        "base": 0,
+        "variation": 0
+      },
+      "normal": {
+        "pattern": "grip-polymer_normal.png",
+        "strength": 0.34,
+        "scale": 110,
+        "space": "tangent"
+      },
+      "ambientOcclusion": {
+        "map": "grip-polymer_ao.png",
+        "cavityStrength": 0.28,
+        "contactShadowBias": 0.25
+      },
+      "wear": {
+        "edgeWear": 0.08,
+        "scratches": ["subtle grip contact polish"],
+        "chips": []
+      },
+      "dirt": {
+        "amount": 0.04,
+        "cavityBias": 0.65,
+        "color": "#161616"
+      },
+      "localOverrides": [
+        {
+          "id": "stipple",
+          "region": "grip side panels",
+          "roughness": 0.78,
+          "normalStrength": 0.44,
+          "evidenceRefs": ["art/img2threejs/carbine/detail-zones/grip.png"]
+        }
+      ],
+      "referencePbr": {
+        "version": "1",
+        "sourceImage": "art/img2threejs/carbine/detail-zones/grip.png",
+        "extractor": "extract_pbr_evidence.py",
+        "method": "single-image reference inference",
+        "verdict": "pass",
+        "hardLimit": "not inverse rendering truth",
+        "usable": true,
+        "confidence": 0.86,
+        "estimatedFidelity": 0.86,
+        "targetThreshold": 0.7,
+        "maps": {
+          "albedo": {
+            "path": "art/img2threejs/carbine/material-evidence/grip-polymer/grip-polymer_albedo.png",
+            "channel": "albedo"
+          },
+          "roughness": {
+            "path": "art/img2threejs/carbine/material-evidence/grip-polymer/grip-polymer_roughness.png",
+            "channel": "roughness"
+          },
+          "height": {
+            "path": "art/img2threejs/carbine/material-evidence/grip-polymer/grip-polymer_height.png",
+            "channel": "height"
+          },
+          "normal": {
+            "path": "art/img2threejs/carbine/material-evidence/grip-polymer/grip-polymer_normal.png",
+            "channel": "normal"
+          },
+          "ao": {
+            "path": "art/img2threejs/carbine/material-evidence/grip-polymer/grip-polymer_ao.png",
+            "channel": "ao"
+          }
+        }
+      }
+    },
+    {
+      "id": "stock-polymer",
+      "name": "Worn stock polymer",
+      "type": "standard",
+      "shaderModel": "MeshStandardMaterial",
+      "baseColor": "#4E4D4B",
+      "color": "#4E4D4B",
+      "albedo": {
+        "dominant": "#4E4D4B",
+        "secondary": ["#706D67", "#32312E"],
+        "samplingNotes": "stock crop palette"
+      },
+      "colorVariation": {
+        "palette": ["#4E4D4B", "#706D67", "#32312E"],
+        "pattern": "contact-worn-mottle",
+        "amplitude": 0.14
+      },
+      "textureResolution": 1024,
+      "textureProjection": {
+        "mode": "triplanar",
+        "repeat": [3, 3],
+        "anisotropy": 8,
+        "texelDensityIntent": "stock-scale wear without UV stretch"
+      },
+      "surfaceFrequencyBands": [
+        {
+          "id": "macro",
+          "frequency": 2,
+          "amplitude": 0.08,
+          "role": "broad tan-charcoal drift"
+        },
+        {
+          "id": "meso",
+          "frequency": 16,
+          "amplitude": 0.1,
+          "role": "contact wear patches"
+        },
+        {
+          "id": "micro",
+          "frequency": 84,
+          "amplitude": 0.03,
+          "role": "mold grain and scratches"
+        }
+      ],
+      "roughness": {
+        "base": 0.68,
+        "variation": 0.11,
+        "map": "stock-polymer_roughness.png",
+        "localResponse": "contact zones smoother"
+      },
+      "metalness": {
+        "base": 0,
+        "variation": 0
+      },
+      "normal": {
+        "pattern": "stock-polymer_normal.png",
+        "strength": 0.25,
+        "scale": 84,
+        "space": "tangent"
+      },
+      "ambientOcclusion": {
+        "map": "stock-polymer_ao.png",
+        "cavityStrength": 0.25,
+        "contactShadowBias": 0.26
+      },
+      "wear": {
+        "edgeWear": 0.14,
+        "scratches": ["upper cheek-rest abrasion"],
+        "chips": []
+      },
+      "dirt": {
+        "amount": 0.05,
+        "cavityBias": 0.6,
+        "color": "#1D1C1A"
+      },
+      "localOverrides": [
+        {
+          "id": "contact-wear",
+          "region": "upper cheek rest and rear edges",
+          "roughness": 0.5,
+          "albedo": "#706D67",
+          "evidenceRefs": ["art/img2threejs/carbine/detail-zones/stock.png"]
+        }
+      ],
+      "referencePbr": {
+        "version": "1",
+        "sourceImage": "art/img2threejs/carbine/detail-zones/stock.png",
+        "extractor": "extract_pbr_evidence.py",
+        "method": "single-image reference inference",
+        "verdict": "pass",
+        "hardLimit": "not inverse rendering truth",
+        "usable": true,
+        "confidence": 0.86,
+        "estimatedFidelity": 0.86,
+        "targetThreshold": 0.7,
+        "maps": {
+          "albedo": {
+            "path": "art/img2threejs/carbine/material-evidence/stock-polymer/stock-polymer_albedo.png",
+            "channel": "albedo"
+          },
+          "roughness": {
+            "path": "art/img2threejs/carbine/material-evidence/stock-polymer/stock-polymer_roughness.png",
+            "channel": "roughness"
+          },
+          "height": {
+            "path": "art/img2threejs/carbine/material-evidence/stock-polymer/stock-polymer_height.png",
+            "channel": "height"
+          },
+          "normal": {
+            "path": "art/img2threejs/carbine/material-evidence/stock-polymer/stock-polymer_normal.png",
+            "channel": "normal"
+          },
+          "ao": {
+            "path": "art/img2threejs/carbine/material-evidence/stock-polymer/stock-polymer_ao.png",
+            "channel": "ao"
+          }
+        }
+      }
+    },
+    {
+      "id": "dark-metal",
+      "name": "Dark steel utility",
+      "qualityTier": "utility",
+      "type": "standard",
+      "shaderModel": "MeshStandardMaterial",
+      "baseColor": "#232426",
+      "color": "#232426",
+      "roughness": {
+        "base": 0.42,
+        "variation": 0.08,
+        "map": "independent-procedural-brush"
+      },
+      "metalness": {
+        "base": 0.9,
+        "variation": 0.04
+      },
+      "normal": {
+        "pattern": "directional-brush",
+        "strength": 0.12
+      },
+      "localOverrides": []
+    },
+    {
+      "id": "tan-polymer",
+      "name": "Muted tan utility",
+      "qualityTier": "utility",
+      "type": "standard",
+      "shaderModel": "MeshStandardMaterial",
+      "baseColor": "#706D67",
+      "color": "#706D67",
+      "roughness": {
+        "base": 0.58,
+        "variation": 0.08,
+        "map": "independent-procedural-mottle"
+      },
+      "metalness": {
+        "base": 0.04,
+        "variation": 0
+      },
+      "normal": {
+        "pattern": "mold-grain",
+        "strength": 0.12
+      },
+      "localOverrides": []
+    },
+    {
+      "id": "rubber",
+      "name": "Butt pad rubber",
+      "qualityTier": "utility",
+      "type": "standard",
+      "shaderModel": "MeshStandardMaterial",
+      "baseColor": "#1A1A1B",
+      "color": "#1A1A1B",
+      "roughness": {
+        "base": 0.94,
+        "variation": 0.04,
+        "map": "independent-rubber-grain"
+      },
+      "metalness": {
+        "base": 0,
+        "variation": 0
+      },
+      "normal": {
+        "pattern": "rubber-grain",
+        "strength": 0.22
+      },
+      "localOverrides": []
+    },
+    {
+      "id": "optic-lens",
+      "name": "Amber optic lens",
+      "qualityTier": "utility",
+      "type": "physical",
+      "shaderModel": "MeshPhysicalMaterial",
+      "baseColor": "#705828",
+      "color": "#705828",
+      "roughness": {
+        "base": 0.12,
+        "variation": 0.02,
+        "map": "independent-clean-lens"
+      },
+      "metalness": {
+        "base": 0,
+        "variation": 0
+      },
+      "clearcoat": 1,
+      "transmission": 0.42,
+      "opacity": 0.72,
+      "transparent": true,
+      "localOverrides": [
+        {
+          "id": "amber-gloss",
+          "roughness": 0.08,
+          "clearcoat": 1
+        }
+      ]
+    },
+    {
+      "id": "indicator-emissive",
+      "name": "Cyan indicator",
+      "qualityTier": "utility",
+      "type": "standard",
+      "shaderModel": "MeshStandardMaterial",
+      "baseColor": "#4BE7F2",
+      "color": "#4BE7F2",
+      "emissive": "#1BBBC8",
+      "emissiveIntensity": 2.2,
+      "roughness": {
+        "base": 0.24,
+        "variation": 0.02,
+        "map": "independent-clean-emitter"
+      },
+      "metalness": {
+        "base": 0,
+        "variation": 0
+      },
+      "localOverrides": [
+        {
+          "id": "cyan-strip",
+          "emissive": "#1BBBC8",
+          "emissiveIntensity": 2.2
+        }
+      ]
+    }
+  ],
+  "repetitionSystems": [
+    {
+      "id": "rail-teeth-system",
+      "parent": "top-rail",
+      "count": 24,
+      "distribution": "linear along receiver and handguard top",
+      "realization": "instanced-mesh",
+      "buildsGeometry": true,
+      "geometry": {
+        "primitive": "box",
+        "size": [0.09, 0.045, 0.24]
+      },
+      "evidenceRefs": ["art/img2threejs/carbine/detail-zones/handguard.png"]
+    },
+    {
+      "id": "fastener-system",
+      "parent": "receiver-assembly",
+      "count": 14,
+      "distribution": "observed receiver and optic attachment points",
+      "realization": "instanced-mesh",
+      "buildsGeometry": true,
+      "geometry": {
+        "primitive": "cylinder",
+        "radius": 0.025
+      },
+      "evidenceRefs": [
+        "art/img2threejs/carbine/detail-zones/receiver.png",
+        "art/img2threejs/carbine/detail-zones/optic.png"
+      ]
+    },
+    {
+      "id": "vent-system",
+      "parent": "handguard-shell",
+      "count": 8,
+      "distribution": "two staggered longitudinal rows",
+      "realization": "geometry-cutout-plus-dark-interior",
+      "buildsGeometry": true,
+      "geometry": {
+        "primitive": "capsule",
+        "size": [0.22, 0.08, 0.04]
+      },
+      "evidenceRefs": ["art/img2threejs/carbine/detail-zones/handguard.png"]
+    }
+  ],
+  "buildPasses": [
+    {
+      "id": "blockout",
+      "goal": "Match macro silhouette and proportions.",
+      "componentRefs": ["root"],
+      "acceptance": [
+        "Silhouette reads correctly without materials.",
+        "Quality contract has named all required macro feature groups before code generation.",
+        "AI vision comparison score meets selfCorrectLoop.visualAcceptance.threshold."
+      ]
+    },
+    {
+      "id": "structural-pass",
+      "goal": "Build the component hierarchy implied by the pre-spec complexity assessment.",
+      "componentRefs": ["root"],
+      "acceptance": [
+        "Macro, meso, and repeated structures meet qualityContract.minimumSpecDepth.",
+        "Parent-child relations, joints, seams, sockets, and contact points are explicit.",
+        "Every attached child appendage/connector has parentSocket, localStart/localEnd, contactType, embedDepth or overlap, and gapTolerance.",
+        "AI vision comparison score meets selfCorrectLoop.visualAcceptance.threshold."
+      ]
+    },
+    {
+      "id": "form-refinement",
+      "goal": "Refine shape, deformation, bevels, tapers, curves, asymmetry, and visible local geometry.",
+      "componentRefs": ["root"],
+      "acceptance": [
+        "Important visible forms are represented in component geometryDescriptor, deformations, localFeatures, or repetitionSystems.",
+        "Endpoint-based child parts are rooted at their attachment sockets and do not visibly float away from parents.",
+        "AI vision comparison score meets selfCorrectLoop.visualAcceptance.threshold."
+      ]
+    },
+    {
+      "id": "material-pass",
+      "goal": "Match material color, roughness, bump, and local variation.",
+      "componentRefs": ["root"],
+      "acceptance": [
+        "Reference-derived albedo palette records dominant, secondary, and accent colors per visible material.",
+        "Each important material defines roughness variation and at least one normal/bump/displacement response.",
+        "Local material overrides, dirt/wear/stains/moss/chips/scratches or equivalent masks are tied to evidenceRefs.",
+        "Thin, transparent, reflective, wet, or fibrous materials document alpha/transmission/clearcoat/metalness/fiber response when relevant.",
+        "Generated preview uses procedural albedo/roughness/bump texture or vertex color variation instead of one flat color.",
+        "Generated preview uses independent PBR maps at 1024px or higher for the quality-first tier.",
+        "If source pixels are available, referencePbr extraction passed at confidence >= 0.7 or the pass is stopped/requesting better references.",
+        "Macro, meso, and micro surface frequency bands are visible at the intended review distance without obvious tiling.",
+        "AI vision comparison score meets selfCorrectLoop.visualAcceptance.threshold."
+      ]
+    },
+    {
+      "id": "surface-pass",
+      "goal": "Add procedural surface locality such as normal/bump/displacement, AO, dirt, stains, chips, grain, moss, scratches, and wear.",
+      "componentRefs": ["root"],
+      "acceptance": [
+        "Every required material feature group has local overrides or surfaceDetail tied to evidenceRefs.",
+        "A grazing-angle close-up proves that normal/height detail breaks highlights naturally and does not read as smooth plastic.",
+        "AI vision comparison score meets selfCorrectLoop.visualAcceptance.threshold."
+      ]
+    },
+    {
+      "id": "lighting-pass",
+      "goal": "Make material and form readable under neutral turntable lighting plus optional reference lighting.",
+      "componentRefs": ["root"],
+      "acceptance": [
+        "lightingFromPhoto identifies key light direction/color/intensity, fill light, rim or environment light, and ambient color.",
+        "Exposure, tone mapping, background color/gradient, shadow softness, and contact shadow behavior are specified.",
+        "Lighting does not hide geometry/material gaps and screenshots can be compared fairly to the reference.",
+        "Neutral, grazing, and reference-matched lighting checks distinguish material errors from lighting errors.",
+        "AI vision comparison score meets selfCorrectLoop.visualAcceptance.threshold."
+      ]
+    },
+    {
+      "id": "interaction-pass",
+      "goal": "Make the model ready for future animation, transformation, physics, or destruction.",
+      "componentRefs": ["root"],
+      "acceptance": [
+        "Macro and movable meso components have stable pivot nodes.",
+        "Sockets, collider proxies, and destruction metadata are present for future runtime actions.",
+        "AI vision comparison score meets selfCorrectLoop.visualAcceptance.threshold."
+      ]
+    },
+    {
+      "id": "optimization-pass",
+      "goal": "Protect runtime performance after visual fidelity is accepted.",
+      "componentRefs": ["root"],
+      "acceptance": [
+        "Triangle count, draw calls, instancing, LOD strategy, and FPS target are documented or verified.",
+        "Repeated detail is instanced or simplified where possible without breaking silhouette/material believability."
+      ]
+    }
+  ],
+  "visualEvidence": [
+    {
+      "timestamp": "2026-08-22T15:25:45.458607+00:00",
+      "passId": "blockout",
+      "estimatedFidelity": 0.22,
+      "aiVisionScore": 0.22,
+      "visualAcceptanceThreshold": 0.7,
+      "layerScores": {
+        "silhouetteProportion": 0.24,
+        "componentStructure": 0.32,
+        "formDetail": 0.2,
+        "materialSurface": 0.05,
+        "lightingCamera": 0.1
+      },
+      "featureReviews": [
+        {
+          "id": "carbine-silhouette-and-negative-space",
+          "score": 0.24,
+          "visible": true,
+          "notes": "全長方向の横長比率が失われ、stock、receiver、handguardが同寸の箱へ潰れている。magazineとgripの配置も参照と不一致。"
+        },
+        {
+          "id": "receiver-handguard-stock-assembly",
+          "score": 0.32,
+          "visible": true,
+          "notes": "macro部品は存在するが、dimensionsがtransform.scaleへ反映されず、親子の世界／ローカル座標も混在している。"
+        },
+        {
+          "id": "gunmetal-polymer-material-separation",
+          "score": 0.05,
+          "visible": true,
+          "notes": "レビュー用sceneへ返却light groupを追加していなかったため黒一色。材質そのものの判定は不能。"
+        }
+      ],
+      "referenceScreenshot": "C:\\Users\\UserName\\Documents\\fps-test\\art\\references\\fps-carbine.png",
+      "renderScreenshot": "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\render-reference.png",
+      "comparisonImage": "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\comparison-blockout.png",
+      "cameraView": "left-three-quarter",
+      "notes": "2D gateとagent visionの両方で不合格",
+      "aiVisionNotes": "参照は横長で負形状が明確だが、renderは箱の集合。原因はspecのdimensionsとtransform.scaleの不一致、root/childの重複、world/local座標混在。黒一色はreview harnessのlight未追加。"
+    },
+    {
+      "timestamp": "2026-08-22T16:01:42.051245+00:00",
+      "passId": "blockout",
+      "estimatedFidelity": 0.71,
+      "aiVisionScore": 0.71,
+      "visualAcceptanceThreshold": 0.7,
+      "layerScores": {
+        "silhouetteProportion": 0.68,
+        "componentStructure": 0.76,
+        "formDetail": 0.7,
+        "materialSurface": 0.71,
+        "lightingCamera": 0.74
+      },
+      "featureReviews": [
+        {
+          "id": "carbine-silhouette-and-negative-space",
+          "score": 0.68,
+          "visible": true,
+          "notes": "横長のcarbine輪郭、独立stock、下方grip/magazine、露出barrelを回復。stock外形とoptic高さは参照より単純。"
+        },
+        {
+          "id": "receiver-handguard-stock-assembly",
+          "score": 0.76,
+          "visible": true,
+          "notes": "receiver、実開口handguard、17歯rail、buffer tube、貫通stock、muzzle brakeが接続。右側面内部は単一画像からの近似。"
+        },
+        {
+          "id": "gunmetal-polymer-material-separation",
+          "score": 0.71,
+          "visible": true,
+          "notes": "gunmetal、polymer、rubber、tan、amber lens、cyan emissiveを独立。参考画像の局所傷位置と完全一致はしない。"
+        }
+      ],
+      "referenceScreenshot": "C:\\Users\\UserName\\Documents\\fps-test\\art\\references\\fps-carbine.png",
+      "renderScreenshot": "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\render-reference.png",
+      "comparisonImage": "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\comparison-final.png",
+      "cameraView": "left-three-quarter",
+      "notes": "turntableはallow-holesでpass。Tier1 photo alignmentはhard failのためcontinueではなくstopを選択。",
+      "aiVisionNotes": "2D silhouetteの完全一致ではなく、ゲーム内で読める独立部品、実開口、非平面4方向、PBR分離を達成。single-view hidden sideと局所wearは近似として明示する。"
+    }
+  ],
+  "reviewHistory": [
+    {
+      "timestamp": "2026-08-22T15:25:45.458607+00:00",
+      "passId": "blockout",
+      "estimatedFidelity": 0.22,
+      "aiVisionScore": 0.22,
+      "visualAcceptanceThreshold": 0.7,
+      "layerScores": {
+        "silhouetteProportion": 0.24,
+        "componentStructure": 0.32,
+        "formDetail": 0.2,
+        "materialSurface": 0.05,
+        "lightingCamera": 0.1
+      },
+      "featureReviews": [
+        {
+          "id": "carbine-silhouette-and-negative-space",
+          "score": 0.24,
+          "visible": true,
+          "notes": "全長方向の横長比率が失われ、stock、receiver、handguardが同寸の箱へ潰れている。magazineとgripの配置も参照と不一致。"
+        },
+        {
+          "id": "receiver-handguard-stock-assembly",
+          "score": 0.32,
+          "visible": true,
+          "notes": "macro部品は存在するが、dimensionsがtransform.scaleへ反映されず、親子の世界／ローカル座標も混在している。"
+        },
+        {
+          "id": "gunmetal-polymer-material-separation",
+          "score": 0.05,
+          "visible": true,
+          "notes": "レビュー用sceneへ返却light groupを追加していなかったため黒一色。材質そのものの判定は不能。"
+        }
+      ],
+      "action": "refine-spec",
+      "summary": "macro部品の寸法と親子座標が生成geometryへ反映されず、カービン輪郭になっていない",
+      "matched": ["全macro部品が存在", "4方向で体積が完全には潰れない"],
+      "mismatches": [
+        "silhouette IoU 0.241",
+        "aspect ratio delta 0.507",
+        "macro部品が同寸箱",
+        "review light group未追加で黒一色"
+      ],
+      "specFixes": [
+        "rootを非表示containerへ変更",
+        "receiver macroを独立追加",
+        "macro寸法をtransform.scaleへ反映",
+        "親子local座標を修正"
+      ],
+      "codeFixes": ["review sceneへlight groupとenvironmentを追加"],
+      "evidence": [],
+      "visualEvidence": {
+        "referenceScreenshot": "C:\\Users\\UserName\\Documents\\fps-test\\art\\references\\fps-carbine.png",
+        "renderScreenshot": "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\render-reference.png",
+        "comparisonImage": "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\comparison-blockout.png",
+        "cameraView": "left-three-quarter",
+        "notes": "2D gateとagent visionの両方で不合格",
+        "aiVisionNotes": "参照は横長で負形状が明確だが、renderは箱の集合。原因はspecのdimensionsとtransform.scaleの不一致、root/childの重複、world/local座標混在。黒一色はreview harnessのlight未追加。"
+      }
+    },
+    {
+      "timestamp": "2026-08-22T16:01:42.051245+00:00",
+      "passId": "blockout",
+      "estimatedFidelity": 0.71,
+      "aiVisionScore": 0.71,
+      "visualAcceptanceThreshold": 0.7,
+      "layerScores": {
+        "silhouetteProportion": 0.68,
+        "componentStructure": 0.76,
+        "formDetail": 0.7,
+        "materialSurface": 0.71,
+        "lightingCamera": 0.74
+      },
+      "featureReviews": [
+        {
+          "id": "carbine-silhouette-and-negative-space",
+          "score": 0.68,
+          "visible": true,
+          "notes": "横長のcarbine輪郭、独立stock、下方grip/magazine、露出barrelを回復。stock外形とoptic高さは参照より単純。"
+        },
+        {
+          "id": "receiver-handguard-stock-assembly",
+          "score": 0.76,
+          "visible": true,
+          "notes": "receiver、実開口handguard、17歯rail、buffer tube、貫通stock、muzzle brakeが接続。右側面内部は単一画像からの近似。"
+        },
+        {
+          "id": "gunmetal-polymer-material-separation",
+          "score": 0.71,
+          "visible": true,
+          "notes": "gunmetal、polymer、rubber、tan、amber lens、cyan emissiveを独立。参考画像の局所傷位置と完全一致はしない。"
+        }
+      ],
+      "action": "stop",
+      "summary": "リアルタイムFPS向けの参照ベース手続きモデルとして採用し、単一画像との完全一致追跡は停止",
+      "matched": [
+        "横長carbine輪郭",
+        "実開口handguard",
+        "rail/optic/stock/magazine/muzzle",
+        "独立PBR材質",
+        "4方向で非退化",
+        "action-ready runtime nodes"
+      ],
+      "mismatches": [
+        "stock外形は参照より平面的",
+        "optic hoodが大きい",
+        "grip/magazine接続を簡略化",
+        "参照の傷位置は一致しない",
+        "photo-vs-procedural Tier1 IoUは未達"
+      ],
+      "specFixes": ["追加の右側面/下面参照が得られた場合のみhidden geometry confidenceを更新"],
+      "codeFixes": ["将来のhero fidelityではstock loftとoptic hoodを連続断面へ細分化"],
+      "evidence": [],
+      "mapStrippedRender": "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\render-map-stripped.png",
+      "reviewViewpoints": ["left-three-quarter", "opposite-three-quarter", "top", "muzzle"],
+      "visualEvidence": {
+        "referenceScreenshot": "C:\\Users\\UserName\\Documents\\fps-test\\art\\references\\fps-carbine.png",
+        "renderScreenshot": "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\render-reference.png",
+        "comparisonImage": "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\comparison-final.png",
+        "cameraView": "left-three-quarter",
+        "notes": "turntableはallow-holesでpass。Tier1 photo alignmentはhard failのためcontinueではなくstopを選択。",
+        "aiVisionNotes": "2D silhouetteの完全一致ではなく、ゲーム内で読める独立部品、実開口、非平面4方向、PBR分離を達成。single-view hidden sideと局所wearは近似として明示する。"
+      }
+    }
+  ],
+  "lodPlan": [
+    {
+      "tier": "near",
+      "distance": 0,
+      "strategy": "full component tree and material layers"
+    },
+    {
+      "tier": "far",
+      "distance": 30,
+      "strategy": "merge static components and reduce local feature geometry"
+    }
+  ],
+  "performanceBudget": {
+    "qualityPriority": "reference-fidelity",
+    "targetTriangles": 20000,
+    "maxDrawCalls": 45,
+    "textureSize": 1024,
+    "fpsTarget": 60,
+    "optimizationPolicy": "Reach accepted visual fidelity first, then optimize without removing reference-critical geometry or surface layers."
+  },
+  "lightingFromPhoto": [
+    {
+      "id": "key",
+      "type": "directional",
+      "direction": [-0.45, 0.72, 0.52],
+      "color": "#FFF2E4",
+      "intensity": 2.4,
+      "shadowSoftness": "medium-soft"
+    },
+    {
+      "id": "fill",
+      "type": "hemisphere",
+      "color": "#DCE9FF",
+      "groundColor": "#665F57",
+      "intensity": 0.75
+    },
+    {
+      "id": "rim-environment",
+      "type": "directional-plus-environment",
+      "direction": [0.65, 0.28, -0.6],
+      "color": "#D8ECFF",
+      "intensity": 1.1,
+      "exposure": 1.0,
+      "toneMapping": "ACESFilmic",
+      "background": "neutral light-gray studio",
+      "contactShadow": "soft ground/contact AO under assemblies"
+    }
+  ],
+  "proceduralStrategy": [
+    "Block out macro silhouette first.",
+    "Add component hierarchy and joints.",
+    "Create stable pivot groups, sockets, collider proxies, and destruction metadata before visual polish.",
+    "Refine forms with bevels, tapers, bends, and procedural noise.",
+    "Run reference PBR extraction for important source-image materials and stop when confidence is below the target threshold.",
+    "Add material variation before adding expensive micro-geometry."
+  ],
+  "animationAnchors": [
+    "root pivot node supports whole-object translation, rotation, scale, and visibility changes",
+    "component pivot groups support later local transforms without rebuilding geometry"
+  ],
+  "destructionAnchors": [
+    "actionProfile.destruction.fractureGroup marks detachable or breakable component sets",
+    "component seams and sockets define plausible break points instead of random explosions"
+  ],
+  "risks": [],
+  "localSpecSearch": {
+    "collection": "core_3d",
+    "query": "FPS Carbine modular carbine receiver handguard PBR browser FPS weapon socket detachable magazine",
+    "index": {
+      "status": "rebuilt",
+      "reason": "missing",
+      "fingerprint": "6857e5ab528b42ac12f4f411f862610a0bffce8e47aee3610a7603c318072fe8"
+    },
+    "matches": [
+      {
+        "record_id": "core.socket-pivot",
+        "file_path": "grimoire/glossary/3d_vocabulary.md",
+        "heading": "Animation, Physics, And Destruction",
+        "key_path": null,
+        "score": 5.511200483252,
+        "snippets": [
+          "A pivot is a local rotation origin; a socket is an attachment point for a child part. In a runtime hierarchy, a socket Object3D is a child of the relevant pivot."
+        ],
+        "source_refs": [
+          {
+            "path": "grimoire/glossary/3d_vocabulary.md",
+            "heading": "Animation, Physics, And Destruction",
+            "key_path": null
+          },
+          {
+            "path": "grimoire/readiness/action_rigging.md",
+            "heading": "Hierarchy Pattern",
+            "key_path": null
+          }
+        ],
+        "evidence_refs": [
+          {
+            "kind": "source",
+            "ref": "grimoire/readiness/action_rigging.md"
+          },
+          {
+            "kind": "notebooklm-research",
+            "ref": "notebooklm:4b03c2f9-8393-411f-b5b4-039ab9532843",
+            "note": "Validated generic schema vocabulary; numeric claims remain backed by local source_refs."
+          }
+        ]
+      },
+      {
+        "record_id": "core.attachment-contract",
+        "file_path": "grimoire/readiness/joint_attachment.md",
+        "heading": "Attachment Contract",
+        "key_path": null,
+        "score": 4.774467103191,
+        "snippets": [
+          "An attached child records its parent, parent socket, local start and end, contact type, and embed depth or overlap where applicable."
+        ],
+        "source_refs": [
+          {
+            "path": "grimoire/readiness/joint_attachment.md",
+            "heading": "Attachment Contract",
+            "key_path": null
+          }
+        ],
+        "evidence_refs": [
+          {
+            "kind": "source",
+            "ref": "grimoire/readiness/joint_attachment.md"
+          },
+          {
+            "kind": "notebooklm-research",
+            "ref": "notebooklm:4b03c2f9-8393-411f-b5b4-039ab9532843",
+            "note": "Validated generic schema vocabulary; numeric claims remain backed by local source_refs."
+          }
+        ]
+      },
+      {
+        "record_id": "core.pbr-hand-painted-vs-pbr-texture",
+        "file_path": "docs/raw/img2threejs-skill-dataset.json",
+        "heading": null,
+        "key_path": "categories.material_pbr[12]",
+        "score": 4.661903223664,
+        "snippets": [
+          "... baked directly into color (static, stylized) from textures that respond dynamically to scene lighting via separate PBR channels. Phân biệt kết cấu có ánh sáng được nướng trực tiếp vào màu (tĩnh, cách điệu) với kết cấu phản hồi động ..."
+        ],
+        "source_refs": [
+          {
+            "path": "docs/raw/img2threejs-skill-dataset.json",
+            "heading": null,
+            "key_path": "categories.material_pbr[12]"
+          }
+        ],
+        "evidence_refs": [
+          {
+            "kind": "source",
+            "ref": "docs/raw/img2threejs-skill-dataset.json",
+            "note": "img2threejs NotebookLM research distillation"
+          }
+        ]
+      }
+    ]
+  },
+  "tier1Results": [
+    {
+      "passed": false,
+      "checks": {
+        "silhouetteIoU": 0.2411,
+        "aspectRatioDelta": 0.5068,
+        "scaleDelta": 0.4329,
+        "bilateralSymmetryError": 0.1002,
+        "colorDelta": {
+          "checked": 21,
+          "maxDeltaE": 32.12,
+          "perComponent": [
+            {
+              "componentId": null,
+              "deltaE": 16.84
+            },
+            {
+              "componentId": null,
+              "deltaE": 13.44
+            },
+            {
+              "componentId": null,
+              "deltaE": 16.84
+            },
+            {
+              "componentId": null,
+              "deltaE": 14.25
+            },
+            {
+              "componentId": null,
+              "deltaE": 19.94
+            },
+            {
+              "componentId": null,
+              "deltaE": 18.47
+            },
+            {
+              "componentId": null,
+              "deltaE": 21.36
+            },
+            {
+              "componentId": null,
+              "deltaE": 3.76
+            },
+            {
+              "componentId": null,
+              "deltaE": 9.33
+            },
+            {
+              "componentId": null,
+              "deltaE": 14.25
+            },
+            {
+              "componentId": null,
+              "deltaE": 16.84
+            },
+            {
+              "componentId": null,
+              "deltaE": 20.36
+            },
+            {
+              "componentId": null,
+              "deltaE": 23.06
+            },
+            {
+              "componentId": null,
+              "deltaE": 16.84
+            },
+            {
+              "componentId": null,
+              "deltaE": 14.25
+            },
+            {
+              "componentId": null,
+              "deltaE": 14.25
+            },
+            {
+              "componentId": null,
+              "deltaE": 17.49
+            },
+            {
+              "componentId": null,
+              "deltaE": 18.47
+            },
+            {
+              "componentId": null,
+              "deltaE": 3.76
+            },
+            {
+              "componentId": null,
+              "deltaE": 21.36
+            },
+            {
+              "componentId": null,
+              "deltaE": 32.12
+            }
+          ],
+          "gated": false
+        }
+      },
+      "failures": [
+        "silhouette IoU 0.241 is below threshold 0.85",
+        "aspect-ratio delta 0.507 exceeds threshold 0.05",
+        "scale delta 0.433 exceeds threshold 0.08",
+        "blockout requires --map-stripped-render evidence"
+      ],
+      "maskWarnings": [],
+      "renderHash": "e1abd9757e67673d",
+      "passId": "blockout"
+    },
+    {
+      "passed": false,
+      "checks": {
+        "silhouetteIoU": 0.2965,
+        "aspectRatioDelta": 0.0529,
+        "scaleDelta": 0.2267,
+        "bilateralSymmetryError": 0.1873,
+        "colorDelta": {
+          "checked": 22,
+          "maxDeltaE": 25.21,
+          "perComponent": [
+            {
+              "componentId": null,
+              "deltaE": 7.15
+            },
+            {
+              "componentId": null,
+              "deltaE": 7.15
+            },
+            {
+              "componentId": null,
+              "deltaE": 10.26
+            },
+            {
+              "componentId": null,
+              "deltaE": 7.15
+            },
+            {
+              "componentId": null,
+              "deltaE": 8.93
+            },
+            {
+              "componentId": null,
+              "deltaE": 4.03
+            },
+            {
+              "componentId": null,
+              "deltaE": 4.39
+            },
+            {
+              "componentId": null,
+              "deltaE": 3.35
+            },
+            {
+              "componentId": null,
+              "deltaE": 4.73
+            },
+            {
+              "componentId": null,
+              "deltaE": 5.23
+            },
+            {
+              "componentId": null,
+              "deltaE": 8.93
+            },
+            {
+              "componentId": null,
+              "deltaE": 7.15
+            },
+            {
+              "componentId": null,
+              "deltaE": 3.97
+            },
+            {
+              "componentId": null,
+              "deltaE": 2.34
+            },
+            {
+              "componentId": null,
+              "deltaE": 7.15
+            },
+            {
+              "componentId": null,
+              "deltaE": 8.93
+            },
+            {
+              "componentId": null,
+              "deltaE": 8.93
+            },
+            {
+              "componentId": null,
+              "deltaE": 5.64
+            },
+            {
+              "componentId": null,
+              "deltaE": 4.39
+            },
+            {
+              "componentId": null,
+              "deltaE": 4.73
+            },
+            {
+              "componentId": null,
+              "deltaE": 3.35
+            },
+            {
+              "componentId": null,
+              "deltaE": 25.21
+            }
+          ],
+          "gated": false
+        }
+      },
+      "failures": [
+        "silhouette IoU 0.297 is below threshold 0.85",
+        "aspect-ratio delta 0.053 exceeds threshold 0.05",
+        "scale delta 0.227 exceeds threshold 0.08"
+      ],
+      "maskWarnings": [],
+      "renderHash": "089cd162b0269d13",
+      "passId": "blockout",
+      "mapStrippedRender": "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\render-map-stripped.png"
+    }
+  ]
+}

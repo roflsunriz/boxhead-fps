@@ -4,6 +4,7 @@ import { bots, damageBot } from "./enemies";
 import { refreshHealth, setInventory } from "./ui";
 import { leaveBlastMark } from "./persistent-effects";
 import { camera, randomWalkablePoint, raycastEnvironment, scene } from "./world";
+import { createGrenadeModel, createPickupModel } from "./models/game-models";
 import type { PickupKind, PlayerState } from "./types";
 
 interface WorldPickup {
@@ -13,7 +14,7 @@ interface WorldPickup {
 }
 
 interface GrenadeProjectile {
-  mesh: THREE.Mesh;
+  mesh: THREE.Group;
   vel: THREE.Vector3;
   fuse: number;
   lastContact: { point: THREE.Vector3; normal: THREE.Vector3 } | null;
@@ -51,43 +52,8 @@ function nearestBlastSurface(position: THREE.Vector3): { point: THREE.Vector3; n
 }
 
 function pickupModel(kind: PickupKind): THREE.Group {
-  const group = new THREE.Group();
-  if (kind === "shield") {
-    const mat = new THREE.MeshStandardMaterial({
-      color: 0x258dff,
-      emissive: 0x073eaa,
-      emissiveIntensity: 1.5,
-    });
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.65, 12), mat);
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(0.23, 0.035, 6, 14),
-      new THREE.MeshBasicMaterial({ color: 0x98edff })
-    );
-    ring.rotation.x = Math.PI / 2;
-    group.add(body, ring);
-  } else if (kind === "health") {
-    const mat = new THREE.MeshStandardMaterial({
-      color: 0xf4f4f4,
-      emissive: 0x224422,
-      emissiveIntensity: 0.4,
-    });
-    const box = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.45, 0.5), mat);
-    const crossMat = new THREE.MeshBasicMaterial({ color: 0xff3344 });
-    const h = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, 0.52), crossMat);
-    const v = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.38, 0.52), crossMat);
-    group.add(box, h, v);
-  } else {
-    const body = new THREE.Mesh(
-      new THREE.SphereGeometry(0.28, 12, 10),
-      new THREE.MeshStandardMaterial({ color: 0x52623b, roughness: 0.8 })
-    );
-    const cap = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.08, 0.1, 0.16, 8),
-      new THREE.MeshStandardMaterial({ color: 0x252a20, metalness: 0.5 })
-    );
-    cap.position.y = 0.31;
-    group.add(body, cap);
-  }
+  const group = createPickupModel(kind);
+  group.scale.setScalar(kind === "health" ? 0.9 : kind === "shield" ? 0.82 : 1.05);
   group.position.copy(randomWalkablePoint());
   scene.add(group);
   return group;
@@ -160,10 +126,8 @@ function explodeGrenade(grenade: GrenadeProjectile): void {
 export function throwPlayerGrenade(player: PlayerState): boolean {
   if (player.grenades <= 0) return false;
   const dir = camera.getWorldDirection(new THREE.Vector3());
-  const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(0.18, 10, 8),
-    new THREE.MeshStandardMaterial({ color: 0x4b5b35, roughness: 0.75, metalness: 0.2 })
-  );
+  const mesh = createGrenadeModel();
+  mesh.scale.setScalar(0.72);
   mesh.position.copy(camera.getWorldPosition(new THREE.Vector3())).addScaledVector(dir, 0.8);
   scene.add(mesh);
   grenadesInFlight.push({

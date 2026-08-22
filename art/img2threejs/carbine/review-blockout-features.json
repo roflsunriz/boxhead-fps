@@ -1,0 +1,20 @@
+[
+  {
+    "id": "carbine-silhouette-and-negative-space",
+    "score": 0.24,
+    "visible": true,
+    "notes": "全長方向の横長比率が失われ、stock、receiver、handguardが同寸の箱へ潰れている。magazineとgripの配置も参照と不一致。"
+  },
+  {
+    "id": "receiver-handguard-stock-assembly",
+    "score": 0.32,
+    "visible": true,
+    "notes": "macro部品は存在するが、dimensionsがtransform.scaleへ反映されず、親子の世界／ローカル座標も混在している。"
+  },
+  {
+    "id": "gunmetal-polymer-material-separation",
+    "score": 0.05,
+    "visible": true,
+    "notes": "レビュー用sceneへ返却light groupを追加していなかったため黒一色。材質そのものの判定は不能。"
+  }
+]

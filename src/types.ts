@@ -119,10 +119,12 @@ export interface BotVisual {
   locomotion: "idle" | "walk" | "sprint";
   weapon: {
     group: THREE.Group;
+    muzzle: THREE.Object3D;
     muzzleFlash: THREE.PointLight;
     muzzleBurst: THREE.Mesh<THREE.OctahedronGeometry, THREE.MeshBasicMaterial>;
   };
   fireFlashT: number;
+  fireFlashLastTime: number;
   shotCount: number;
   allyOutline: THREE.Mesh[];
 }
@@ -182,6 +184,7 @@ export interface GameDebugApi {
     markers: Array<{ team: TeamId; x: number; y: number; clamped: boolean }>;
   };
   readonly persistentEffects: PersistentEffectsSummary;
+  readonly renderInfo: { calls: number; triangles: number; textures: number; geometries: number };
   setWeather(i: number): void;
   setKillTarget(n: number): void;
   tryShoot(): void;
@@ -193,6 +196,7 @@ export interface GameDebugApi {
   throwGrenade(): void;
   damageEnemy(en: Enemy, dmg: number): void;
   debugPopulatePersistentEffects(kind: PersistentEffectKind, count: number): void;
+  debugLeaveBlastMark(x: number, z: number): void;
   debugEnvSummary(): Array<{ geo: string; x: number; y: number; z: number; visible: boolean }>;
   debugCoverSummary(): {
     variant: EnvVariant;

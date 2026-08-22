@@ -48,45 +48,90 @@ const magazineBodyMaterial = new THREE.MeshStandardMaterial({
 const magazineBandMaterial = new THREE.MeshStandardMaterial({ color: 0xff5533, roughness: 0.6 });
 const surfaceForward = new THREE.Vector3(0, 0, 1);
 
-function createCraterBowlGeometry(): THREE.BufferGeometry {
-  const rings = 6;
-  const segments = 32;
-  const positions: number[] = [0, 0, 0.012];
+function createCraterReliefGeometry(): THREE.BufferGeometry {
+  const rings = 8;
+  const segments = 48;
+  const positions: number[] = [];
+  const colors: number[] = [];
   const indices: number[] = [];
-  for (let ring = 1; ring <= rings; ring++) {
+  for (let ring = 0; ring <= rings; ring++) {
     const t = ring / rings;
-    const radius = t * 0.9;
-    const depth = 0.012 + t * t * 0.045;
     for (let segment = 0; segment < segments; segment++) {
       const angle = (segment / segments) * Math.PI * 2;
-      const uneven = 1 + Math.sin(segment * 5.7) * 0.035 + Math.cos(segment * 2.3) * 0.025;
-      positions.push(Math.cos(angle) * radius * uneven, Math.sin(angle) * radius * uneven, depth);
+      const irregularity =
+        1 + Math.sin(segment * 5.37 + ring * 0.83) * 0.045 + Math.cos(segment * 2.11) * 0.03;
+      const radius = (0.68 + t * 0.28) * irregularity;
+      const brokenRim =
+        Math.pow(Math.max(0, (t - 0.48) / 0.52), 1.35) *
+        (0.008 + Math.max(0, Math.sin(segment * 1.73)) * 0.024);
+      const relief = 0.003 + brokenRim;
+      positions.push(Math.cos(angle) * radius, Math.sin(angle) * radius, relief);
+      colors.push(0.018 + t * 0.035, 0.013 + t * 0.024, 0.01 + t * 0.018);
     }
   }
-  for (let segment = 0; segment < segments; segment++) {
-    indices.push(0, 1 + segment, 1 + ((segment + 1) % segments));
-  }
-  for (let ring = 1; ring < rings; ring++) {
-    const innerStart = 1 + (ring - 1) * segments;
-    const outerStart = innerStart + segments;
+  for (let ring = 0; ring < rings; ring++) {
+    const inner = ring * segments;
+    const outer = inner + segments;
     for (let segment = 0; segment < segments; segment++) {
       const next = (segment + 1) % segments;
-      indices.push(innerStart + segment, outerStart + segment, outerStart + next);
-      indices.push(innerStart + segment, outerStart + next, innerStart + next);
+      indices.push(
+        inner + segment,
+        outer + segment,
+        outer + next,
+        inner + segment,
+        outer + next,
+        inner + next
+      );
     }
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
   return geometry;
 }
 
-const craterBowlGeometry = createCraterBowlGeometry();
-const craterScorchGeometry = new THREE.CircleGeometry(1.25, 36);
-const craterRimGeometry = new THREE.TorusGeometry(0.88, 0.07, 6, 32);
-const craterBowlMaterial = new THREE.MeshStandardMaterial({
-  color: 0x211713,
+function createScorchTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 256;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("2D canvas context unavailable");
+  const image = context.createImageData(256, 256);
+  let state = 0x0b1a57;
+  const random = (): number => {
+    state = Math.imul(state ^ (state >>> 15), 2246822519);
+    return (state >>> 0) / 4294967296;
+  };
+  for (let y = 0; y < 256; y++) {
+    for (let x = 0; x < 256; x++) {
+      const dx = (x - 127.5) / 127.5;
+      const dy = (y - 127.5) / 127.5;
+      const angle = Math.atan2(dy, dx);
+      const distortedRadius =
+        Math.hypot(dx, dy) * (1 + Math.sin(angle * 7) * 0.07 + Math.cos(angle * 11) * 0.035);
+      const soot = THREE.MathUtils.smoothstep(1 - distortedRadius, 0, 0.92);
+      const centerAsh = Math.max(0, 1 - distortedRadius * 1.8);
+      const noise = random() * 0.24;
+      const alpha = Math.max(0, Math.min(1, soot * (0.72 + noise) + centerAsh * 0.18));
+      const offset = (y * 256 + x) * 4;
+      image.data[offset] = 24 + centerAsh * 18;
+      image.data[offset + 1] = 20 + centerAsh * 13;
+      image.data[offset + 2] = 17 + centerAsh * 9;
+      image.data[offset + 3] = alpha * 235;
+    }
+  }
+  context.putImageData(image, 0, 0);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+const craterReliefGeometry = createCraterReliefGeometry();
+const craterScorchGeometry = new THREE.CircleGeometry(1.22, 48);
+const craterRubbleGeometry = new THREE.DodecahedronGeometry(0.08, 0);
+const craterReliefMaterial = new THREE.MeshStandardMaterial({
+  vertexColors: true,
   roughness: 1,
   metalness: 0,
   side: THREE.DoubleSide,
@@ -95,16 +140,16 @@ const craterBowlMaterial = new THREE.MeshStandardMaterial({
   polygonOffsetUnits: -3,
 });
 const craterScorchMaterial = new THREE.MeshBasicMaterial({
-  color: 0x080706,
+  map: createScorchTexture(),
   transparent: true,
-  opacity: 0.62,
+  opacity: 0.88,
   depthWrite: false,
   polygonOffset: true,
-  polygonOffsetFactor: -2,
-  polygonOffsetUnits: -2,
+  polygonOffsetFactor: -4,
+  polygonOffsetUnits: -4,
   side: THREE.DoubleSide,
 });
-const craterRimMaterial = new THREE.MeshStandardMaterial({ color: 0x30231b, roughness: 1 });
+const craterRubbleMaterial = new THREE.MeshStandardMaterial({ color: 0x4a3b30, roughness: 1 });
 
 function removeEffect(record: EffectRecord): void {
   scene.remove(record.object);
@@ -204,25 +249,41 @@ export function leaveBotCorpse(source: THREE.Group): void {
   retainEffect(corpses, record, PERSISTENT_EFFECT_LIMITS.corpses);
 }
 
-export function leaveBlastMark(point: THREE.Vector3, normal: THREE.Vector3): void {
+export function createBlastMarkModel(): THREE.Group {
   const group = new THREE.Group();
+  group.name = "blast-mark";
   const scorch = new THREE.Mesh(craterScorchGeometry, craterScorchMaterial);
-  const bowl = new THREE.Mesh(craterBowlGeometry, craterBowlMaterial);
-  const rim = new THREE.Mesh(craterRimGeometry, craterRimMaterial);
-  scorch.position.z = 0.004;
-  bowl.position.z = 0.008;
-  rim.position.z = 0.04;
-  bowl.receiveShadow = rim.receiveShadow = true;
-  group.add(scorch, bowl, rim);
+  const relief = new THREE.Mesh(craterReliefGeometry, craterReliefMaterial);
+  scorch.position.z = 0.006;
+  relief.position.z = 0.009;
+  relief.receiveShadow = true;
+  group.add(scorch, relief);
+  for (let index = 0; index < 11; index++) {
+    if (index % 4 === 1) continue;
+    const angle = (index / 11) * Math.PI * 2;
+    const rubble = new THREE.Mesh(craterRubbleGeometry, craterRubbleMaterial);
+    const radius = 0.79 + Math.sin(index * 2.4) * 0.09;
+    rubble.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0.035 + (index % 3) * 0.012);
+    rubble.scale.set(0.65 + (index % 2) * 0.35, 0.45 + (index % 3) * 0.16, 0.25 + (index % 2) * 0.18);
+    rubble.rotation.set(index * 0.4, index * 0.8, angle);
+    rubble.castShadow = rubble.receiveShadow = true;
+    rubble.userData.explodeWithParent = true;
+    group.add(rubble);
+  }
+  group.traverse((object) => {
+    object.userData.ignoreRaycast = true;
+  });
+  return group;
+}
+
+export function leaveBlastMark(point: THREE.Vector3, normal: THREE.Vector3): void {
+  const group = createBlastMarkModel();
   const worldNormal = normal.clone().normalize();
   group.position.copy(point).addScaledVector(worldNormal, 0.008);
   group.quaternion.setFromUnitVectors(surfaceForward, worldNormal);
   group.rotateZ(Math.random() * Math.PI * 2);
   const scale = 0.88 + Math.random() * 0.24;
   group.scale.set(scale, scale * (0.9 + Math.random() * 0.16), scale);
-  group.traverse((object) => {
-    object.userData.ignoreRaycast = true;
-  });
   const record: EffectRecord = { id: nextEffectId++, object: group };
   group.userData.persistentEffectId = record.id;
   retainEffect(blastMarks, record, PERSISTENT_EFFECT_LIMITS.blastMarks);

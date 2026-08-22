@@ -1,11 +1,13 @@
 import * as THREE from "three";
 import {
-  facadeTexture,
+  facadeTextureSet,
   makeCanvasTexture,
-  sandTexture,
-  concreteTexture,
-  concreteWallTexture,
+  sandTextureSet,
+  concreteTextureSet,
+  concreteWallTextureSet,
+  type PbrTextureSet,
 } from "./textures";
+import { createPalmTreeModel, createStarfishModel } from "./models/game-models";
 import { mulberry32 } from "./random";
 import { createBeachWaveSystem } from "./beach-waves";
 import type { BeachWaveSummary, BeachWaveSystem } from "./beach-waves";
@@ -21,8 +23,14 @@ export const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 
 export const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const gl = renderer.getContext();
+const rendererInfoExtension = gl.getExtension("WEBGL_debug_renderer_info");
+const rendererName = rendererInfoExtension
+  ? String(gl.getParameter(rendererInfoExtension.UNMASKED_RENDERER_WEBGL))
+  : "";
+const supportsRealtimeShadows = !/swiftshader|llvmpipe|software/i.test(rendererName);
+renderer.shadowMap.enabled = supportsRealtimeShadows;
+renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 document.body.appendChild(renderer.domElement);
 
@@ -36,7 +44,7 @@ export const hemi = new THREE.HemisphereLight(0xcfe8ff, 0x3a4a35, 1.1);
 scene.add(hemi);
 export const sun = new THREE.DirectionalLight(0xfff2d8, 1.6);
 sun.position.set(30, 60, 20);
-sun.castShadow = true;
+sun.castShadow = supportsRealtimeShadows;
 sun.shadow.mapSize.set(2048, 2048);
 sun.shadow.camera.left = -70;
 sun.shadow.camera.right = 70;
@@ -45,13 +53,23 @@ sun.shadow.camera.bottom = -70;
 scene.add(sun);
 
 const groundTextures: Partial<Record<EnvVariant, THREE.Texture>> = {};
+const groundPbrTextures: Partial<Record<EnvVariant, PbrTextureSet>> = {};
+function getGroundPbrTextures(variant: EnvVariant): PbrTextureSet | undefined {
+  if (variant === "city") return undefined;
+  let textures = groundPbrTextures[variant];
+  if (!textures) {
+    textures = variant === "beach" ? sandTextureSet() : concreteTextureSet();
+    groundPbrTextures[variant] = textures;
+  }
+  return textures;
+}
 function getGroundTexture(variant: EnvVariant): THREE.Texture {
   let tex = groundTextures[variant];
   if (tex) return tex;
-  if (variant === "beach") {
-    tex = sandTexture();
-  } else if (variant === "underground") {
-    tex = concreteTexture();
+  if (variant !== "city") {
+    const textures = getGroundPbrTextures(variant);
+    if (!textures) throw new Error(`Missing ground textures for ${variant}`);
+    tex = textures.map;
   } else {
     tex = makeCanvasTexture(
       256,
@@ -121,8 +139,22 @@ function buildCityEnv(): EnvBuild {
   const trees: TreeCollider[] = [];
 
   const roofMat = new THREE.MeshStandardMaterial({ color: 0x3a3e44, roughness: 0.95 });
+  const facadeMaterials = new Map<string, THREE.MeshStandardMaterial>();
   function wallMat(tw: number, th: number, base: string): THREE.MeshStandardMaterial {
-    return new THREE.MeshStandardMaterial({ map: facadeTexture(tw, th, base), roughness: 0.9 });
+    const cached = facadeMaterials.get(base);
+    if (cached) return cached;
+    const textures = facadeTextureSet(tw, th, base);
+    const material = new THREE.MeshStandardMaterial({
+      map: textures.map,
+      roughnessMap: textures.roughnessMap,
+      normalMap: textures.normalMap,
+      normalScale: new THREE.Vector2(0.3, 0.3),
+      aoMap: textures.aoMap,
+      aoMapIntensity: 0.55,
+      roughness: 0.9,
+    });
+    facadeMaterials.set(base, material);
+    return material;
   }
   function addBuilding(x: number, z: number, w: number, h: number, d: number, base: string): void {
     const mx = wallMat(d, h, base);
@@ -131,6 +163,33 @@ function buildCityEnv(): EnvBuild {
     m.position.set(x, h / 2, z);
     m.castShadow = m.receiveShadow = true;
     group.add(m);
+    const roofCap = new THREE.Mesh(new THREE.BoxGeometry(w + 0.18, 0.16, d + 0.18), roofMat);
+    roofCap.position.set(x, h + 0.08, z);
+    roofCap.castShadow = roofCap.receiveShadow = true;
+    group.add(roofCap);
+    if (h >= 4) {
+      const unitW = Math.min(1.8, w * 0.34);
+      const unitD = Math.min(1.5, d * 0.3);
+      const rooftopUnit = new THREE.Mesh(
+        new THREE.BoxGeometry(unitW, 0.7, unitD),
+        new THREE.MeshStandardMaterial({ color: 0x5b6266, metalness: 0.42, roughness: 0.62 })
+      );
+      rooftopUnit.position.set(x + w * 0.18, h + 0.5, z - d * 0.12);
+      rooftopUnit.castShadow = rooftopUnit.receiveShadow = true;
+      group.add(rooftopUnit);
+      const vent = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.13, 0.16, 0.55, 12),
+        new THREE.MeshStandardMaterial({ color: 0x30363a, metalness: 0.75, roughness: 0.44 })
+      );
+      vent.position.set(x - w * 0.2, h + 0.36, z + d * 0.16);
+      group.add(vent);
+    }
+    const entrance = new THREE.Mesh(
+      new THREE.BoxGeometry(Math.min(1.4, w * 0.4), Math.min(2.5, h * 0.48), 0.06),
+      new THREE.MeshPhysicalMaterial({ color: 0x18252e, roughness: 0.24, metalness: 0.15, clearcoat: 0.45 })
+    );
+    entrance.position.set(x, entrance.geometry.parameters.height / 2, z + d / 2 + 0.035);
+    group.add(entrance);
     obs.push(boxObstacle(x, z, w, h, d));
   }
 
@@ -389,71 +448,20 @@ function buildBeachEnv(): EnvBuild {
     obs.push(boxObstacle(x, z, 4.5, 4.3, 4.5));
   }
 
-  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8a6239, roughness: 1 });
-  const frondMat = new THREE.MeshStandardMaterial({ color: 0x2f7d3a, roughness: 1 });
   for (let i = 0; i < 22; i++) {
-    const palm = new THREE.Group();
     const h = 4.5 + rng() * 2.5;
-    const segs = 5;
-    const segLen = h / segs;
-    const dirA = rng() * Math.PI * 2;
-    const bend = 0.1 + rng() * 0.12;
-    let topX = 0;
-    let topZ = 0;
-    for (let sgi = 0; sgi < segs; sgi++) {
-      const t = sgi / (segs - 1);
-      const off = bend * h * t * t;
-      topX = Math.cos(dirA) * off;
-      topZ = Math.sin(dirA) * off;
-      const seg = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.23, segLen, 7), trunkMat);
-      seg.position.set(topX, (sgi + 0.5) * segLen, topZ);
-      seg.rotation.z = -Math.cos(dirA) * bend * 2 * t;
-      seg.rotation.x = Math.sin(dirA) * bend * 2 * t;
-      seg.castShadow = true;
-      palm.add(seg);
-    }
-    for (let f = 0; f < 7; f++) {
-      const ang = (f / 7) * Math.PI * 2 + rng() * 0.4;
-      const pivot = new THREE.Group();
-      pivot.position.set(topX, h + 0.25, topZ);
-      pivot.rotation.y = -ang;
-      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.05, 2.9), frondMat);
-      blade.position.set(0, 0, 1.35);
-      blade.rotation.x = 0.45 + rng() * 0.3;
-      blade.castShadow = true;
-      pivot.add(blade);
-      palm.add(pivot);
-    }
-    for (let c = 0; c < 3; c++) {
-      const nut = new THREE.Mesh(
-        new THREE.SphereGeometry(0.16, 8, 6),
-        new THREE.MeshStandardMaterial({ color: 0x5c4326, roughness: 1 })
-      );
-      nut.position.set(topX + Math.cos(c * 2.1) * 0.28, h - 0.12, topZ + Math.sin(c * 2.1) * 0.28);
-      palm.add(nut);
-    }
+    const palm = createPalmTreeModel(h, 9000 + i * 97);
     const [x, z] = scatterSpot(-4, 90);
     palm.position.set(x, 0, z);
     palm.rotation.y = rng() * Math.PI * 2;
     group.add(palm);
-    rocks.push({ x: x + topX * 0.4, z: z + topZ * 0.4, r: 0.5 });
+    rocks.push({ x, z, r: 0.55 });
   }
 
   const starColors = [0xe07038, 0xd94f4f, 0xe89b4a, 0xcf5b88];
   for (let i = 0; i < 12; i++) {
-    const star = new THREE.Group();
-    const mat = new THREE.MeshStandardMaterial({
-      color: starColors[i % starColors.length],
-      roughness: 0.9,
-    });
     const armLen = 0.28 + rng() * 0.22;
-    for (let a = 0; a < 5; a++) {
-      const arm = new THREE.Mesh(new THREE.BoxGeometry(armLen, 0.07, 0.13), mat);
-      const ang = (a / 5) * Math.PI * 2;
-      arm.position.set(Math.cos(ang) * armLen * 0.75, 0, Math.sin(ang) * armLen * 0.75);
-      arm.rotation.y = -ang;
-      star.add(arm);
-    }
+    const star = createStarfishModel(armLen, starColors[i % starColors.length]);
     const [x, z] = scatterSpot(-13, -5);
     star.position.set(x, 0.04, z);
     star.rotation.y = rng() * Math.PI * 2;
@@ -541,9 +549,24 @@ function buildUndergroundEnv(): EnvBuild {
   const obs: ObstacleBox[] = [];
   const colliders: TreeCollider[] = [];
 
-  const wallTex = concreteWallTexture();
-  const wallMat = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.95 });
-  const slabMat = new THREE.MeshStandardMaterial({ map: concreteWallTexture(), roughness: 0.95 });
+  const wallTex = concreteWallTextureSet();
+  const slabTex = concreteWallTextureSet();
+  const wallMat = new THREE.MeshStandardMaterial({
+    map: wallTex.map,
+    roughnessMap: wallTex.roughnessMap,
+    normalMap: wallTex.normalMap,
+    normalScale: new THREE.Vector2(0.55, 0.55),
+    aoMap: wallTex.aoMap,
+    roughness: 0.95,
+  });
+  const slabMat = new THREE.MeshStandardMaterial({
+    map: slabTex.map,
+    roughnessMap: slabTex.roughnessMap,
+    normalMap: slabTex.normalMap,
+    normalScale: new THREE.Vector2(0.45, 0.45),
+    aoMap: slabTex.aoMap,
+    roughness: 0.95,
+  });
   const pillarMat = new THREE.MeshStandardMaterial({ color: 0x9a9a94, roughness: 0.92 });
 
   const HALF = 90;
@@ -833,6 +856,12 @@ export function applyEnvironment(variant: EnvVariant): void {
   treeColliders = build.treeColliders;
   grid.visible = variant === "city";
   groundMat.map = getGroundTexture(variant);
+  const groundPbr = getGroundPbrTextures(variant);
+  groundMat.roughnessMap = groundPbr?.roughnessMap ?? null;
+  groundMat.normalMap = groundPbr?.normalMap ?? null;
+  groundMat.normalScale.set(variant === "beach" ? 0.75 : 0.5, variant === "beach" ? 0.75 : 0.5);
+  groundMat.aoMap = groundPbr?.aoMap ?? null;
+  groundMat.aoMapIntensity = groundPbr ? 0.6 : 1;
   groundMat.needsUpdate = true;
   scene.add(currentEnvGroup);
   buildWaypoints();

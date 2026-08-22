@@ -1,0 +1,14 @@
+{
+  "admitted": true,
+  "reasons": [],
+  "provenance": {
+    "viewpoint": "left-three-quarter",
+    "sourcePath": "art/references/fps-carbine.png",
+    "width": 1536,
+    "height": 1024,
+    "foregroundCoverage": 0.2529,
+    "largestComponentFraction": 1.0,
+    "pHash": 12359465733411330296,
+    "duplicateOfHash": null
+  }
+}

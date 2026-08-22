@@ -1,0 +1,11 @@
+{
+  "path": "art/references/fps-carbine.png",
+  "type": "png",
+  "bytes": 1553756,
+  "width": 1536,
+  "height": 1024,
+  "aspectRatio": 1.5,
+  "technicalSuitability": "pass",
+  "warnings": [],
+  "note": "技術的プローブ。意味的適合性はreference-analysis.mdで確認済み。"
+}

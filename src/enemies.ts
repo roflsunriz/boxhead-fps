@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import {
   scene,
   losBlocked,
@@ -10,6 +11,7 @@ import {
 } from "./world";
 import { flashHitmarker } from "./ui";
 import { leaveBotCorpse } from "./persistent-effects";
+import { createCarbineModel } from "./models/game-models";
 import type { BotDamageSource, BotSkill, Enemy, HitFlashMaterial, PlayerState, TeamId } from "./types";
 
 export const bots: Enemy[] = [];
@@ -95,27 +97,49 @@ function buildBotModel(team: TeamId): {
   allyOutline: THREE.Mesh[];
 } {
   const g = new THREE.Group();
-  const suitColor = team === "red" ? 0xb23232 : 0x2f56b8;
-  const suit = hitFlashMaterial(suitColor, { roughness: 0.7 });
-  const dark = hitFlashMaterial(0x2e323a, { roughness: 0.55, metalness: 0.35 });
+  const suitColor = team === "red" ? 0x9f3432 : 0x3156a3;
+  const suit = hitFlashMaterial(suitColor, { roughness: 0.62, metalness: 0.18 });
+  const dark = hitFlashMaterial(0x252a31, { roughness: 0.68, metalness: 0.22 });
 
   const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.34, 0.55, 4, 10), suit);
   torso.position.y = 1.15;
-  const chestPlate = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.34, 0.14), dark);
+  const chestPlate = new THREE.Mesh(new RoundedBoxGeometry(0.52, 0.38, 0.15, 3, 0.035), suit);
   chestPlate.position.set(0, 1.28, -0.22);
   chestPlate.userData.botPart = "chestPlate";
-  const pelvis = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.24, 0.3), dark);
+  const abdomen = new THREE.Mesh(new RoundedBoxGeometry(0.4, 0.24, 0.12, 3, 0.025), dark);
+  abdomen.position.set(0, 1.0, -0.24);
+  const collar = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.045, 8, 20), dark);
+  collar.position.set(0, 1.56, 0);
+  collar.rotation.x = Math.PI / 2;
+  const pelvis = new THREE.Mesh(new RoundedBoxGeometry(0.44, 0.25, 0.32, 3, 0.04), dark);
   pelvis.position.y = 0.76;
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 12), suit);
+  const head = new THREE.Mesh(new RoundedBoxGeometry(0.42, 0.38, 0.42, 4, 0.1), dark);
   head.position.y = 1.74;
-  const visor = new THREE.Mesh(
-    new THREE.BoxGeometry(0.32, 0.09, 0.06),
-    new THREE.MeshBasicMaterial({ color: team === "red" ? 0xffdd33 : 0x66ffcc })
+  const helmet = new THREE.Mesh(
+    new THREE.SphereGeometry(0.255, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.62),
+    suit
   );
-  visor.position.set(0, 1.76, -0.21);
+  helmet.position.y = 1.83;
+  helmet.scale.z = 1.08;
+  const visor = new THREE.Mesh(
+    new RoundedBoxGeometry(0.34, 0.105, 0.045, 3, 0.02),
+    new THREE.MeshStandardMaterial({
+      color: team === "red" ? 0xff8d4b : 0x5beeff,
+      emissive: team === "red" ? 0xb33a12 : 0x1594ad,
+      emissiveIntensity: 1.8,
+      roughness: 0.18,
+      metalness: 0.18,
+    })
+  );
+  visor.position.set(0, 1.76, -0.225);
   visor.userData.botPart = "visor";
   const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.22, 5), dark);
   antenna.position.set(0.14, 2.0, 0);
+  const antennaTip = new THREE.Mesh(
+    new THREE.SphereGeometry(0.025, 8, 6),
+    new THREE.MeshBasicMaterial({ color: team === "red" ? 0xff4d3d : 0x44eaff })
+  );
+  antennaTip.position.set(0.14, 2.12, 0);
 
   function limb(len: number, r: number, mat: THREE.Material): THREE.Group {
     const pivot = new THREE.Group();
@@ -128,46 +152,76 @@ function buildBotModel(team: TeamId): {
   armL.position.set(-0.44, 1.42, 0);
   const armR = limb(0.42, 0.09, suit);
   armR.position.set(0.44, 1.42, 0);
+  for (const [arm, sign] of [
+    [armL, -1],
+    [armR, 1],
+  ] as Array<[THREE.Group, number]>) {
+    const shoulder = new THREE.Mesh(new RoundedBoxGeometry(0.2, 0.16, 0.24, 3, 0.045), suit);
+    shoulder.position.set(sign * 0.015, -0.06, -0.02);
+    arm.add(shoulder);
+    const forearm = new THREE.Mesh(new RoundedBoxGeometry(0.16, 0.22, 0.19, 3, 0.035), dark);
+    forearm.position.set(0, -0.34, -0.015);
+    arm.add(forearm);
+  }
   const legL = limb(0.52, 0.11, dark);
   legL.position.set(-0.16, 0.7, 0);
   const legR = limb(0.52, 0.11, dark);
   legR.position.set(0.16, 0.7, 0);
+  for (const leg of [legL, legR]) {
+    const knee = new THREE.Mesh(new RoundedBoxGeometry(0.18, 0.15, 0.18, 3, 0.04), suit);
+    knee.position.set(0, -0.32, -0.08);
+    leg.add(knee);
+    const boot = new THREE.Mesh(new RoundedBoxGeometry(0.19, 0.13, 0.32, 3, 0.04), dark);
+    boot.position.set(0, -0.62, -0.08);
+    leg.add(boot);
+  }
+  const backpack = new THREE.Mesh(new RoundedBoxGeometry(0.38, 0.5, 0.2, 3, 0.045), dark);
+  backpack.position.set(0, 1.22, 0.27);
+  const teamPanel = new THREE.Mesh(
+    new RoundedBoxGeometry(0.21, 0.07, 0.018, 2, 0.01),
+    new THREE.MeshBasicMaterial({ color: team === "red" ? 0xff5a4e : 0x48ddff })
+  );
+  teamPanel.position.set(0, 1.36, -0.305);
 
-  const weaponGroup = new THREE.Group();
+  const carbine = createCarbineModel(team, "bot");
+  const weaponGroup = carbine.group;
   weaponGroup.position.set(0, 1.3, -0.48);
-  const weaponMat = new THREE.MeshStandardMaterial({ color: 0x171a1f, roughness: 0.42, metalness: 0.68 });
-  const weaponAccent = new THREE.MeshStandardMaterial({
-    color: team === "red" ? 0x8f2929 : 0x244a9a,
-    roughness: 0.58,
-  });
-  const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.15, 0.58), weaponMat);
-  const stock = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.18, 0.24), weaponMat);
-  stock.position.set(0, -0.03, 0.36);
-  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.34, 8), weaponMat);
-  barrel.rotation.x = Math.PI / 2;
-  barrel.position.z = -0.45;
-  const magazine = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.22, 0.13), weaponAccent);
-  magazine.position.set(0, -0.17, -0.05);
-  magazine.rotation.x = -0.2;
-  const sight = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.055, 0.13), weaponAccent);
-  sight.position.set(0, 0.105, -0.08);
+  weaponGroup.scale.setScalar(0.58);
   const muzzleBurst = new THREE.Mesh(
     new THREE.OctahedronGeometry(0.12),
     new THREE.MeshBasicMaterial({ color: 0xffb126, transparent: true, opacity: 0.95 })
   );
-  muzzleBurst.position.z = -0.67;
+  muzzleBurst.position.set(0, 0, -0.02);
   muzzleBurst.scale.set(0.75, 0.75, 1.8);
   muzzleBurst.visible = false;
   const muzzleFlash = new THREE.PointLight(0xff8a22, 0, 6);
-  muzzleFlash.position.z = -0.69;
-  weaponGroup.add(receiver, stock, barrel, magazine, sight, muzzleBurst);
+  muzzleFlash.position.set(0, 0, -0.025);
+  carbine.muzzle.add(muzzleBurst);
 
-  g.add(torso, chestPlate, pelvis, head, visor, antenna, armL, armR, legL, legR, weaponGroup);
+  g.add(
+    torso,
+    chestPlate,
+    abdomen,
+    collar,
+    pelvis,
+    head,
+    helmet,
+    visor,
+    antenna,
+    antennaTip,
+    backpack,
+    teamPanel,
+    armL,
+    armR,
+    legL,
+    legR,
+    weaponGroup
+  );
   const originalMeshes: THREE.Mesh[] = [];
   g.traverse((o) => {
     if (o instanceof THREE.Mesh) {
       o.castShadow = true;
-      originalMeshes.push(o);
+      if (!o.userData.explodeWithParent && !o.name.startsWith("fastener")) originalMeshes.push(o);
     }
   });
   const allyOutline: THREE.Mesh[] = [];
@@ -194,7 +248,7 @@ function buildBotModel(team: TeamId): {
     group: g,
     mats: [suit, dark],
     limbs: { armL, armR, legL, legR },
-    weapon: { group: weaponGroup, muzzleFlash, muzzleBurst },
+    weapon: { group: weaponGroup, muzzle: carbine.muzzle, muzzleFlash, muzzleBurst },
     allyOutline,
   };
 }
@@ -255,6 +309,7 @@ function createBot(team: TeamId, name: string, x: number, z: number): Enemy {
       locomotion: "idle",
       weapon: model.weapon,
       fireFlashT: 0,
+      fireFlashLastTime: -1,
       shotCount: 0,
       allyOutline: model.allyOutline,
     },
@@ -458,10 +513,11 @@ function tryFire(bot: Enemy, time: number): void {
   if (!canSee(bot, t.pos.x, t.pos.z)) return;
   bot.fireT = bot.skill.fireInterval + Math.max(0, dist - 16) * 0.012;
   bot.ammo--;
-  bot.visual.fireFlashT = 0.1;
+  bot.visual.fireFlashT = 3;
+  bot.visual.fireFlashLastTime = time;
   bot.visual.shotCount++;
   bot.visual.weapon.muzzleFlash.intensity = 5;
-  if (!bot.visual.weapon.muzzleFlash.parent) bot.visual.weapon.group.add(bot.visual.weapon.muzzleFlash);
+  if (!bot.visual.weapon.muzzleFlash.parent) bot.visual.weapon.muzzle.add(bot.visual.weapon.muzzleFlash);
   bot.visual.weapon.muzzleBurst.visible = true;
   bot.visual.weapon.muzzleBurst.rotation.z = Math.random() * Math.PI;
   const aimErr = (1 - bot.skill.accuracy) * (0.065 + dist * 0.003);
@@ -501,7 +557,7 @@ function updateReload(bot: Enemy, dt: number): void {
   }
 }
 
-function animateVisual(bot: Enemy, dt: number): void {
+function animateVisual(bot: Enemy, dt: number, time: number): void {
   const sprinting = bot.visual.locomotion === "sprint";
   const walking = bot.visual.locomotion === "walk";
   const stride = Math.sin(bot.visual.phase);
@@ -528,8 +584,11 @@ function animateVisual(bot: Enemy, dt: number): void {
   bot.visual.weapon.group.rotation.x = sprinting ? -0.08 : 0;
 
   if (bot.visual.fireFlashT > 0) {
-    bot.visual.fireFlashT -= dt;
-    const flash = Math.min(1, Math.max(0, bot.visual.fireFlashT / 0.1));
+    if (bot.visual.fireFlashLastTime !== time) {
+      bot.visual.fireFlashT--;
+      bot.visual.fireFlashLastTime = time;
+    }
+    const flash = Math.min(1, Math.max(0, bot.visual.fireFlashT / 2));
     bot.visual.weapon.muzzleFlash.intensity = flash * 5;
     bot.visual.weapon.muzzleBurst.visible = true;
     bot.visual.weapon.muzzleBurst.scale.setScalar(0.65 + flash * 0.75);
@@ -594,7 +653,7 @@ export function updateBots(dt: number, time: number): void {
     updateReload(bot, dt);
     moveBot(bot, dt, time);
     tryFire(bot, time);
-    animateVisual(bot, dt);
+    animateVisual(bot, dt, time);
   }
 }
 

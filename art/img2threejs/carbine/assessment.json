@@ -1,0 +1,472 @@
+{
+  "targetName": "FPS Carbine",
+  "sourceImage": "C:\\Users\\UserName\\Documents\\fps-test\\art\\references\\fps-carbine.png",
+  "preSpecAssessment": {
+    "objectClass": {
+      "primaryType": "modular-carbine",
+      "primaryDomain": "object",
+      "formLanguage": ["hard-surface", "mechanical", "geometric"],
+      "structureKind": ["compound-object", "articulated-assembly", "layered-shell", "repeated-modules"],
+      "motionPotential": ["whole-object-transform", "detachable", "effect-emitter"],
+      "materialFamilies": ["metal", "plastic", "rubber", "emissive"],
+      "notes": "単一3/4ビューから再構成する、ブランド非依存のゲーム用カービン。右側面・下面・内部機構は推定し、製造用精度は対象外とする。"
+    },
+    "complexity": {
+      "tier": "complex",
+      "scores": {
+        "silhouetteComplexity": 2,
+        "componentCount": 3,
+        "hierarchyDepth": 3,
+        "repetitionDensity": 2,
+        "materialLayerCount": 3,
+        "localDetailDensity": 3,
+        "occlusionRisk": 2,
+        "actionReadinessNeed": 3
+      },
+      "estimatedCounts": {
+        "macroComponents": 7,
+        "mesoComponents": 14,
+        "microFeatureGroups": 12,
+        "materialLayers": 5,
+        "repetitionSystems": 3
+      },
+      "reasoning": [
+        "上面レールから銃口までの直線的輪郭に対し、ストック、グリップ、曲面マガジンが大きな負形状を作る。",
+        "receiver、handguard、barrel、stock、grip、magazine、opticの7アセンブリと、それぞれのmeso部品が必要。",
+        "レール歯、ハンドガードベント、fastener列は反復システムとして実装する。",
+        "一人称射撃、リロード、マズルエフェクト、投棄弾倉へ接続するためaction-ready階層が必要。"
+      ]
+    },
+    "specDepthDecision": {
+      "requiredDepth": "complex",
+      "minimumComponentLevels": ["macro", "meso", "micro"],
+      "needsRepetitionSystems": true,
+      "needsMaterialLocalOverrides": true,
+      "needsMultipleReviewViews": true,
+      "needsActionReadyHierarchy": true,
+      "rationale": "複数アセンブリ、3階層、反復機構、独立PBR材質、ゲーム用ソケットを同時に必要とするためcomplexとする。"
+    },
+    "unknownsToResolveBeforeImplementation": [
+      "右側面の操作部は参照に映らないため、左側と機械的に整合する簡略形状として推定する。",
+      "下面と内部機構はゲーム中に見える範囲だけを造形し、実銃の完全な内部構造は再現しない。",
+      "単眼画像から断面幅を推定するため、銃口側と上面のレビューで平面スラブ化を阻止する。",
+      "表面傷の位置は参照と完全一致させず、決定論的なwear分布として近似する。"
+    ],
+    "detailInventory": {
+      "scanMethod": "component-zones",
+      "targetMinDetails": 10,
+      "note": "Enumerate every identity-defining small detail before authoring the spec. Each detail must map to a component.localFeatures entry or material.localOverrides entry, never prose only. Use forge/stage1_intake/build_detail_inventory.py to scan zones.",
+      "details": [
+        {
+          "id": "stock-negative-space",
+          "kind": "hole",
+          "description": "ストック側板の三角形肉抜きと長円穴",
+          "region": { "x": 0.03, "y": 0.2, "width": 0.27, "height": 0.43, "units": "normalized" },
+          "scale": "meso",
+          "affects": "silhouette, topology",
+          "mapsTo": { "type": "component.localFeatures", "ref": "stock-shell.stock-cutouts" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/stock.png",
+          "confidence": 0.98
+        },
+        {
+          "id": "butt-pad-grooves",
+          "kind": "ridge",
+          "description": "ゴム製バットパッドの深い横溝",
+          "region": { "x": 0.03, "y": 0.2, "width": 0.27, "height": 0.43, "units": "normalized" },
+          "scale": "micro-to-meso",
+          "affects": "geometry relief, roughness",
+          "mapsTo": { "type": "component.localFeatures", "ref": "butt-pad.pad-ridges" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/stock.png",
+          "confidence": 0.96
+        },
+        {
+          "id": "stock-contact-wear",
+          "kind": "scratch",
+          "description": "ストック上部の擦過傷と縁摩耗",
+          "region": { "x": 0.03, "y": 0.2, "width": 0.27, "height": 0.43, "units": "normalized" },
+          "scale": "micro",
+          "affects": "albedo, roughness, normal",
+          "mapsTo": { "type": "material.localOverrides", "ref": "stock-polymer.contact-wear" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/stock.png",
+          "confidence": 0.9
+        },
+        {
+          "id": "receiver-ejection-port",
+          "kind": "hole",
+          "description": "上部レシーバーの深い排莢ポート",
+          "region": { "x": 0.27, "y": 0.23, "width": 0.34, "height": 0.4, "units": "normalized" },
+          "scale": "meso",
+          "affects": "topology, cavity",
+          "mapsTo": { "type": "component.localFeatures", "ref": "upper-receiver.ejection-port" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/receiver.png",
+          "confidence": 0.99
+        },
+        {
+          "id": "receiver-fastener-system",
+          "kind": "fastener",
+          "description": "receiverとhingeの反復ピン／ボルト",
+          "region": { "x": 0.27, "y": 0.23, "width": 0.34, "height": 0.4, "units": "normalized" },
+          "scale": "micro repetition",
+          "affects": "geometry, metal roughness",
+          "mapsTo": { "type": "component.localFeatures", "ref": "receiver-assembly.fastener-system" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/receiver.png",
+          "confidence": 0.95
+        },
+        {
+          "id": "receiver-panel-seams",
+          "kind": "seam",
+          "description": "upper/lower receiver境界の凹み線",
+          "region": { "x": 0.27, "y": 0.23, "width": 0.34, "height": 0.4, "units": "normalized" },
+          "scale": "micro",
+          "affects": "AO, geometry relief",
+          "mapsTo": { "type": "component.localFeatures", "ref": "receiver-assembly.panel-seams" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/receiver.png",
+          "confidence": 0.94
+        },
+        {
+          "id": "handguard-vent-system",
+          "kind": "hole",
+          "description": "二段の長円ベント列",
+          "region": { "x": 0.57, "y": 0.25, "width": 0.27, "height": 0.28, "units": "normalized" },
+          "scale": "meso repetition",
+          "affects": "silhouette, topology, AO",
+          "mapsTo": { "type": "component.localFeatures", "ref": "handguard-shell.vent-system" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/handguard.png",
+          "confidence": 0.99
+        },
+        {
+          "id": "top-rail-teeth",
+          "kind": "ridge",
+          "description": "上面の反復レール歯",
+          "region": { "x": 0.57, "y": 0.25, "width": 0.27, "height": 0.28, "units": "normalized" },
+          "scale": "micro repetition",
+          "affects": "top silhouette, geometry",
+          "mapsTo": { "type": "component.localFeatures", "ref": "top-rail.rail-teeth" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/handguard.png",
+          "confidence": 0.98
+        },
+        {
+          "id": "cyan-status-indicator",
+          "kind": "emissive",
+          "description": "黒い台座内のcyan発光バー",
+          "region": { "x": 0.57, "y": 0.25, "width": 0.27, "height": 0.28, "units": "normalized" },
+          "scale": "micro",
+          "affects": "emissive, accent color",
+          "mapsTo": { "type": "material.localOverrides", "ref": "indicator-emissive.cyan-strip" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/handguard.png",
+          "confidence": 0.99
+        },
+        {
+          "id": "handguard-edge-wear",
+          "kind": "scratch",
+          "description": "露出稜線の金属色摩耗",
+          "region": { "x": 0.57, "y": 0.25, "width": 0.27, "height": 0.28, "units": "normalized" },
+          "scale": "micro",
+          "affects": "albedo, roughness",
+          "mapsTo": { "type": "material.localOverrides", "ref": "gunmetal.edge-wear" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/handguard.png",
+          "confidence": 0.93
+        },
+        {
+          "id": "muzzle-port-system",
+          "kind": "hole",
+          "description": "マズルブレーキの側面ポートと銃口穴",
+          "region": { "x": 0.8, "y": 0.28, "width": 0.19, "height": 0.19, "units": "normalized" },
+          "scale": "meso",
+          "affects": "topology, muzzle silhouette",
+          "mapsTo": { "type": "component.localFeatures", "ref": "muzzle-brake.port-system" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/barrel.png",
+          "confidence": 0.95
+        },
+        {
+          "id": "optic-lens-response",
+          "kind": "gloss",
+          "description": "琥珀色の低roughnessレンズ",
+          "region": { "x": 0.4, "y": 0.1, "width": 0.22, "height": 0.27, "units": "normalized" },
+          "scale": "meso",
+          "affects": "roughness, transmission, tint",
+          "mapsTo": { "type": "material.localOverrides", "ref": "optic-lens.amber-gloss" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/optic.png",
+          "confidence": 0.96
+        },
+        {
+          "id": "optic-fasteners",
+          "kind": "fastener",
+          "description": "サイト側板と基部の皿穴ボルト列",
+          "region": { "x": 0.4, "y": 0.1, "width": 0.22, "height": 0.27, "units": "normalized" },
+          "scale": "micro repetition",
+          "affects": "geometry, metal highlight",
+          "mapsTo": { "type": "component.localFeatures", "ref": "optic-assembly.fastener-system" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/optic.png",
+          "confidence": 0.95
+        },
+        {
+          "id": "grip-stipple",
+          "kind": "ridge",
+          "description": "グリップ面の不規則細粒stipple",
+          "region": { "x": 0.25, "y": 0.46, "width": 0.18, "height": 0.32, "units": "normalized" },
+          "scale": "micro",
+          "affects": "normal, roughness",
+          "mapsTo": { "type": "material.localOverrides", "ref": "grip-polymer.stipple" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/grip.png",
+          "confidence": 0.98
+        },
+        {
+          "id": "magazine-rib-system",
+          "kind": "ridge",
+          "description": "曲面マガジンの横3段リブと縦境界",
+          "region": { "x": 0.48, "y": 0.46, "width": 0.17, "height": 0.43, "units": "normalized" },
+          "scale": "meso repetition",
+          "affects": "cross-section, geometry relief",
+          "mapsTo": { "type": "component.localFeatures", "ref": "magazine-shell.rib-system" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/magazine.png",
+          "confidence": 0.99
+        },
+        {
+          "id": "magazine-floorplate",
+          "kind": "bevel",
+          "description": "tan床板の張り出しと外周ベベル",
+          "region": { "x": 0.48, "y": 0.46, "width": 0.17, "height": 0.43, "units": "normalized" },
+          "scale": "meso",
+          "affects": "silhouette, material boundary",
+          "mapsTo": { "type": "component.localFeatures", "ref": "magazine-floorplate.edge-treatment" },
+          "evidenceRef": "art/img2threejs/carbine/detail-zones/magazine.png",
+          "confidence": 0.98
+        }
+      ]
+    },
+    "anatomy": {
+      "applies": false,
+      "styleHeads": 0.0,
+      "proportions": {
+        "headUnit": 0.0,
+        "torso": 0.0,
+        "legs": 0.0,
+        "shoulderWidth": 0.0,
+        "hipWidth": 0.0
+      },
+      "pose": {
+        "type": "unassessed",
+        "jointAngles": {}
+      },
+      "faceLandmarks": {
+        "eyeLine": 0.0,
+        "eyeSpacing": 0.0,
+        "noseBase": 0.0,
+        "mouthLine": 0.0,
+        "hairline": 0.0
+      },
+      "features": [],
+      "confidence": 0.0,
+      "note": "Only meaningful when objectClass.primaryDomain is character or hybrid. Set applies=true and fill from forge/stage1_intake/extract_landmarks.py. See grimoire/character/reconstruction.md and grimoire/character/likeness_maximization.md."
+    },
+    "sourceImage": "C:\\Users\\UserName\\Documents\\fps-test\\art\\references\\fps-carbine.png"
+  },
+  "qualityContract": {
+    "qualityBar": "complex",
+    "definitionOfDone": [
+      "一人称3/4ビューとボット側面ビューの双方でオリジナルの短銃身カービンとして即座に読める。",
+      "主要7アセンブリが物理的に接続され、マガジン、マズル、グリップの既存ゲームソケットを維持する。",
+      "銃口側と上面から見ても平面押し出しではない断面を持ち、金属、ポリマー、ゴム、emissiveが独立したPBR応答を示す。"
+    ],
+    "minimumSpecDepth": {
+      "macroComponents": 7,
+      "mesoComponents": 12,
+      "microFeatureGroups": 10,
+      "materialLayers": 5,
+      "repetitionSystems": 3,
+      "reviewViewpoints": 5
+    },
+    "featureGroups": [
+      {
+        "id": "overall-silhouette",
+        "name": "Overall silhouette and proportions",
+        "required": true,
+        "qualityCriteria": [
+          "Bounding shape, dominant curves, negative spaces, and scale relationships are explicitly described."
+        ],
+        "evidenceRefs": ["full-object"],
+        "failureModes": [
+          "model reads as a generic placeholder instead of the reference object",
+          "major proportions are guessed without evidence"
+        ]
+      },
+      {
+        "id": "primary-structure",
+        "name": "Primary structure and hierarchy",
+        "required": true,
+        "qualityCriteria": [
+          "Major parts, joints, seams, contact points, and parent-child relationships are named before code generation."
+        ],
+        "evidenceRefs": ["full-object"],
+        "failureModes": [
+          "large visible parts are merged into one mesh",
+          "component hierarchy is too shallow for the observed complexity"
+        ]
+      },
+      {
+        "id": "attachment-joint-correctness",
+        "name": "Attachment and joint correctness",
+        "required": true,
+        "qualityCriteria": [
+          "Every visible child appendage, branch, limb, handle, connector, tube, cable, horn, wing, leg, or hinged part has an attachment contract with parent socket, localStart/localEnd, contact type, embed/overlap, and gap tolerance."
+        ],
+        "evidenceRefs": ["full-object"],
+        "failureModes": [
+          "child part root floats away from the parent",
+          "branch/limb/tube is centered in space instead of pivoting from its root",
+          "parent-child transform mixes world and local coordinates"
+        ]
+      },
+      {
+        "id": "surface-material-response",
+        "name": "Surface material response",
+        "required": true,
+        "qualityCriteria": [
+          "Albedo zones, roughness, normal/bump/displacement intent, cavity dirt, edge wear, and local overrides are specified where visible.",
+          "Important materials define independent albedo, roughness, height/normal, and AO responses instead of reusing one texture for unrelated PBR channels.",
+          "Surface response is decomposed into macro, meso, and micro frequency bands with scale and amplitude tied to object scale."
+        ],
+        "evidenceRefs": ["full-object"],
+        "failureModes": [
+          "surface looks like flat plastic",
+          "local material variation is missing or not tied to image evidence"
+        ]
+      },
+      {
+        "id": "reference-lookdev",
+        "name": "Reference color, material, and lighting response",
+        "required": true,
+        "qualityCriteria": [
+          "Material-pass names the reference-derived albedo palette, roughness variation, tactile normal/bump/displacement response, and local masks.",
+          "When a source image is available, run reference PBR extraction and require confidence >= 0.7 before treating maps as implementation-ready.",
+          "Lighting-pass names key/fill/rim or environment light, exposure, tone mapping, background, and contact shadow behavior.",
+          "Neutral, grazing-angle, and reference-matched renders prove that surface relief survives relighting and is not painted into albedo."
+        ],
+        "evidenceRefs": ["full-object"],
+        "failureModes": [
+          "model has acceptable shape but reads as flat shaded or plastic",
+          "colors are a generic average instead of reference-observed local color zones",
+          "lighting is evenly ambient and cannot reproduce the source value range"
+        ]
+      }
+    ],
+    "visualDeltaChecks": [
+      "silhouette and negative-space delta",
+      "component hierarchy depth delta",
+      "repetition density and distribution delta",
+      "material albedo/roughness/normal response delta",
+      "local feature placement and scale delta"
+    ],
+    "antiShallowSpecRules": [
+      "Do not proceed to code if qualityContract.qualityBar is unassessed.",
+      "Do not proceed to code if the spec only contains a root component for a moderate or complex object.",
+      "Do not proceed to code if required featureGroups are not represented by componentTree, materials, or repetitionSystems.",
+      "Do not proceed to code if visible local features are described only in prose and not attached to components/materials/evidenceRefs.",
+      "Do not proceed past structural-pass if attached child parts lack attachment.parentSocket, localStart, localEnd, embedDepth/overlap, and gapTolerance.",
+      "Do not pass material look-dev when albedo is reused as roughness, height, normal, or AO.",
+      "Do not pass material look-dev without macro, meso, and micro surface frequency bands for close-up materials.",
+      "Do not pass reference-fidelity material look-dev from a source image without usable referencePbr maps or an explicit documented limitation.",
+      "Do not patch a spec with extracted PBR maps when extraction confidence is below the target threshold unless the user explicitly accepts lower fidelity.",
+      "Do not place adjacent separate-geometry parts below 0.02 world-unit seam overlap (source: grimoire/build/geometry_patterns.md).",
+      "Do not satisfy raised or recessed relief, fasteners, or grip structure with a map alone when the feature affects form; use geometry or displacement (source: grimoire/build/geometry_patterns.md)."
+    ]
+  },
+  "authoringInstruction": "Fill observed object class, complexity reasoning, featureGroups, visualDeltaChecks, and unknowns before generating or implementing ObjectSculptSpec.",
+  "localSpecSearch": {
+    "collection": "core_3d",
+    "query": "FPS Carbine modular carbine receiver handguard PBR browser FPS weapon socket detachable magazine",
+    "index": {
+      "status": "rebuilt",
+      "reason": "missing",
+      "fingerprint": "6857e5ab528b42ac12f4f411f862610a0bffce8e47aee3610a7603c318072fe8"
+    },
+    "matches": [
+      {
+        "record_id": "core.socket-pivot",
+        "file_path": "grimoire/glossary/3d_vocabulary.md",
+        "heading": "Animation, Physics, And Destruction",
+        "key_path": null,
+        "score": 5.511200483252,
+        "snippets": [
+          "A pivot is a local rotation origin; a socket is an attachment point for a child part. In a runtime hierarchy, a socket Object3D is a child of the relevant pivot."
+        ],
+        "source_refs": [
+          {
+            "path": "grimoire/glossary/3d_vocabulary.md",
+            "heading": "Animation, Physics, And Destruction",
+            "key_path": null
+          },
+          {
+            "path": "grimoire/readiness/action_rigging.md",
+            "heading": "Hierarchy Pattern",
+            "key_path": null
+          }
+        ],
+        "evidence_refs": [
+          {
+            "kind": "source",
+            "ref": "grimoire/readiness/action_rigging.md"
+          },
+          {
+            "kind": "notebooklm-research",
+            "ref": "notebooklm:4b03c2f9-8393-411f-b5b4-039ab9532843",
+            "note": "Validated generic schema vocabulary; numeric claims remain backed by local source_refs."
+          }
+        ]
+      },
+      {
+        "record_id": "core.attachment-contract",
+        "file_path": "grimoire/readiness/joint_attachment.md",
+        "heading": "Attachment Contract",
+        "key_path": null,
+        "score": 4.774467103191,
+        "snippets": [
+          "An attached child records its parent, parent socket, local start and end, contact type, and embed depth or overlap where applicable."
+        ],
+        "source_refs": [
+          {
+            "path": "grimoire/readiness/joint_attachment.md",
+            "heading": "Attachment Contract",
+            "key_path": null
+          }
+        ],
+        "evidence_refs": [
+          {
+            "kind": "source",
+            "ref": "grimoire/readiness/joint_attachment.md"
+          },
+          {
+            "kind": "notebooklm-research",
+            "ref": "notebooklm:4b03c2f9-8393-411f-b5b4-039ab9532843",
+            "note": "Validated generic schema vocabulary; numeric claims remain backed by local source_refs."
+          }
+        ]
+      },
+      {
+        "record_id": "core.pbr-hand-painted-vs-pbr-texture",
+        "file_path": "docs/raw/img2threejs-skill-dataset.json",
+        "heading": null,
+        "key_path": "categories.material_pbr[12]",
+        "score": 4.661903223664,
+        "snippets": [
+          "... baked directly into color (static, stylized) from textures that respond dynamically to scene lighting via separate PBR channels. Phân biệt kết cấu có ánh sáng được nướng trực tiếp vào màu (tĩnh, cách điệu) với kết cấu phản hồi động ..."
+        ],
+        "source_refs": [
+          {
+            "path": "docs/raw/img2threejs-skill-dataset.json",
+            "heading": null,
+            "key_path": "categories.material_pbr[12]"
+          }
+        ],
+        "evidence_refs": [
+          {
+            "kind": "source",
+            "ref": "docs/raw/img2threejs-skill-dataset.json",
+            "note": "img2threejs NotebookLM research distillation"
+          }
+        ]
+      }
+    ]
+  }
+}
