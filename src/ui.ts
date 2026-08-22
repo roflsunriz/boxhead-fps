@@ -19,6 +19,7 @@ const stanceEl = requiredElement<HTMLSpanElement>("#stance");
 const actionWrap = requiredElement<HTMLDivElement>("#action-wrap");
 const actionLabel = requiredElement<HTMLDivElement>("#action-label");
 const actionProgress = requiredElement<HTMLDivElement>("#action-progress");
+const systemMessages = requiredElement<HTMLDivElement>("#system-messages");
 export const overlay = requiredElement<HTMLDivElement>("#overlay");
 const overlayTitle = requiredElement<HTMLHeadingElement>("#overlay h1");
 const overlayMsg = requiredElement<HTMLParagraphElement>("#overlay-msg");
@@ -60,6 +61,9 @@ export function showOverlay(screen: OverlayScreen, msg: () => string, btnKey: "r
 onChange(() => {
   applyI18n();
   if (!overlay.classList.contains("hidden")) renderOverlay();
+  systemMessages.querySelectorAll<HTMLElement>(".system-message").forEach((message) => {
+    message.textContent = `${t("enemyEliminated")} · ${message.dataset.enemyName ?? ""}`;
+  });
 });
 
 export function setAmmoText(text: string): void {
@@ -122,4 +126,14 @@ export function setVignette(opacity: number): void {
 
 export function setDeathScreen(opacity: number): void {
   deathScreen.style.opacity = String(Math.min(0.9, Math.max(0, opacity)));
+}
+
+export function showEliminationMessage(enemyName: string): void {
+  const message = document.createElement("div");
+  message.className = "system-message";
+  message.dataset.enemyName = enemyName;
+  message.textContent = `${t("enemyEliminated")} · ${enemyName}`;
+  systemMessages.append(message);
+  while (systemMessages.childElementCount > 3) systemMessages.firstElementChild?.remove();
+  window.setTimeout(() => message.remove(), 2600);
 }

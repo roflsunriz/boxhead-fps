@@ -23,6 +23,7 @@ import {
   setMatchScore,
   setVignette,
   showDamageDirection,
+  showEliminationMessage,
   showOverlay,
   startBtn,
 } from "./ui";
@@ -140,12 +141,34 @@ gunPart(new THREE.BoxGeometry(0.06, 0.04, 0.18), metalDark, 0, 0.078, -0.12);
 gunPart(new THREE.BoxGeometry(0.045, 0.065, 0.05), metalDark, 0, 0.125, -0.14);
 gunPart(new THREE.BoxGeometry(0.009, 0.028, 0.009), accent, 0, 0.17, -0.14);
 gunPart(new THREE.BoxGeometry(0.07, 0.19, 0.09), polymer, 0, -0.15, 0.02, 0.25);
-gunPart(new THREE.BoxGeometry(0.05, 0.16, 0.07), metalMid, 0, -0.13, -0.16, -0.35);
+const gunMagazine = gunPart(new THREE.BoxGeometry(0.05, 0.16, 0.07), metalMid, 0, -0.13, -0.16, -0.35);
+const magazineBand = new THREE.Mesh(new THREE.BoxGeometry(0.058, 0.025, 0.078), accent);
+magazineBand.position.y = -0.035;
+gunMagazine.add(magazineBand);
 gunPart(new THREE.BoxGeometry(0.08, 0.09, 0.22), polymer, 0, -0.01, 0.19);
 gunPart(new THREE.BoxGeometry(0.07, 0.05, 0.11), polymer, 0, -0.02, -0.27);
+
+const reloadHand = new THREE.Group();
+const gloveMat = new THREE.MeshStandardMaterial({ color: 0x596451, roughness: 0.92 });
+const reloadPalm = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.13, 0.24), gloveMat);
+reloadPalm.rotation.x = -0.25;
+reloadHand.add(reloadPalm);
+const reloadWrist = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.18, 0.14), gloveMat);
+reloadWrist.position.set(0, -0.12, 0.08);
+reloadHand.add(reloadWrist);
+for (let i = 0; i < 3; i++) {
+  const finger = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.06, 0.12), gloveMat);
+  finger.position.set(-0.04 + i * 0.04, -0.06, -0.02);
+  reloadHand.add(finger);
+}
+reloadHand.position.set(-0.16, -0.18, -0.1);
+reloadHand.visible = false;
+gun.add(reloadHand);
 camera.add(gun);
 scene.add(camera);
-gun.position.set(0.22, -0.2, -0.45);
+const gunBasePosition = new THREE.Vector3(0.22, -0.2, -0.45);
+const magazineBaseY = gunMagazine.position.y;
+gun.position.copy(gunBasePosition);
 gun.scale.setScalar(0.85);
 
 const shieldDevice = new THREE.Group();
@@ -203,6 +226,9 @@ function shootTracer(from: THREE.Vector3, to: THREE.Vector3): void {
 let ammo = 30;
 const magSize = 30;
 let reloading = false;
+let reloadProgress = 0;
+let reloadStartedAt = 0;
+const reloadDuration = 1.25;
 let shootCooldown = 0;
 let recoil = 0;
 let lastTracerOrigin: { x: number; y: number; z: number } | null = null;
@@ -237,8 +263,9 @@ function scoreKill(team: TeamId): void {
   }
 }
 
-setOnBotKilled((victim, killerTeam) => {
+setOnBotKilled((victim, killerTeam, playerCaused) => {
   if (victim.team === killerTeam) return;
+  if (playerCaused && victim.team === "red") showEliminationMessage(victim.name);
   scoreKill(killerTeam);
 });
 
@@ -329,10 +356,54 @@ function endMatch(winner: TeamId): void {
 function reload(): void {
   if (reloading || ammo === magSize || healingShield) return;
   reloading = true;
-  setTimeout(() => {
+  reloadProgress = 0;
+  reloadStartedAt = performance.now();
+  triggerHeld = false;
+}
+
+function updateReloadAnimation(): void {
+  if (!reloading) {
+    gunMagazine.position.y = magazineBaseY;
+    gunMagazine.visible = true;
+    reloadHand.visible = false;
+    gun.position.y = gunBasePosition.y;
+    gun.position.z = gunBasePosition.z + recoil * 0.08;
+    gun.rotation.x = recoil * 0.15;
+    gun.rotation.z = 0;
+    return;
+  }
+
+  reloadProgress = Math.min(1, (performance.now() - reloadStartedAt) / 1000 / reloadDuration);
+  const dip = Math.sin(reloadProgress * Math.PI);
+  gun.position.y = gunBasePosition.y - dip * 0.1;
+  gun.position.z = gunBasePosition.z + recoil * 0.08 + dip * 0.07;
+  gun.rotation.x = recoil * 0.15 + dip * 0.28;
+  gun.rotation.z = -dip * 0.18;
+  reloadHand.visible = true;
+
+  if (reloadProgress < 0.42) {
+    const pull = THREE.MathUtils.smoothstep(reloadProgress, 0.08, 0.42);
+    gunMagazine.visible = true;
+    gunMagazine.position.y = magazineBaseY - pull * 0.34;
+    reloadHand.position.y = -0.18 - pull * 0.28;
+  } else if (reloadProgress < 0.54) {
+    gunMagazine.visible = false;
+    reloadHand.position.y = -0.46;
+  } else {
+    const insert = THREE.MathUtils.smoothstep(reloadProgress, 0.54, 0.84);
+    gunMagazine.visible = true;
+    gunMagazine.position.y = THREE.MathUtils.lerp(-0.47, magazineBaseY, insert);
+    reloadHand.position.y = THREE.MathUtils.lerp(-0.46, -0.18, insert);
+  }
+  reloadHand.position.x = -0.16 + Math.sin(reloadProgress * Math.PI) * 0.04;
+
+  if (reloadProgress >= 1) {
     ammo = magSize;
     reloading = false;
-  }, 1200);
+    gunMagazine.position.y = magazineBaseY;
+    gunMagazine.visible = true;
+    reloadHand.visible = false;
+  }
 }
 
 addEventListener("mousedown", (e) => {
@@ -427,7 +498,7 @@ function tryShoot(): void {
     let root: THREE.Object3D = hit.object;
     while (root.parent && !bots.some((en) => en.group === root)) root = root.parent;
     const target = bots.find((en) => en.group === root);
-    if (target) damageBot(target, 25, "blue");
+    if (target) damageBot(target, 25, "blue", true);
   }
 
   const origin = muzzle.getWorldPosition(new THREE.Vector3());
@@ -516,8 +587,7 @@ function animate(): void {
     camera.rotation.x = player.pitch - recoil * 0.04;
     camera.rotation.z = 0;
 
-    gun.position.z = -0.45 + recoil * 0.08;
-    gun.rotation.x = recoil * 0.15;
+    updateReloadAnimation();
     recoil = Math.max(0, recoil - dt * 8);
     muzzleFlash.intensity = Math.max(0, muzzleFlash.intensity - dt * 40);
     shootCooldown = Math.max(0, shootCooldown - dt);
@@ -592,6 +662,15 @@ window.__game = {
   get reloading() {
     return reloading;
   },
+  get reloadView() {
+    return {
+      progress: reloadProgress,
+      magazineY: gunMagazine.position.y,
+      magazineVisible: gunMagazine.visible,
+      handVisible: reloadHand.visible,
+      gunY: gun.position.y,
+    };
+  },
   get healingShield() {
     return healingShield;
   },
@@ -640,7 +719,7 @@ window.__game = {
   useShieldCell,
   throwGrenade,
   damageEnemy(en: (typeof bots)[number], dmg: number): void {
-    damageBot(en, dmg, "blue");
+    damageBot(en, dmg, "blue", true);
   },
 };
 animate();

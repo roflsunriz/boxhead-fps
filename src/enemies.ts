@@ -20,11 +20,11 @@ export interface BotContext {
 }
 
 let ctx: BotContext | null = null;
-let onBotKilled: ((victim: Enemy, killerTeam: TeamId) => void) | null = null;
+let onBotKilled: ((victim: Enemy, killerTeam: TeamId, playerCaused: boolean) => void) | null = null;
 const BOT_MAX_ENGAGE_RANGE = 42;
 const BOT_FULL_ACCURACY_RANGE = 12;
 
-export function setOnBotKilled(cb: (victim: Enemy, killerTeam: TeamId) => void): void {
+export function setOnBotKilled(cb: (victim: Enemy, killerTeam: TeamId, playerCaused: boolean) => void): void {
   onBotKilled = cb;
 }
 
@@ -409,7 +409,7 @@ function animateVisual(bot: Enemy, dt: number): void {
   }
 }
 
-export function damageBot(bot: Enemy, dmg: number, attackerTeam: TeamId): void {
+export function damageBot(bot: Enemy, dmg: number, attackerTeam: TeamId, playerCaused = false): void {
   if (!bot.alive) return;
   bot.hp -= dmg;
   bot.visual.mats.forEach((m) => m.color.setHex(0xffffff));
@@ -419,7 +419,7 @@ export function damageBot(bot: Enemy, dmg: number, attackerTeam: TeamId): void {
     bot.alive = false;
     bot.respawnT = 4.5;
     bot.group.visible = false;
-    if (onBotKilled) onBotKilled(bot, attackerTeam);
+    if (onBotKilled) onBotKilled(bot, attackerTeam, playerCaused);
   }
 }
 

@@ -19,7 +19,8 @@ type StringKey =
   | "chargingBarrier"
   | "stand"
   | "crouch"
-  | "prone";
+  | "prone"
+  | "enemyEliminated";
 
 const STRINGS: Record<Lang, Record<StringKey, string>> = {
   en: {
@@ -42,6 +43,7 @@ const STRINGS: Record<Lang, Record<StringKey, string>> = {
     stand: "STAND",
     crouch: "CROUCH",
     prone: "PRONE",
+    enemyEliminated: "ENEMY ELIMINATED",
   },
   ja: {
     msgStart:
@@ -64,6 +66,7 @@ const STRINGS: Record<Lang, Record<StringKey, string>> = {
     stand: "立ち",
     crouch: "しゃがみ",
     prone: "うつぶせ",
+    enemyEliminated: "敵を撃破",
   },
 };
 

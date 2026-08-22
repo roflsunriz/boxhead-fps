@@ -124,6 +124,13 @@ export interface GameDebugApi {
   readonly wave: number;
   readonly gameOver: boolean;
   readonly reloading: boolean;
+  readonly reloadView: {
+    progress: number;
+    magazineY: number;
+    magazineVisible: boolean;
+    handVisible: boolean;
+    gunY: number;
+  };
   readonly healingShield: boolean;
   readonly pickups: number;
   readonly deathView: {

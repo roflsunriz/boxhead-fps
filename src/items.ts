@@ -104,7 +104,7 @@ function explodeGrenade(grenade: GrenadeProjectile): void {
   for (const bot of bots) {
     if (!bot.alive || bot.team !== "red") continue;
     const dist = bot.pos.distanceTo(pos);
-    if (dist < 9) damageBot(bot, Math.max(15, 120 * (1 - dist / 9)), "blue");
+    if (dist < 9) damageBot(bot, Math.max(15, 120 * (1 - dist / 9)), "blue", true);
   }
   const sphere = new THREE.Mesh(
     new THREE.SphereGeometry(1, 16, 12),

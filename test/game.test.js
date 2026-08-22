@@ -217,7 +217,7 @@ const killResult = await page.evaluate(() => {
   if (!victim) return { ok: false };
   const s0 = g.score;
   g.damageEnemy(victim, 999);
-  return { ok: true, s0, s1: g.score, aliveAfter: victim.alive };
+  return { ok: true, s0, s1: g.score, aliveAfter: victim.alive, victimName: victim.name };
 });
 check(
   "damageEnemy kills red bot",
@@ -225,6 +225,16 @@ check(
   JSON.stringify(killResult)
 );
 check("blue team score awarded on enemy kill (+1)", killResult.s1 === killResult.s0 + 1);
+await page.waitForTimeout(150);
+const killMessage = await page.evaluate(() => {
+  const message = document.querySelector(".system-message");
+  return { count: document.querySelectorAll(".system-message").length, text: message?.textContent ?? "" };
+});
+check(
+  `player kill shows a named system message (${JSON.stringify(killMessage)})`,
+  killMessage.count === 1 && killMessage.text.includes(killResult.victimName)
+);
+await page.screenshot({ path: "test/feature-kill-message.png" });
 
 console.log("\n[6] Bot reload & respawn");
 await page.evaluate(() => {
@@ -248,6 +258,7 @@ const botReloaded = await page.evaluate(async () => {
   return en ? { ammo: en.ammo } : null;
 });
 check(`bot auto-reloads to full (${JSON.stringify(botReloaded)})`, botReloaded && botReloaded.ammo === 30);
+check("kill system message dismisses automatically", (await page.locator(".system-message").count()) === 0);
 
 console.log("\n[6] Reload");
 await page.evaluate(() => {
@@ -256,7 +267,29 @@ await page.evaluate(() => {
 const ra0 = await page.evaluate(() => window.__game.ammo);
 await page.evaluate(() => window.__game.reload());
 check("reload flag set", await page.evaluate(() => window.__game.reloading === true));
-await page.waitForTimeout(1400);
+await page.waitForTimeout(450);
+const reloadView = await page.evaluate(() => window.__game.reloadView);
+check(
+  `reload visibly removes the magazine (${JSON.stringify(reloadView)})`,
+  reloadView.progress > 0.2 &&
+    reloadView.progress < 0.7 &&
+    reloadView.handVisible &&
+    (reloadView.magazineY < -0.3 || !reloadView.magazineVisible) &&
+    reloadView.gunY < -0.22
+);
+await page.screenshot({ path: "test/feature-magazine-reload.png" });
+await page.waitForTimeout(100);
+const reloadInsertView = await page.evaluate(() => window.__game.reloadView);
+check(
+  `reload inserts the replacement magazine (${JSON.stringify(reloadInsertView)})`,
+  reloadInsertView.progress > 0.5 &&
+    reloadInsertView.progress < 0.95 &&
+    reloadInsertView.magazineVisible &&
+    reloadInsertView.magazineY > -0.47 &&
+    reloadInsertView.magazineY < -0.13
+);
+await page.screenshot({ path: "test/feature-magazine-insert.png" });
+await page.waitForTimeout(850);
 check(
   `reload refills magazine (${ra0} -> full)`,
   await page.evaluate(() => window.__game.ammo === 30 && !window.__game.reloading)
