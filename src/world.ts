@@ -842,6 +842,24 @@ export function updateEnvironment(dt: number): void {
   currentUpdate?.(dt);
 }
 
+export interface EnvironmentRayHit {
+  distance: number;
+  point: THREE.Vector3;
+  normal: THREE.Vector3;
+}
+
+export function raycastEnvironment(raycaster: THREE.Raycaster): EnvironmentRayHit | null {
+  const targets: THREE.Object3D[] = [ground];
+  if (currentEnvGroup) targets.push(currentEnvGroup);
+  const hit = raycaster
+    .intersectObjects(targets, true)
+    .find((candidate) => candidate.object instanceof THREE.Mesh && !candidate.object.userData.ignoreRaycast);
+  if (!hit) return null;
+  const normal = hit.face?.normal.clone() ?? new THREE.Vector3(0, 1, 0);
+  normal.transformDirection(hit.object.matrixWorld);
+  return { distance: hit.distance, point: hit.point.clone(), normal };
+}
+
 export interface EnvMeshInfo {
   geo: string;
   x: number;

@@ -9,6 +9,7 @@ import {
   waypointPos,
 } from "./world";
 import { flashHitmarker } from "./ui";
+import { leaveBotCorpse } from "./persistent-effects";
 import type { BotDamageSource, BotSkill, Enemy, HitFlashMaterial, PlayerState, TeamId } from "./types";
 
 export const bots: Enemy[] = [];
@@ -211,6 +212,8 @@ function spawnAt(bot: Enemy, x: number, z: number): void {
   bot.pathGoal = -1;
   bot.visual.moveSpeed = 0;
   bot.visual.locomotion = "idle";
+  bot.visual.hitTimer = 0;
+  bot.visual.mats.forEach((material) => material.color.setHex(material.userData.base));
   bot.visual.fireFlashT = 0;
   bot.visual.weapon.muzzleFlash.intensity = 0;
   bot.visual.weapon.muzzleFlash.removeFromParent();
@@ -554,6 +557,11 @@ export function damageBot(bot: Enemy, dmg: number, source: BotDamageSource): voi
   if (bot.hp <= 0) {
     bot.alive = false;
     bot.respawnT = 4.5;
+    bot.visual.fireFlashT = 0;
+    bot.visual.weapon.muzzleFlash.intensity = 0;
+    bot.visual.weapon.muzzleFlash.removeFromParent();
+    bot.visual.weapon.muzzleBurst.visible = false;
+    leaveBotCorpse(bot.group);
     bot.group.visible = false;
     if (onBotKilled) onBotKilled(bot, source.team, source.playerCaused ?? false);
   } else {

@@ -25,6 +25,21 @@ export type TeamId = "red" | "blue";
 export type Stance = "stand" | "crouch" | "prone";
 export type PickupKind = "shield" | "health" | "grenade";
 export type DeathFallDirection = "forward" | "backward" | "left" | "right";
+export type PersistentEffectKind = "bulletMarks" | "magazines" | "corpses";
+
+export interface PersistentEffectQueueSummary {
+  count: number;
+  max: number;
+  oldestId: number | null;
+  newestId: number | null;
+  allAttached: boolean;
+}
+
+export interface PersistentEffectsSummary {
+  bulletMarks: PersistentEffectQueueSummary;
+  magazines: PersistentEffectQueueSummary;
+  corpses: PersistentEffectQueueSummary;
+}
 
 export interface BotSkill {
   label: string;
@@ -165,6 +180,7 @@ export interface GameDebugApi {
     range: number;
     markers: Array<{ team: TeamId; x: number; y: number; clamped: boolean }>;
   };
+  readonly persistentEffects: PersistentEffectsSummary;
   setWeather(i: number): void;
   setKillTarget(n: number): void;
   tryShoot(): void;
@@ -175,6 +191,7 @@ export interface GameDebugApi {
   useShieldCell(): void;
   throwGrenade(): void;
   damageEnemy(en: Enemy, dmg: number): void;
+  debugPopulatePersistentEffects(kind: PersistentEffectKind, count: number): void;
   debugEnvSummary(): Array<{ geo: string; x: number; y: number; z: number; visible: boolean }>;
   debugCoverSummary(): {
     variant: EnvVariant;

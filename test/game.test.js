@@ -245,6 +245,24 @@ const e0 = await page.evaluate(() => window.__game.enemies.length);
 check(`bots fielded (count=${e0})`, e0 > 0);
 await page.waitForTimeout(200);
 
+const bulletMarkResult = await page.evaluate(async () => {
+  const g = window.__game;
+  g.enemies.forEach((en, index) => en.pos.set(120 + index * 3, 0, 120));
+  g.player.pos.set(0, 1.7, 5);
+  g.player.yaw = 0;
+  g.player.pitch = 0;
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  const before = g.persistentEffects.bulletMarks.count;
+  g.tryShoot();
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  const effects = g.persistentEffects.bulletMarks;
+  return { before, after: effects.count, attached: effects.allAttached };
+});
+check(
+  `shots leave persistent marks on obstacles (${JSON.stringify(bulletMarkResult)})`,
+  bulletMarkResult.after === bulletMarkResult.before + 1 && bulletMarkResult.attached
+);
+
 const longRangeTarget = await page.evaluate(async () => {
   const g = window.__game;
   const red = g.enemies.find((en) => en.team === "red" && en.alive);
@@ -307,8 +325,19 @@ const killResult = await page.evaluate(() => {
   const victim = g.enemies.find((en) => en.team === "red" && en.alive);
   if (!victim) return { ok: false };
   const s0 = g.score;
+  const corpsesBefore = g.persistentEffects.corpses.count;
   g.damageEnemy(victim, 999);
-  return { ok: true, s0, s1: g.score, aliveAfter: victim.alive, victimName: victim.name };
+  const corpseEffects = g.persistentEffects.corpses;
+  return {
+    ok: true,
+    s0,
+    s1: g.score,
+    aliveAfter: victim.alive,
+    victimName: victim.name,
+    corpsesBefore,
+    corpsesAfter: corpseEffects.count,
+    corpsesAttached: corpseEffects.allAttached,
+  };
 });
 check(
   "damageEnemy kills red bot",
@@ -316,6 +345,10 @@ check(
   JSON.stringify(killResult)
 );
 check("blue team score awarded on enemy kill (+1)", killResult.s1 === killResult.s0 + 1);
+check(
+  `defeated bots leave persistent bodies (${killResult.corpsesBefore} -> ${killResult.corpsesAfter})`,
+  killResult.corpsesAfter === killResult.corpsesBefore + 1 && killResult.corpsesAttached
+);
 await page.waitForTimeout(150);
 const killMessage = await page.evaluate(() => {
   const message = document.querySelector(".system-message");
@@ -386,6 +419,30 @@ check(
   `reload refills magazine (${ra0} -> full)`,
   await page.evaluate(() => window.__game.ammo === 30 && !window.__game.reloading)
 );
+const droppedMagazine = await page.evaluate(() => window.__game.persistentEffects.magazines);
+check(
+  `reload leaves a dropped magazine on the ground (${JSON.stringify(droppedMagazine)})`,
+  droppedMagazine.count === 1 && droppedMagazine.allAttached
+);
+
+const fifoEffects = await page.evaluate(() => {
+  const g = window.__game;
+  const before = g.persistentEffects;
+  for (const kind of ["bulletMarks", "magazines", "corpses"]) {
+    g.debugPopulatePersistentEffects(kind, before[kind].max + 3);
+  }
+  return { before, after: g.persistentEffects };
+});
+for (const kind of ["bulletMarks", "magazines", "corpses"]) {
+  const beforeQueue = fifoEffects.before[kind];
+  const afterQueue = fifoEffects.after[kind];
+  check(
+    `${kind} evicts oldest entries at its cap (${JSON.stringify(afterQueue)})`,
+    afterQueue.count === afterQueue.max &&
+      afterQueue.allAttached &&
+      (beforeQueue.newestId === null || afterQueue.oldestId > beforeQueue.newestId)
+  );
+}
 
 console.log("\n[7] Player damage, death & respawn");
 await page.evaluate(() => {

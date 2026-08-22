@@ -5,10 +5,10 @@ import {
   debugBeachWaveSummary,
   debugCoverSummary,
   debugEnvSummary,
-  ground,
   renderer,
   scene,
   updateEnvironment,
+  raycastEnvironment,
 } from "./world";
 import { getWeather, initWeather, setWeatherByIndex, updateWeatherFx } from "./weather";
 import { bots, damageBot, initBots, setOnBotKilled, updateBots } from "./enemies";
@@ -29,6 +29,13 @@ import {
 import { matchResultMsg, t, onChange } from "./i18n";
 import { initAudio, playHurt, playShieldCharge, playShot } from "./audio";
 import { pickupCount, spawnPickups, throwPlayerGrenade, updateItems } from "./items";
+import {
+  debugPopulatePersistentEffects,
+  dropMagazine,
+  leaveBulletMark,
+  persistentEffectsSummary,
+  updatePersistentEffects,
+} from "./persistent-effects";
 import { debugMinimapState, updateMinimap } from "./minimap";
 import type { DeathFallDirection, GameDebugApi, PlayerState, TeamId, Tracer } from "./types";
 
@@ -228,6 +235,7 @@ const magSize = 30;
 let reloading = false;
 let reloadProgress = 0;
 let reloadStartedAt = 0;
+let reloadMagazineDropped = false;
 const reloadDuration = 1.25;
 let shootCooldown = 0;
 let recoil = 0;
@@ -358,6 +366,7 @@ function reload(): void {
   reloading = true;
   reloadProgress = 0;
   reloadStartedAt = performance.now();
+  reloadMagazineDropped = false;
   triggerHeld = false;
 }
 
@@ -380,6 +389,17 @@ function updateReloadAnimation(): void {
   gun.rotation.x = recoil * 0.15 + dip * 0.28;
   gun.rotation.z = -dip * 0.18;
   reloadHand.visible = true;
+
+  if (reloadProgress >= 0.42 && !reloadMagazineDropped) {
+    const position = gunMagazine.getWorldPosition(new THREE.Vector3());
+    const quaternion = gunMagazine.getWorldQuaternion(new THREE.Quaternion());
+    const forward = camera.getWorldDirection(new THREE.Vector3()).setY(0).normalize();
+    const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0));
+    const velocity = right.multiplyScalar(-1.7).addScaledVector(forward, 0.45);
+    velocity.y = 1.2;
+    dropMagazine(position, quaternion, velocity);
+    reloadMagazineDropped = true;
+  }
 
   if (reloadProgress < 0.42) {
     const pull = THREE.MathUtils.smoothstep(reloadProgress, 0.08, 0.42);
@@ -488,12 +508,12 @@ function tryShoot(): void {
     })
   );
   const hits = raycaster.intersectObjects(meshes, false);
-  const wallHits = raycaster.intersectObject(ground, false);
+  const environmentHit = raycastEnvironment(raycaster);
 
   let end = raycaster.ray.at(200, new THREE.Vector3());
-  if (wallHits.length && wallHits[0].distance < 200) end = wallHits[0].point;
+  if (environmentHit && environmentHit.distance < 200) end = environmentHit.point;
 
-  if (hits.length && hits[0].distance < end.distanceTo(raycaster.ray.origin)) {
+  if (hits.length && (!environmentHit || hits[0].distance < environmentHit.distance)) {
     const hit = hits[0];
     end = hit.point;
     let root: THREE.Object3D = hit.object;
@@ -502,6 +522,8 @@ function tryShoot(): void {
     if (target) {
       damageBot(target, 25, { id: -1, team: "blue", pos: player.pos, playerCaused: true });
     }
+  } else if (environmentHit && environmentHit.distance < 200) {
+    leaveBulletMark(environmentHit.point, environmentHit.normal);
   }
 
   const origin = muzzle.getWorldPosition(new THREE.Vector3());
@@ -627,6 +649,7 @@ function animate(): void {
 
   updateWeatherFx(dt, player.pos.x, player.pos.z);
   updateEnvironment(dt);
+  updatePersistentEffects(dt);
   updateMinimap(player, bots);
 
   renderer.render(scene, camera);
@@ -702,6 +725,9 @@ window.__game = {
   get minimapState() {
     return debugMinimapState();
   },
+  get persistentEffects() {
+    return persistentEffectsSummary();
+  },
   debugEnvSummary() {
     return debugEnvSummary();
   },
@@ -735,6 +761,10 @@ window.__game = {
   throwGrenade,
   damageEnemy(en: (typeof bots)[number], dmg: number): void {
     damageBot(en, dmg, { id: -1, team: "blue", pos: player.pos, playerCaused: true });
+  },
+  debugPopulatePersistentEffects(kind, count): void {
+    const source = bots.find((bot) => bot.alive)?.group ?? bots[0].group;
+    debugPopulatePersistentEffects(kind, Math.max(0, Math.floor(count)), source);
   },
 };
 animate();
