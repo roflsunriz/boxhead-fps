@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 今後のPagesリリースでNode.js 20非推奨警告が発生しないように、公式のconfigure-pagesをv6、upload-pages-artifactとdeploy-pagesをv5へ更新した。
+
 ## [1.1.0] - 2026-08-22
 
 ### Added
