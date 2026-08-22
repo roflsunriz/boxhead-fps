@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- SemVerタグをpushしたのにReleases欄へ掲載されない状態を防ぐため、Pagesデプロイ成功後にGitHub Releaseを自動公開する処理を追加した。安定版はLatest、プレリリースはPrereleaseとして扱い、再実行時は既存Releaseの重複作成を避ける。
+
 ## [1.2.0] - 2026-08-23
 
 ### Added

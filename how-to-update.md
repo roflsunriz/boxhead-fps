@@ -32,7 +32,7 @@ bun run preview
 
 (`http://localhost:8787` で `dist/` を配信)
 
-## GitHub Pages リリース
+## GitHub Pages / GitHub Releases リリース
 
 ### 初回設定
 
@@ -48,7 +48,7 @@ git tag -a v1.2.3 -m "v1.2.3"
 git push origin v1.2.3
 ```
 
-`.github/workflows/deploy-pages.yml` がタグ形式を再検証し、依存インストール、型検査、lint、脆弱性監査、Pagesのベースパスを使ったBunビルド、成果物アップロード、デプロイを順番に実行する。`v1.2.3-rc.1`のようなプレリリースタグもSemVerとしてデプロイ対象になる。
+`.github/workflows/deploy-pages.yml` がタグ形式を再検証し、依存インストール、型検査、lint、脆弱性監査、Pagesのベースパスを使ったBunビルド、成果物アップロード、デプロイ、GitHub Release公開を順番に実行する。安定版タグはLatest Release、`v1.2.3-rc.1`のようなタグはプレリリースとして掲載される。Actionsを再実行した場合は既存Releaseを検出して重複作成しない。
 
 タグは公開履歴なので、失敗時も削除・付け替えを行わない。修正コミットを作成し、パッチ番号を上げた新しいタグ（例: `v1.2.4`）で再デプロイする。
 
@@ -103,4 +103,4 @@ node test/capture-crater-review.js   # クレーター単体の斜光確認
 - three.js は npm 依存(bundler 解決)のため CDN 障害の影響を受けない。
 - typescript-eslint は TS 7 未対応のため、`typescript` は 6.x に固定している。TS 7 対応後の更新時は `typescript-eslint` の対応状況を先に確認すること。
 - テストが失敗した場合はまず `test/run.log` の失敗項目名と、8787 ポートで `dist/` が配信されているかを確認すること。UI 文言関連の失敗時は、言語設定(ja/en)の違いが原因ではないかを確認すること。
-- Pagesデプロイが失敗した場合はActionsの `Deploy SemVer tag to GitHub Pages` を確認し、PagesのSourceが `GitHub Actions` か、タグが正しいSemVerか、`github-pages` environmentの保護ルールがタグを許可しているかを確認すること。
+- PagesデプロイまたはGitHub Release公開が失敗した場合はActionsの `Release SemVer tag` を確認し、PagesのSourceが `GitHub Actions` か、タグが正しいSemVerか、`github-pages` environmentの保護ルールがタグを許可しているか、ワークフローの`contents: write`権限が許可されているかを確認すること。

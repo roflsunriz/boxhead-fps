@@ -57,17 +57,17 @@ bun run build     # dist/ へバンドル出力(Bun のバンドラ使用。roll
 bun run preview   # dist/ を 8787 番ポートで配信
 ```
 
-## GitHub Pages へのリリース
+## GitHub PagesとReleasesへのリリース
 
 リポジトリの Settings → Pages → Build and deployment → Source を、初回だけ `GitHub Actions` に設定する。
-その後、SemVer形式のタグをpushすると、型検査・lint・依存監査・Pages用ビルドを通過した成果物が自動デプロイされる。
+その後、SemVer形式のタグをpushすると、型検査・lint・依存監査・Pages用ビルドを通過した成果物が自動デプロイされ、GitHub Releasesにも自動掲載される。
 
 ```powershell
 git tag -a v1.2.0 -m "v1.2.0"
 git push origin v1.2.0
 ```
 
-`v1.2.3`、`v1.2.3-rc.1`、`v1.2.3+build.4`などを受け付ける。不正な形式のタグはデプロイ前に失敗する。Pagesのベースパスはリポジトリ設定から自動取得するため、プロジェクトサイトとカスタムドメインの両方に対応する。
+`v1.2.3`、`v1.2.3-rc.1`、`v1.2.3+build.4`などを受け付ける。不正な形式のタグはデプロイ前に失敗する。Pagesのベースパスはリポジトリ設定から自動取得するため、プロジェクトサイトとカスタムドメインの両方に対応する。安定版はLatest Release、`-rc.1`などはプレリリースとして自動公開される。
 
 ## 検証
 
