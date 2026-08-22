@@ -611,6 +611,21 @@ if (colResult.ok) {
     sprintState.locomotion === "sprint" && sprintState.moveSpeed >= 4 && sprintState.lean < -0.05
   );
 
+  const facingParts = await page3.evaluate(() => {
+    const bot = window.__game.enemies.find((en) => en.team === "red");
+    let chestZ = null;
+    let visorZ = null;
+    bot.group.traverse((part) => {
+      if (part.userData.botPart === "chestPlate") chestZ = part.position.z;
+      if (part.userData.botPart === "visor") visorZ = part.position.z;
+    });
+    return { chestZ, visorZ, muzzleZ: bot.visual.weapon.muzzleBurst.position.z };
+  });
+  check(
+    `bot face, chest decoration, and muzzle share the same forward axis (${JSON.stringify(facingParts)})`,
+    facingParts.chestZ < 0 && facingParts.visorZ < 0 && facingParts.muzzleZ < 0
+  );
+
   const shotBefore = await page3.evaluate(() => {
     const g = window.__game;
     const bot = g.enemies.find((en) => en.team === "red");

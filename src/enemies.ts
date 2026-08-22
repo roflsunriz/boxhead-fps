@@ -100,7 +100,8 @@ function buildBotModel(team: TeamId): {
   const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.34, 0.55, 4, 10), suit);
   torso.position.y = 1.15;
   const chestPlate = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.34, 0.14), dark);
-  chestPlate.position.set(0, 1.28, 0.22);
+  chestPlate.position.set(0, 1.28, -0.22);
+  chestPlate.userData.botPart = "chestPlate";
   const pelvis = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.24, 0.3), dark);
   pelvis.position.y = 0.76;
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 12), suit);
@@ -109,7 +110,8 @@ function buildBotModel(team: TeamId): {
     new THREE.BoxGeometry(0.32, 0.09, 0.06),
     new THREE.MeshBasicMaterial({ color: team === "red" ? 0xffdd33 : 0x66ffcc })
   );
-  visor.position.set(0, 1.76, 0.21);
+  visor.position.set(0, 1.76, -0.21);
+  visor.userData.botPart = "visor";
   const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.22, 5), dark);
   antenna.position.set(0.14, 2.0, 0);
 
