@@ -142,9 +142,39 @@ function buildCityEnv(): EnvBuild {
     [0, 0, 3, 2, 3],
     [-40, -30, 7, 6, 7],
     [42, 32, 6, 8, 6],
+    [-45, -15, 5, 6, 5],
+    [38, 28, 5, 4, 6],
+    [-35, 42, 6, 5, 5],
+    [48, -40, 7, 8, 7],
+    [-55, -55, 6, 5, 6],
+    [15, 52, 5, 7, 5],
+    [-20, -50, 6, 6, 6],
+    [60, 10, 5, 4, 8],
+    [55, -60, 6, 6, 5],
   ];
   const palettes = ["#8a6f52", "#6e7681", "#9c5a48", "#75808a", "#96795c"];
   crateSpots.forEach(([x, z, w, h, d], i) => addBuilding(x, z, w, h, d, palettes[i % palettes.length]));
+
+  const lowWallMat = new THREE.MeshStandardMaterial({ color: 0x9a9186, roughness: 0.95 });
+  const cityWalls: Array<[number, number, number, number]> = [
+    [-12, 18, 10, 1.2],
+    [25, -30, 1.2, 12],
+    [-32, -8, 8, 1.2],
+    [8, 35, 12, 1.2],
+    [40, -5, 1.2, 10],
+    [-48, 25, 1.2, 14],
+    [18, -58, 14, 1.2],
+    [-15, 60, 1.2, 10],
+    [55, 45, 10, 1.2],
+    [-60, -25, 12, 1.2],
+  ];
+  for (const [x, z, w, d] of cityWalls) {
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(w, 1.1, d), lowWallMat);
+    wall.position.set(x, 0.55, z);
+    wall.castShadow = wall.receiveShadow = true;
+    group.add(wall);
+    obs.push(boxObstacle(x, z, w, 1.1, d));
+  }
 
   function makeTree(scale: number): THREE.Group {
     const g = new THREE.Group();
@@ -555,6 +585,128 @@ function buildUndergroundEnv(): EnvBuild {
   return { group, obstacles: obs, treeColliders: colliders };
 }
 
+/* ------------------------------- Waypoint graph --------------------------- */
+
+export interface Waypoint {
+  x: number;
+  z: number;
+  edges: number[];
+}
+
+let waypoints: Waypoint[] = [];
+
+function pointBlocked(x: number, z: number, pad: number): boolean {
+  for (const o of obstacles) {
+    if (x > o.min.x - pad && x < o.max.x + pad && z > o.min.z - pad && z < o.max.z + pad) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function losBlocked(ax: number, az: number, bx: number, bz: number): boolean {
+  const dx = bx - ax;
+  const dz = bz - az;
+  const steps = Math.max(2, Math.ceil(Math.hypot(dx, dz) / 1.5));
+  for (let i = 1; i < steps; i++) {
+    const t = i / steps;
+    const x = ax + dx * t;
+    const z = az + dz * t;
+    for (const o of obstacles) {
+      if (o.max.y > 1.3 && x > o.min.x && x < o.max.x && z > o.min.z && z < o.max.z) return true;
+    }
+  }
+  return false;
+}
+
+function walkClear(ax: number, az: number, bx: number, bz: number): boolean {
+  const dx = bx - ax;
+  const dz = bz - az;
+  const steps = Math.max(2, Math.ceil(Math.hypot(dx, dz) / 1));
+  for (let i = 1; i < steps; i++) {
+    const t = i / steps;
+    if (pointBlocked(ax + dx * t, az + dz * t, 0.55)) return false;
+  }
+  return true;
+}
+
+function buildWaypoints(): void {
+  waypoints = [];
+  const step = 11;
+  const limit = currentVariant === "underground" ? 77 : 85;
+  const index = new Map<string, number>();
+  for (let x = -limit; x <= limit; x += step) {
+    for (let z = -limit; z <= limit; z += step) {
+      if (pointBlocked(x, z, 0.8)) continue;
+      index.set(`${Math.round(x)},${Math.round(z)}`, waypoints.length);
+      waypoints.push({ x, z, edges: [] });
+    }
+  }
+  for (const wp of waypoints) {
+    for (const [dx, dz] of [
+      [step, 0],
+      [-step, 0],
+      [0, step],
+      [0, -step],
+    ]) {
+      const j = index.get(`${Math.round(wp.x + dx)},${Math.round(wp.z + dz)}`);
+      if (j !== undefined && walkClear(wp.x, wp.z, waypoints[j].x, waypoints[j].z)) {
+        wp.edges.push(j);
+      }
+    }
+  }
+}
+
+export function nearestWaypoint(x: number, z: number): number {
+  let best = 0;
+  let bd = Infinity;
+  for (let i = 0; i < waypoints.length; i++) {
+    const d = (waypoints[i].x - x) ** 2 + (waypoints[i].z - z) ** 2;
+    if (d < bd) {
+      bd = d;
+      best = i;
+    }
+  }
+  return best;
+}
+
+export function randomWaypoint(): number {
+  return Math.floor(Math.random() * waypoints.length);
+}
+
+export function findPath(fromWp: number, toWp: number): number[] {
+  if (fromWp === toWp) return [toWp];
+  const prev = new Map<number, number>();
+  const queue: number[] = [fromWp];
+  prev.set(fromWp, -1);
+  while (queue.length) {
+    const cur = queue.shift() as number;
+    if (cur === toWp) break;
+    for (const nb of waypoints[cur].edges) {
+      if (!prev.has(nb)) {
+        prev.set(nb, cur);
+        queue.push(nb);
+      }
+    }
+  }
+  if (!prev.has(toWp)) return [];
+  const path: number[] = [];
+  let cur = toWp;
+  while (cur !== fromWp && cur >= 0) {
+    path.push(cur);
+    cur = prev.get(cur) as number;
+  }
+  return path.reverse();
+}
+
+export function waypointPos(i: number): { x: number; z: number } {
+  return { x: waypoints[i].x, z: waypoints[i].z };
+}
+
+export function waypointCount(): number {
+  return waypoints.length;
+}
+
 /* ----------------------------- Env management ----------------------------- */
 
 let currentEnvGroup: THREE.Group | null = null;
@@ -582,6 +734,7 @@ export function applyEnvironment(variant: EnvVariant): void {
   groundMat.map = getGroundTexture(variant);
   groundMat.needsUpdate = true;
   scene.add(currentEnvGroup);
+  buildWaypoints();
 }
 
 export function updateEnvironment(dt: number): void {

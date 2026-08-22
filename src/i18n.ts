@@ -12,6 +12,8 @@ type StringKey =
   | "reloading"
   | "pts"
   | "wave"
+  | "redWins"
+  | "blueWins"
   | "weatherLabel"
   | "langBtn";
 
@@ -27,7 +29,9 @@ const STRINGS: Record<Lang, Record<StringKey, string>> = {
     playAgain: "PLAY AGAIN",
     reloading: "RELOADING...",
     pts: "pts",
-    wave: "Wave",
+    wave: "Enemy",
+    redWins: "RED TEAM WINS",
+    blueWins: "BLUE TEAM WINS",
     weatherLabel: "Atmosphere:",
     langBtn: "JA",
   },
@@ -42,7 +46,9 @@ const STRINGS: Record<Lang, Record<StringKey, string>> = {
     playAgain: "もう一度プレイ",
     reloading: "リロード中...",
     pts: "pt",
-    wave: "Wave",
+    wave: "敵チーム",
+    redWins: "赤チームの勝利",
+    blueWins: "青チームの勝利",
     weatherLabel: "大気:",
     langBtn: "EN",
   },
@@ -71,10 +77,11 @@ export function onChange(fn: I18nListener): void {
   listeners.push(fn);
 }
 
-export function gameOverMsg(score: number, wave: number): string {
+export function matchResultMsg(winner: "red" | "blue", redScore: number, blueScore: number): string {
+  const title = t(winner === "red" ? "redWins" : "blueWins");
   return lang === "ja"
-    ? `最終スコア: <b>${score}</b> · 到達ウェーブ <b>${wave}</b>`
-    : `Final score: <b>${score}</b> · Reached wave <b>${wave}</b>`;
+    ? `${title}<br>最終スコア <b>青 ${blueScore}</b> - <b>赤 ${redScore}</b>`
+    : `${title}<br>Final score <b>Blue ${blueScore}</b> - <b>Red ${redScore}</b>`;
 }
 
 export function t(key: StringKey): string {

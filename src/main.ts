@@ -1,19 +1,10 @@
 import * as THREE from "three";
 import { camera, collide, ground, renderer, scene, updateEnvironment, debugEnvSummary } from "./world";
 import { getWeather, initWeather, setWeatherByIndex, updateWeatherFx } from "./weather";
-import { damageEnemy, enemies, setOnEnemyKilled, spawnEnemy } from "./enemies";
-import {
-  overlay,
-  refreshHealth,
-  setAmmoText,
-  setScore,
-  setVignette,
-  setWave,
-  showOverlay,
-  startBtn,
-} from "./ui";
-import { gameOverMsg, t, onChange } from "./i18n";
-import type { GameDebugApi, PlayerState, Tracer } from "./types";
+import { bots, damageBot, initBots, setOnBotKilled, updateBots } from "./enemies";
+import { overlay, refreshHealth, setAmmoText, setMatchScore, setVignette, showOverlay, startBtn } from "./ui";
+import { matchResultMsg, t, onChange } from "./i18n";
+import type { GameDebugApi, PlayerState, TeamId, Tracer } from "./types";
 
 declare global {
   interface Window {
@@ -29,6 +20,7 @@ const player: PlayerState = {
   onGround: true,
   hp: 100,
   radius: 0.5,
+  dead: false,
 };
 const keys: Record<string, boolean> = {};
 addEventListener("keydown", (e) => (keys[e.code] = true));
@@ -142,19 +134,44 @@ function shootTracer(from: THREE.Vector3, to: THREE.Vector3): void {
 let ammo = 30;
 const magSize = 30;
 let reloading = false;
-let score = 0;
-let wave = 1;
-let enemiesToSpawn = 5;
-let spawnTimer = 0;
-let gameOver = false;
 let shootCooldown = 0;
 let recoil = 0;
 let lastTracerOrigin: { x: number; y: number; z: number } | null = null;
 
-setOnEnemyKilled(() => {
-  score += 100;
-  setScore(score);
+const teamScore: Record<TeamId, number> = { red: 0, blue: 0 };
+let killTarget = 20;
+let respawnT = 0;
+let gameOver = false;
+
+function scoreKill(team: TeamId): void {
+  teamScore[team]++;
+  setMatchScore(teamScore.red, teamScore.blue);
+  if (teamScore[team] >= killTarget) endMatch(team);
+}
+
+setOnBotKilled((victim, killerTeam) => {
+  if (victim.team === killerTeam) return;
+  scoreKill(killerTeam);
 });
+
+function respawnPlayer(): void {
+  player.dead = false;
+  player.hp = 100;
+  player.pos.set(66 + Math.random() * 8, 1.7, 66 + Math.random() * 8);
+  player.vel.set(0, 0, 0);
+  gun.visible = true;
+  refreshHealth(100);
+  setVignette(0);
+}
+
+function endMatch(winner: TeamId): void {
+  gameOver = true;
+  playing = false;
+  document.exitPointerLock();
+  renderer.domElement.style.cursor = "default";
+  showOverlay("gameOverTitle", () => matchResultMsg(winner, teamScore.red, teamScore.blue), "playAgain");
+  startBtn.onclick = () => location.reload();
+}
 
 function reload(): void {
   if (reloading || ammo === magSize) return;
@@ -174,7 +191,7 @@ addEventListener("keydown", (e) => {
 });
 
 function tryShoot(): void {
-  if (shootCooldown > 0 || reloading || gameOver) return;
+  if (shootCooldown > 0 || reloading || gameOver || player.dead) return;
   if (ammo <= 0) {
     reload();
     return;
@@ -194,9 +211,9 @@ function tryShoot(): void {
   raycaster.far = 200;
 
   const meshes: THREE.Mesh[] = [];
-  enemies.forEach((en) =>
+  bots.forEach((en) =>
     en.group.traverse((o) => {
-      if (o instanceof THREE.Mesh) meshes.push(o);
+      if (o instanceof THREE.Mesh && en.alive) meshes.push(o);
     })
   );
   const hits = raycaster.intersectObjects(meshes, false);
@@ -209,9 +226,9 @@ function tryShoot(): void {
     const hit = hits[0];
     end = hit.point;
     let root: THREE.Object3D = hit.object;
-    while (root.parent && !enemies.some((en) => en.group === root)) root = root.parent;
-    const target = enemies.find((en) => en.group === root);
-    if (target) damageEnemy(target, 1);
+    while (root.parent && !bots.some((en) => en.group === root)) root = root.parent;
+    const target = bots.find((en) => en.group === root);
+    if (target) damageBot(target, 25, "blue");
   }
 
   const origin = muzzle.getWorldPosition(new THREE.Vector3());
@@ -220,23 +237,16 @@ function tryShoot(): void {
 }
 
 function hurtPlayer(dmg: number): void {
-  if (gameOver) return;
+  if (gameOver || player.dead || dmg <= 0) return;
   player.hp -= dmg;
-  setVignette((100 - player.hp) / 70);
-  setTimeout(() => {
-    setVignette((100 - player.hp - 10) / 70);
-  }, 150);
+  setVignette(Math.min(1, (100 - player.hp) / 70));
   refreshHealth(player.hp);
-  if (player.hp <= 0) endGame();
-}
-
-function endGame(): void {
-  gameOver = true;
-  playing = false;
-  document.exitPointerLock();
-  renderer.domElement.style.cursor = "default";
-  showOverlay("gameOverTitle", () => gameOverMsg(score, wave), "playAgain");
-  startBtn.onclick = () => location.reload();
+  if (player.hp <= 0) {
+    player.dead = true;
+    respawnT = 3;
+    gun.visible = false;
+    scoreKill("red");
+  }
 }
 
 const clock = new THREE.Clock();
@@ -289,44 +299,12 @@ function animate(): void {
     shootCooldown = Math.max(0, shootCooldown - dt);
     setAmmoText(reloading ? t("reloading") : `${ammo} / ∞`);
 
-    spawnTimer -= dt;
-    if (enemiesToSpawn > 0 && spawnTimer <= 0) {
-      spawnEnemy(player.pos, wave);
-      enemiesToSpawn--;
-      spawnTimer = 1.2;
-    }
-    if (enemiesToSpawn === 0 && enemies.length === 0) {
-      wave++;
-      setWave(wave);
-      enemiesToSpawn = 4 + wave * 2;
-      spawnTimer = 2;
-      player.hp = Math.min(100, player.hp + 20);
-      hurtPlayer(0);
+    if (player.dead) {
+      respawnT -= dt;
+      if (respawnT <= 0) respawnPlayer();
     }
 
-    for (const en of [...enemies]) {
-      const toPlayer = new THREE.Vector3().subVectors(player.pos, en.group.position);
-      toPlayer.y = 0;
-      const dist = toPlayer.length();
-      toPlayer.normalize();
-      en.group.lookAt(player.pos.x, en.group.position.y, player.pos.z);
-      if (dist > 1.6) {
-        en.group.position.addScaledVector(toPlayer, en.speed * dt);
-        collide(en.group.position, 0.45);
-        en.group.position.y = Math.abs(Math.sin(clock.elapsedTime * 8 + en.speed)) * 0.08;
-        const sw = Math.sin(clock.elapsedTime * 9 + en.phase) * 0.55;
-        en.limbs.legL.rotation.x = sw;
-        en.limbs.legR.rotation.x = -sw;
-        en.limbs.armL.rotation.x = -sw * 0.7;
-        en.limbs.armR.rotation.x = sw * 0.7;
-      } else {
-        hurtPlayer(12 * dt * 3);
-      }
-      if (en.hitTimer > 0) {
-        en.hitTimer -= dt;
-        if (en.hitTimer <= 0) en.mats.forEach((m) => m.color.setHex(m.userData.base));
-      }
-    }
+    updateBots(dt, clock.elapsedTime);
   }
 
   for (let i = tracers.length - 1; i >= 0; i--) {
@@ -347,22 +325,23 @@ function animate(): void {
 initWeather();
 refreshHealth(player.hp);
 onChange(() => setAmmoText(reloading ? t("reloading") : `${ammo} / ∞`));
+initBots({ x: 66, z: 66 }, { x: -66, z: -66 }, { player, onPlayerHit: hurtPlayer });
 
 window.__game = {
   get player() {
     return player;
   },
   get enemies() {
-    return enemies;
+    return bots;
   },
   get ammo() {
     return ammo;
   },
   get score() {
-    return score;
+    return teamScore.blue;
   },
   get wave() {
-    return wave;
+    return teamScore.red;
   },
   get gameOver() {
     return gameOver;
@@ -382,9 +361,14 @@ window.__game = {
   setWeather(i: number): void {
     setWeatherByIndex(i);
   },
+  setKillTarget(n: number): void {
+    killTarget = n;
+  },
   tryShoot,
   reload,
   hurtPlayer,
-  damageEnemy,
+  damageEnemy(en: (typeof bots)[number], dmg: number): void {
+    damageBot(en, dmg, "blue");
+  },
 };
 animate();

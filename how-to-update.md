@@ -41,7 +41,7 @@ bun run type-check   # tsc --noEmit、any 禁止・strict
 bun run lint         # ESLint (typescript-eslint flat config、src/ と test/ 両方)
 bun run format       # Prettier 整形
 bun run audit        # bun audit による依存脆弱性スキャン
-bun run test         # Playwright E2E、31 項目すべて PASS すること
+bun run test         # Playwright E2E、41 項目すべて PASS すること
 node test/responsive.js   # 4 ビューポートのレイアウト検証(ALL VIEWPORTS OK が出ること)
 ```
 

@@ -102,7 +102,7 @@ console.log("\n[4] Shooting & ammo");
 await page.evaluate(() => {
   const g = window.__game;
   g.enemies.forEach((en) => {
-    en.group.position.set(200, 0, 200);
+    en.pos.set(200, 0, 200);
   });
   g.player.pos.set(0, 1.7, 25);
   g.player.yaw = Math.PI;
@@ -126,36 +126,51 @@ check(
 console.log("\n[5] Enemy spawn, damage, kill, score");
 await page.evaluate(() => window.__game.hurtPlayer(0));
 const e0 = await page.evaluate(() => window.__game.enemies.length);
-check(`enemies spawning (count=${e0})`, e0 > 0);
+check(`bots fielded (count=${e0})`, e0 > 0);
 await page.waitForTimeout(200);
 
 const killResult = await page.evaluate(() => {
   const g = window.__game;
-  if (!g.enemies.length) return { ok: false };
-  g.enemies.forEach((en) => {
-    en.hp = 1;
-    en.group.position.set(0, 0, 28);
-    en.group.updateMatrixWorld(true);
-  });
+  const victim = g.enemies.find((en) => en.team === "red" && en.alive);
+  if (!victim) return { ok: false };
   const s0 = g.score;
-  const n0 = g.enemies.length;
-  g.tryShoot();
-  return { ok: true, s0, s1: g.score, n0, n1: g.enemies.length };
+  g.damageEnemy(victim, 999);
+  return { ok: true, s0, s1: g.score, aliveAfter: victim.alive };
 });
 check(
-  "raycast hits enemy and kills it",
-  killResult.ok && killResult.n1 === killResult.n0 - 1,
+  "damageEnemy kills red bot",
+  killResult.ok && killResult.aliveAfter === false,
   JSON.stringify(killResult)
 );
-check(
-  "score awarded on kill (+100)",
-  killResult.s1 === killResult.s0 + 100,
-  `${killResult.s0} -> ${killResult.s1}`
-);
+check("blue team score awarded on enemy kill (+1)", killResult.s1 === killResult.s0 + 1);
+
+console.log("\n[6] Bot reload & respawn");
+await page.evaluate(() => {
+  const g = window.__game;
+  g.enemies.forEach((en) => {
+    if (en.team === "red") {
+      en.skill.accuracy = 0;
+      en.pos.set(-200, 0, -200);
+    }
+  });
+});
+const reloadInfo = await page.evaluate(() => {
+  const en = window.__game.enemies.find((b) => b.alive);
+  if (!en) return null;
+  en.ammo = 1;
+  return { team: en.team };
+});
+check("bot selected for reload test", reloadInfo !== null);
+const botReloaded = await page.evaluate(async () => {
+  await new Promise((r) => setTimeout(r, 3500));
+  const en = window.__game.enemies.find((b) => b.alive);
+  return en ? { ammo: en.ammo } : null;
+});
+check(`bot auto-reloads to full (${JSON.stringify(botReloaded)})`, botReloaded && botReloaded.ammo === 30);
 
 console.log("\n[6] Reload");
 await page.evaluate(() => {
-  window.__game.enemies.forEach((en) => en.group.position.set(200, 0, 200));
+  window.__game.enemies.forEach((en) => en.pos.set(200, 0, 200));
 });
 const ra0 = await page.evaluate(() => window.__game.ammo);
 await page.evaluate(() => window.__game.reload());
@@ -166,24 +181,56 @@ check(
   await page.evaluate(() => window.__game.ammo === 30 && !window.__game.reloading)
 );
 
-console.log("\n[7] Damage & game over");
+console.log("\n[7] Player damage, death & respawn");
 await page.evaluate(() => {
   const g = window.__game;
   g.enemies.forEach((en) => {
-    en.group.position.set(200, 0, 200);
+    if (en.team === "red") {
+      en.skill.accuracy = 0;
+      en.pos.set(-200, 0, -200);
+    }
   });
   g.player.hp = 100;
   g.hurtPlayer(40);
-  return g.player.hp;
 });
 const hpAfter = await page.evaluate(() => window.__game.player.hp);
 check(`player hp reduced to exactly 60 (${hpAfter.toFixed(1)})`, Math.abs(hpAfter - 60) < 0.01);
-check("game still running before death test", await page.evaluate(() => window.__game.gameOver === false));
+check("match still running before death test", await page.evaluate(() => window.__game.gameOver === false));
 const hpText = await page.textContent("#health-text");
 check("HUD health text synced", hpText.trim() === "60");
 await page.evaluate(() => window.__game.hurtPlayer(1000));
+const deathState = await page.evaluate(() => ({
+  dead: window.__game.player.dead,
+  over: window.__game.gameOver,
+}));
+check(
+  `player dies but match continues (dead=${deathState.dead}, matchOver=${deathState.over})`,
+  deathState.dead === true && deathState.over === false
+);
+const respawned = await page.evaluate(async () => {
+  await new Promise((r) => setTimeout(r, 3500));
+  const g = window.__game;
+  return { dead: g.player.dead, hp: g.player.hp };
+});
+check(
+  `player respawns with full hp (${JSON.stringify(respawned)})`,
+  respawned.dead === false && respawned.hp === 100
+);
+
+console.log("\n[7b] Match end & result overlay");
+await page.evaluate(() => {
+  const g = window.__game;
+  g.setKillTarget(1);
+});
+const redBot = await page.evaluate(() => {
+  const en = window.__game.enemies.find((b) => b.team === "red" && b.alive);
+  if (!en) return false;
+  window.__game.damageEnemy(en, 999);
+  return true;
+});
+check("red bot available for match-end kill", redBot);
 await page.waitForTimeout(400);
-check("game over triggered", await page.evaluate(() => window.__game.gameOver === true));
+check("match ends at kill target", await page.evaluate(() => window.__game.gameOver === true));
 check(
   "overlay shows game over state",
   await page.evaluate(() => document.querySelector("#overlay")?.dataset.screen === "game-over")
@@ -246,24 +293,25 @@ await page3.evaluate(() => window.__game.setWeather(0));
 await page3.waitForTimeout(150);
 const colResult = await page3.evaluate(() => {
   const g = window.__game;
-  g.enemies.forEach((en) => en.group.position.set(500, 0, 500));
-  g.player.pos.set(0, 1.7, 25);
-  g.player.yaw = 0;
-  g.player.pitch = 0;
-  const en = g.enemies[0];
-  if (!en) return { ok: false };
-  en.group.position.set(0, 0, -12);
-  return { ok: true, getZ: () => en.group.position.z };
+  const red = g.enemies.filter((en) => en.team === "red");
+  const blue = g.enemies.filter((en) => en.team === "blue");
+  const bot = red[0];
+  if (!bot || !blue.length) return { ok: false };
+  bot.pos.set(0, 0, -12);
+  return { ok: true, z0: bot.pos.z };
 });
 if (colResult.ok) {
-  await page3.waitForTimeout(2500);
-  const ez = await page3.evaluate(() => window.__game.enemies[0].group.position.z);
+  await page3.waitForTimeout(2000);
+  const moved = await page3.evaluate(() => {
+    const bot = window.__game.enemies.find((en) => en.team === "red");
+    return { z: bot.pos.z, x: bot.pos.x, alive: bot.alive };
+  });
   check(
-    `enemy blocked by center building (stayed at z=${ez.toFixed(2)}, did not cross to player side)`,
-    ez < 0
+    `red bot navigates via waypoints (moved to ${moved.x.toFixed(1)},${moved.z.toFixed(1)})`,
+    Math.hypot(moved.x, moved.z - -12) > 3
   );
 } else {
-  check("enemy available for collision test", false);
+  check("bots available for navigation test", false);
 }
 
 console.log("\n[11] Environment variants (beach / underground)");

@@ -54,12 +54,9 @@ export function setAmmoText(text: string): void {
   ammoEl.textContent = text;
 }
 
-export function setScore(score: number): void {
-  scoreEl.textContent = String(score);
-}
-
-export function setWave(wave: number): void {
-  waveEl.textContent = String(wave);
+export function setMatchScore(red: number, blue: number): void {
+  scoreEl.textContent = String(blue);
+  waveEl.textContent = String(red);
 }
 
 export function flashHitmarker(): void {
