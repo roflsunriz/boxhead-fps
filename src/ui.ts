@@ -90,6 +90,7 @@ export function refreshHealth(hp: number): void {
       : hp > 25
         ? "linear-gradient(90deg,#ccaa22,#ffdd55)"
         : "linear-gradient(90deg,#cc2222,#ff5544)";
+  setVignette(hp <= 30 ? 0.35 + ((30 - Math.max(0, hp)) / 30) * 0.65 : 0);
 }
 
 export function refreshShield(value: number): void {

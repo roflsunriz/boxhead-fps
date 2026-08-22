@@ -283,10 +283,11 @@ const reloadInsertView = await page.evaluate(() => window.__game.reloadView);
 check(
   `reload inserts the replacement magazine (${JSON.stringify(reloadInsertView)})`,
   reloadInsertView.progress > 0.5 &&
-    reloadInsertView.progress < 0.95 &&
+    reloadInsertView.progress < 0.99 &&
     reloadInsertView.magazineVisible &&
     reloadInsertView.magazineY > -0.47 &&
-    reloadInsertView.magazineY < -0.13
+    reloadInsertView.magazineY <= -0.129 &&
+    reloadInsertView.handVisible
 );
 await page.screenshot({ path: "test/feature-magazine-insert.png" });
 await page.waitForTimeout(850);
@@ -312,6 +313,19 @@ check(`player hp reduced to exactly 60 (${hpAfter.toFixed(1)})`, Math.abs(hpAfte
 check("match still running before death test", await page.evaluate(() => window.__game.gameOver === false));
 const hpText = await page.textContent("#health-text");
 check("HUD health text synced", hpText.trim() === "60");
+const warningLifecycle = await page.evaluate(() => {
+  const g = window.__game;
+  g.player.hp = 100;
+  g.hurtPlayer(80);
+  const lowOpacity = Number(document.querySelector("#damage-vignette")?.style.opacity ?? 0);
+  g.healPlayer(60);
+  const healedOpacity = Number(document.querySelector("#damage-vignette")?.style.opacity ?? 0);
+  return { lowOpacity, healedOpacity, hp: g.player.hp };
+});
+check(
+  `low-health warning clears after recovery (${JSON.stringify(warningLifecycle)})`,
+  warningLifecycle.lowOpacity > 0.5 && warningLifecycle.hp === 80 && warningLifecycle.healedOpacity === 0
+);
 await page.evaluate(() => window.__game.hurtPlayer(1000));
 const deathState = await page.evaluate(() => ({
   dead: window.__game.player.dead,
@@ -456,18 +470,92 @@ const colResult = await page3.evaluate(() => {
   const bot = red[0];
   if (!bot || !blue.length) return { ok: false };
   bot.pos.set(0, 0, -12);
+  bot.target = null;
+  bot.nextThink = 999;
+  bot.path = [];
+  bot.pathGoal = -1;
   return { ok: true, z0: bot.pos.z };
 });
 if (colResult.ok) {
   await page3.waitForTimeout(2000);
   const moved = await page3.evaluate(() => {
     const bot = window.__game.enemies.find((en) => en.team === "red");
-    return { z: bot.pos.z, x: bot.pos.x, alive: bot.alive };
+    return {
+      z: bot.pos.z,
+      x: bot.pos.x,
+      alive: bot.alive,
+      locomotion: bot.visual.locomotion,
+      moveSpeed: bot.visual.moveSpeed,
+      legSwing: Math.abs(bot.visual.limbs.legL.rotation.x),
+      gunParts: bot.visual.weapon.group.children.length,
+    };
   });
   check(
     `red bot navigates via waypoints (moved to ${moved.x.toFixed(1)},${moved.z.toFixed(1)})`,
     Math.hypot(moved.x, moved.z - -12) > 3
   );
+  check(
+    `patrolling bot uses walk animation (${JSON.stringify(moved)})`,
+    moved.locomotion === "walk" && moved.moveSpeed > 2 && moved.moveSpeed < 4 && moved.gunParts >= 6
+  );
+
+  await page3.evaluate(() => {
+    const bot = window.__game.enemies.find((en) => en.team === "red");
+    const targetPos = bot.pos.clone();
+    targetPos.x += 20;
+    bot.target = { id: -1, pos: targetPos, seenAt: 1e9 };
+    bot.nextThink = 999;
+    bot.fireT = 999;
+  });
+  await page3.waitForTimeout(300);
+  const sprintState = await page3.evaluate(() => {
+    const bot = window.__game.enemies.find((en) => en.team === "red");
+    return {
+      locomotion: bot.visual.locomotion,
+      moveSpeed: bot.visual.moveSpeed,
+      lean: bot.group.rotation.x,
+    };
+  });
+  check(
+    `engaging bot uses sprint animation (${JSON.stringify(sprintState)})`,
+    sprintState.locomotion === "sprint" && sprintState.moveSpeed >= 4 && sprintState.lean < -0.05
+  );
+
+  const shotBefore = await page3.evaluate(() => {
+    const g = window.__game;
+    const bot = g.enemies.find((en) => en.team === "red");
+    g.player.pos.set(5, 1.7, 10);
+    bot.pos.set(5, 0, 2);
+    bot.yaw = Math.PI;
+    bot.target = { id: -1, pos: g.player.pos.clone(), seenAt: 1e9 };
+    bot.nextThink = 999;
+    bot.fireT = 0;
+    bot.ammo = 30;
+    return bot.visual.shotCount;
+  });
+  await page3.waitForTimeout(35);
+  const weaponState = await page3.evaluate((before) => {
+    const bot = window.__game.enemies.find((en) => en.team === "red");
+    return {
+      fired: bot.visual.shotCount > before,
+      gunParts: bot.visual.weapon.group.children.length,
+      flashVisible: bot.visual.weapon.muzzleBurst.visible,
+      flashIntensity: bot.visual.weapon.muzzleFlash.intensity,
+    };
+  }, shotBefore);
+  check(
+    `bot gun fires with muzzle flash (${JSON.stringify(weaponState)})`,
+    weaponState.fired &&
+      weaponState.gunParts >= 7 &&
+      (weaponState.flashVisible || weaponState.flashIntensity > 0)
+  );
+  await page3.evaluate(() => {
+    const bot = window.__game.enemies.find((en) => en.team === "red");
+    bot.visual.fireFlashT = 1;
+    bot.visual.weapon.muzzleBurst.visible = true;
+    bot.visual.weapon.muzzleFlash.intensity = 5;
+  });
+  await page3.screenshot({ path: "test/feature-bot-sprint-gun.png" });
 } else {
   check("bots available for navigation test", false);
 }

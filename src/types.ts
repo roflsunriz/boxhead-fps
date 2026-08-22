@@ -92,6 +92,15 @@ export interface BotVisual {
   hitTimer: number;
   limbs: EnemyLimbs;
   phase: number;
+  moveSpeed: number;
+  locomotion: "idle" | "walk" | "sprint";
+  weapon: {
+    group: THREE.Group;
+    muzzleFlash: THREE.PointLight;
+    muzzleBurst: THREE.Mesh<THREE.OctahedronGeometry, THREE.MeshBasicMaterial>;
+  };
+  fireFlashT: number;
+  shotCount: number;
 }
 
 export type Enemy = Bot & { visual: BotVisual };
@@ -148,6 +157,7 @@ export interface GameDebugApi {
   reload(): void;
   hurtPlayer(dmg: number): void;
   hurtPlayerFrom(dmg: number, x: number, z: number): void;
+  healPlayer(amount: number): void;
   useShieldCell(): void;
   throwGrenade(): void;
   damageEnemy(en: Enemy, dmg: number): void;

@@ -21,7 +21,6 @@ import {
   setDeathScreen,
   setInventory,
   setMatchScore,
-  setVignette,
   showDamageDirection,
   showEliminationMessage,
   showOverlay,
@@ -235,6 +234,7 @@ let lastTracerOrigin: { x: number; y: number; z: number } | null = null;
 let triggerHeld = false;
 let healingShield = false;
 let shieldHealT = 0;
+let shieldHealStartedAt = 0;
 const shieldHealDuration = 2.1;
 
 const teamScore: Record<TeamId, number> = { red: 0, blue: 0 };
@@ -339,7 +339,6 @@ function respawnPlayer(): void {
   refreshHealth(100);
   refreshShield(100);
   setInventory(player.shieldCells, player.grenades, player.stance);
-  setVignette(0);
   setDeathScreen(0);
 }
 
@@ -426,6 +425,7 @@ function useShieldCell(): void {
   if (healingShield || player.dead || player.shield >= 100 || player.shieldCells <= 0) return;
   healingShield = true;
   shieldHealT = 0;
+  shieldHealStartedAt = performance.now();
   reloading = false;
   triggerHeld = false;
   shieldDevice.visible = true;
@@ -435,7 +435,7 @@ function useShieldCell(): void {
 
 function updateShieldHeal(dt: number): void {
   if (!healingShield) return;
-  shieldHealT += dt;
+  shieldHealT = (performance.now() - shieldHealStartedAt) / 1000;
   const progress = Math.min(1, shieldHealT / shieldHealDuration);
   shieldDevice.rotation.y += dt * 4;
   shieldDevice.position.y = -0.31 + Math.sin(shieldHealT * 8) * 0.025;
@@ -524,7 +524,6 @@ function hurtPlayer(dmg: number, source?: THREE.Vector3, bypassShield = false): 
     while (relative < -Math.PI) relative += Math.PI * 2;
     showDamageDirection(relative);
   }
-  setVignette(Math.min(1, (100 - player.hp) / 70));
   refreshHealth(player.hp);
   if (player.hp <= 0) {
     player.dead = true;
@@ -715,6 +714,11 @@ window.__game = {
   },
   hurtPlayerFrom(dmg: number, x: number, z: number): void {
     hurtPlayer(dmg, new THREE.Vector3(x, player.pos.y, z));
+  },
+  healPlayer(amount: number): void {
+    if (amount <= 0 || player.dead) return;
+    player.hp = Math.min(100, player.hp + amount);
+    refreshHealth(player.hp);
   },
   useShieldCell,
   throwGrenade,

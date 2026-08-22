@@ -89,6 +89,7 @@ function buildBotModel(team: TeamId): {
   group: THREE.Group;
   mats: HitFlashMaterial[];
   limbs: Enemy["visual"]["limbs"];
+  weapon: Enemy["visual"]["weapon"];
 } {
   const g = new THREE.Group();
   const suitColor = team === "red" ? 0xb23232 : 0x2f56b8;
@@ -127,11 +128,45 @@ function buildBotModel(team: TeamId): {
   const legR = limb(0.52, 0.11, dark);
   legR.position.set(0.16, 0.7, 0);
 
-  g.add(torso, chestPlate, pelvis, head, visor, antenna, armL, armR, legL, legR);
+  const weaponGroup = new THREE.Group();
+  weaponGroup.position.set(0, 1.3, -0.48);
+  const weaponMat = new THREE.MeshStandardMaterial({ color: 0x171a1f, roughness: 0.42, metalness: 0.68 });
+  const weaponAccent = new THREE.MeshStandardMaterial({
+    color: team === "red" ? 0x8f2929 : 0x244a9a,
+    roughness: 0.58,
+  });
+  const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.15, 0.58), weaponMat);
+  const stock = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.18, 0.24), weaponMat);
+  stock.position.set(0, -0.03, 0.36);
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.34, 8), weaponMat);
+  barrel.rotation.x = Math.PI / 2;
+  barrel.position.z = -0.45;
+  const magazine = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.22, 0.13), weaponAccent);
+  magazine.position.set(0, -0.17, -0.05);
+  magazine.rotation.x = -0.2;
+  const sight = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.055, 0.13), weaponAccent);
+  sight.position.set(0, 0.105, -0.08);
+  const muzzleBurst = new THREE.Mesh(
+    new THREE.OctahedronGeometry(0.12),
+    new THREE.MeshBasicMaterial({ color: 0xffb126, transparent: true, opacity: 0.95 })
+  );
+  muzzleBurst.position.z = -0.67;
+  muzzleBurst.scale.set(0.75, 0.75, 1.8);
+  muzzleBurst.visible = false;
+  const muzzleFlash = new THREE.PointLight(0xff8a22, 0, 6);
+  muzzleFlash.position.z = -0.69;
+  weaponGroup.add(receiver, stock, barrel, magazine, sight, muzzleBurst);
+
+  g.add(torso, chestPlate, pelvis, head, visor, antenna, armL, armR, legL, legR, weaponGroup);
   g.traverse((o) => {
     if (o instanceof THREE.Mesh) o.castShadow = true;
   });
-  return { group: g, mats: [suit, dark], limbs: { armL, armR, legL, legR } };
+  return {
+    group: g,
+    mats: [suit, dark],
+    limbs: { armL, armR, legL, legR },
+    weapon: { group: weaponGroup, muzzleFlash, muzzleBurst },
+  };
 }
 
 function spawnAt(bot: Enemy, x: number, z: number): void {
@@ -145,6 +180,12 @@ function spawnAt(bot: Enemy, x: number, z: number): void {
   bot.target = null;
   bot.path = [];
   bot.pathGoal = -1;
+  bot.visual.moveSpeed = 0;
+  bot.visual.locomotion = "idle";
+  bot.visual.fireFlashT = 0;
+  bot.visual.weapon.muzzleFlash.intensity = 0;
+  bot.visual.weapon.muzzleFlash.removeFromParent();
+  bot.visual.weapon.muzzleBurst.visible = false;
   bot.group.visible = true;
 }
 
@@ -173,7 +214,17 @@ function createBot(team: TeamId, name: string, x: number, z: number): Enemy {
     team,
     name,
     group: model.group,
-    visual: { mats: model.mats, hitTimer: 0, limbs: model.limbs, phase: Math.random() * 10 },
+    visual: {
+      mats: model.mats,
+      hitTimer: 0,
+      limbs: model.limbs,
+      phase: Math.random() * 10,
+      moveSpeed: 0,
+      locomotion: "idle",
+      weapon: model.weapon,
+      fireFlashT: 0,
+      shotCount: 0,
+    },
     hp: 100,
     ammo: 30,
     reloading: false,
@@ -324,11 +375,17 @@ function moveBot(bot: Enemy, dt: number, time: number): void {
   }
 
   const len = Math.hypot(mx, mz);
+  bot.visual.moveSpeed = 0;
+  bot.visual.locomotion = "idle";
   if (len > 0.01) {
     const speed = walkSpeed(bot);
     bot.pos.x += (mx / len) * speed * dt;
     bot.pos.z += (mz / len) * speed * dt;
-    bot.visual.phase += dt * (len > 1 ? 9 : 0);
+    bot.visual.moveSpeed = speed;
+    bot.visual.locomotion = speed >= 4 ? "sprint" : "walk";
+    bot.visual.phase += dt * (speed >= 4 ? 13 : 7);
+  } else {
+    bot.visual.phase += dt * 1.5;
   }
 
   if (!bot.onGround) {
@@ -356,6 +413,12 @@ function tryFire(bot: Enemy, time: number): void {
   if (dist > BOT_MAX_ENGAGE_RANGE) return;
   bot.fireT = bot.skill.fireInterval + Math.max(0, dist - 16) * 0.012;
   bot.ammo--;
+  bot.visual.fireFlashT = 0.1;
+  bot.visual.shotCount++;
+  bot.visual.weapon.muzzleFlash.intensity = 5;
+  if (!bot.visual.weapon.muzzleFlash.parent) bot.visual.weapon.group.add(bot.visual.weapon.muzzleFlash);
+  bot.visual.weapon.muzzleBurst.visible = true;
+  bot.visual.weapon.muzzleBurst.rotation.z = Math.random() * Math.PI;
   const aimErr = (1 - bot.skill.accuracy) * (0.065 + dist * 0.003);
   const hitRoll = Math.random();
   const rangeFactor =
@@ -394,13 +457,44 @@ function updateReload(bot: Enemy, dt: number): void {
 }
 
 function animateVisual(bot: Enemy, dt: number): void {
-  bot.group.position.set(bot.pos.x, bot.pos.y, bot.pos.z);
+  const sprinting = bot.visual.locomotion === "sprint";
+  const walking = bot.visual.locomotion === "walk";
+  const stride = Math.sin(bot.visual.phase);
+  const bob =
+    bot.visual.locomotion === "idle"
+      ? Math.sin(bot.visual.phase) * 0.012
+      : Math.abs(stride) * (sprinting ? 0.07 : 0.035);
+  bot.group.position.set(bot.pos.x, bot.pos.y + bob, bot.pos.z);
   bot.group.rotation.y = bot.yaw;
-  const swing = Math.sin(bot.visual.phase) * 0.55;
-  bot.visual.limbs.armL.rotation.x = swing;
-  bot.visual.limbs.armR.rotation.x = -swing;
-  bot.visual.limbs.legL.rotation.x = -swing;
-  bot.visual.limbs.legR.rotation.x = swing;
+  bot.group.rotation.x = sprinting ? -0.1 : 0;
+  const legSwing = walking ? stride * 0.5 : sprinting ? stride * 0.82 : 0;
+  bot.visual.limbs.legL.rotation.x = -legSwing;
+  bot.visual.limbs.legR.rotation.x = legSwing;
+  const weaponSway =
+    bot.visual.locomotion === "idle"
+      ? Math.sin(bot.visual.phase) * 0.025
+      : stride * (sprinting ? 0.09 : 0.045);
+  const aimPose = sprinting ? 0.82 : 0.72;
+  bot.visual.limbs.armL.rotation.x = aimPose + weaponSway;
+  bot.visual.limbs.armR.rotation.x = aimPose - weaponSway;
+  bot.visual.limbs.armL.rotation.z = 0.65;
+  bot.visual.limbs.armR.rotation.z = -0.65;
+  bot.visual.weapon.group.position.set(0, 1.25 + bob * 0.35, -0.45);
+  bot.visual.weapon.group.rotation.x = sprinting ? -0.08 : 0;
+
+  if (bot.visual.fireFlashT > 0) {
+    bot.visual.fireFlashT -= dt;
+    const flash = Math.min(1, Math.max(0, bot.visual.fireFlashT / 0.1));
+    bot.visual.weapon.muzzleFlash.intensity = flash * 5;
+    bot.visual.weapon.muzzleBurst.visible = true;
+    bot.visual.weapon.muzzleBurst.scale.setScalar(0.65 + flash * 0.75);
+    bot.visual.weapon.muzzleBurst.scale.z *= 1.8;
+    bot.visual.weapon.group.position.z += flash * 0.055;
+  } else {
+    bot.visual.weapon.muzzleFlash.intensity = 0;
+    bot.visual.weapon.muzzleFlash.removeFromParent();
+    bot.visual.weapon.muzzleBurst.visible = false;
+  }
   if (bot.visual.hitTimer > 0) {
     bot.visual.hitTimer -= dt;
     if (bot.visual.hitTimer <= 0) {
