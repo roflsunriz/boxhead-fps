@@ -90,6 +90,7 @@ function buildBotModel(team: TeamId): {
   mats: HitFlashMaterial[];
   limbs: Enemy["visual"]["limbs"];
   weapon: Enemy["visual"]["weapon"];
+  allyOutline: THREE.Mesh[];
 } {
   const g = new THREE.Group();
   const suitColor = team === "red" ? 0xb23232 : 0x2f56b8;
@@ -158,14 +159,39 @@ function buildBotModel(team: TeamId): {
   weaponGroup.add(receiver, stock, barrel, magazine, sight, muzzleBurst);
 
   g.add(torso, chestPlate, pelvis, head, visor, antenna, armL, armR, legL, legR, weaponGroup);
+  const originalMeshes: THREE.Mesh[] = [];
   g.traverse((o) => {
-    if (o instanceof THREE.Mesh) o.castShadow = true;
+    if (o instanceof THREE.Mesh) {
+      o.castShadow = true;
+      originalMeshes.push(o);
+    }
   });
+  const allyOutline: THREE.Mesh[] = [];
+  if (team === "blue") {
+    const outlineMaterial = new THREE.MeshBasicMaterial({
+      color: 0x38eaff,
+      side: THREE.BackSide,
+      transparent: true,
+      opacity: 0.92,
+      depthWrite: false,
+      toneMapped: false,
+    });
+    for (const original of originalMeshes) {
+      const shell = new THREE.Mesh(original.geometry.clone(), outlineMaterial);
+      shell.scale.setScalar(1.085);
+      shell.renderOrder = 2;
+      shell.frustumCulled = false;
+      shell.userData.ignoreRaycast = true;
+      original.add(shell);
+      allyOutline.push(shell);
+    }
+  }
   return {
     group: g,
     mats: [suit, dark],
     limbs: { armL, armR, legL, legR },
     weapon: { group: weaponGroup, muzzleFlash, muzzleBurst },
+    allyOutline,
   };
 }
 
@@ -224,6 +250,7 @@ function createBot(team: TeamId, name: string, x: number, z: number): Enemy {
       weapon: model.weapon,
       fireFlashT: 0,
       shotCount: 0,
+      allyOutline: model.allyOutline,
     },
     hp: 100,
     ammo: 30,

@@ -17,6 +17,7 @@ Three.js 製のブラウザ向け FPS ゲーム。TypeScript + Vite(開発)/ Bun
 - チームデスマッチ: 青チーム(プレイヤー + アライボット 3)vs 赤チーム(ボット 4)。先に 20 キルで勝利、死亡後はリスポーン
 - ボット AI: ウェイポイントグラフ経路探索、視界による索敵(壁で遮蔽)、個別の体力・弾薬・リロード・ジャンプ・スプリント、Beginner〜Pro のスキルランク(高スキルほど正確かつジグザグ回避を行う)
 - ボットはチーム色付きライフルを両腕で構え、巡回中は歩行、交戦移動中は前傾したスプリントへ切り替わり、発砲時は銃の反動・火炎・マズルライトが同期する
+- 味方ボットは身体と装備の縁を常時シアン色でハイライトし、敵との撃ち間違いを防止する。輪郭は照準の当たり判定には含まれない
 - ボットの交戦距離は最大42m。12mを超えると距離に応じて命中率と連射速度が大きく低下し、遠距離から一方的に狙撃されにくい
 - 大気プリセット(Sunny / Cloudy / Rainy / Thunderstorm / Night / Beach Sunset / Underground)を読み込みごとにランダム適用。雨・雷フラッシュ・星空・懐中電灯を含む
 - Beach Sunset と Underground は雰囲気だけでなくマップ自体が変化する。ビーチは岸へ進む立体波・動く白波・ヤシの木・岩場・ヒトデや魚、アンダーグラウンドはコンクリート天井と柱に囲まれた地下空間
@@ -55,7 +56,7 @@ bun run type-check   # tsc --noEmit (strict, any 禁止)
 bun run lint         # ESLint (typescript-eslint flat config)
 bun run format       # Prettier 整形
 bun run audit        # bun audit による依存脆弱性スキャン
-bun run test         # Playwright E2E (73 項目)
+bun run test         # Playwright E2E (74 項目)
 node test/responsive.js   # 複数ビューポートでのレイアウト検証
 ```
 

@@ -463,6 +463,45 @@ check(
     cityCover.faceCoverCount === cityCover.obstacleCount
 );
 await page3.screenshot({ path: "test/feature-cover-city.png" });
+const allyOutlineState = await page3.evaluate(async () => {
+  const g = window.__game;
+  const ally = g.enemies.find((en) => en.team === "blue");
+  const enemy = g.enemies.find((en) => en.team === "red");
+  if (!ally || !enemy) return { ok: false };
+  g.player.pos.set(0, 1.7, 10);
+  g.player.yaw = 0;
+  ally.pos.set(0, 0, 2);
+  ally.yaw = Math.PI;
+  ally.target = null;
+  ally.nextThink = 999;
+  ally.path = [];
+  ally.pathGoal = -1;
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  const colors = ally.visual.allyOutline.map((shell) => shell.material.color.getHex());
+  const state = {
+    ok: true,
+    allyCount: ally.visual.allyOutline.length,
+    enemyCount: enemy.visual.allyOutline.length,
+    allVisible: ally.visual.allyOutline.every((shell) => shell.visible),
+    allIgnoredByAim: ally.visual.allyOutline.every((shell) => shell.userData.ignoreRaycast === true),
+    allCyan: colors.every((color) => color === 0x38eaff),
+  };
+  return state;
+});
+check(
+  `allies have a permanent cyan outline only (${JSON.stringify(allyOutlineState)})`,
+  allyOutlineState.ok &&
+    allyOutlineState.allyCount >= 14 &&
+    allyOutlineState.enemyCount === 0 &&
+    allyOutlineState.allVisible &&
+    allyOutlineState.allIgnoredByAim &&
+    allyOutlineState.allCyan
+);
+await page3.screenshot({ path: "test/feature-ally-outline.png" });
+await page3.evaluate(() => {
+  const ally = window.__game.enemies.find((en) => en.team === "blue");
+  if (ally) ally.pos.set(180, 0, 180);
+});
 const colResult = await page3.evaluate(() => {
   const g = window.__game;
   const red = g.enemies.filter((en) => en.team === "red");

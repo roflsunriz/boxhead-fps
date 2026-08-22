@@ -483,7 +483,7 @@ function tryShoot(): void {
   const meshes: THREE.Mesh[] = [];
   bots.forEach((en) =>
     en.group.traverse((o) => {
-      if (o instanceof THREE.Mesh && en.alive) meshes.push(o);
+      if (o instanceof THREE.Mesh && en.alive && !o.userData.ignoreRaycast) meshes.push(o);
     })
   );
   const hits = raycaster.intersectObjects(meshes, false);

@@ -101,6 +101,7 @@ export interface BotVisual {
   };
   fireFlashT: number;
   shotCount: number;
+  allyOutline: THREE.Mesh[];
 }
 
 export type Enemy = Bot & { visual: BotVisual };
