@@ -9,8 +9,10 @@
   <body>
     <div id="hud">
       <div id="crosshair">
-        <span class="ch v"></span><span class="ch h"></span><span class="ch h"></span
-        ><span class="ch v"></span>
+        <span class="crosshair-line top"></span>
+        <span class="crosshair-line right"></span>
+        <span class="crosshair-line bottom"></span>
+        <span class="crosshair-line left"></span>
       </div>
       <div id="hitmarker">✕</div>
       <div id="damage-vignette"></div>
@@ -19,6 +21,14 @@
       <div id="action-wrap">
         <div id="action-label"></div>
         <div id="action-track"><div id="action-progress"></div></div>
+      </div>
+      <div id="minimap-panel">
+        <div id="minimap-title" data-i18n="minimapTitle">TACTICAL RADAR</div>
+        <canvas id="minimap" width="180" height="180"></canvas>
+        <div id="minimap-legend">
+          <span class="legend-dot ally"></span><span data-i18n="minimapAlly">ALLY</span>
+          <span class="legend-dot enemy"></span><span data-i18n="minimapEnemy">ENEMY</span>
+        </div>
       </div>
       <div id="stats">
         <div id="shield-wrap">

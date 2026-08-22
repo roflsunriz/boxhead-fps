@@ -14,10 +14,22 @@ for (const vp of [
     const doc = document.documentElement;
     const btn = document.querySelector("#start-btn")?.getBoundingClientRect();
     const bar = document.querySelector("#health-wrap")?.getBoundingClientRect();
+    const minimap = document.querySelector("#minimap-panel")?.getBoundingClientRect();
+    const lang = document.querySelector("#lang-btn")?.getBoundingClientRect();
     return {
       horizontalScroll: doc.scrollWidth > doc.clientWidth,
       startBtnInView: !!btn && btn.top >= 0 && btn.bottom <= innerHeight && btn.width > 0,
       healthBarInView: !!bar && bar.left >= 0 && bar.right <= innerWidth && bar.width > 0,
+      minimapInView:
+        !!minimap &&
+        minimap.left >= 0 &&
+        minimap.right <= innerWidth &&
+        minimap.top >= 0 &&
+        minimap.bottom <= innerHeight,
+      minimapClearOfLang:
+        !!minimap &&
+        !!lang &&
+        (minimap.top >= lang.bottom || minimap.right <= lang.left || minimap.left >= lang.right),
     };
   });
   results.push({ ...vp, ...check });
@@ -29,7 +41,10 @@ for (const vp of [
 await browser.close();
 console.log(JSON.stringify(results, null, 1));
 console.log(
-  results.every((r) => !r.horizontalScroll && r.startBtnInView && r.healthBarInView)
+  results.every(
+    (r) =>
+      !r.horizontalScroll && r.startBtnInView && r.healthBarInView && r.minimapInView && r.minimapClearOfLang
+  )
     ? "ALL VIEWPORTS OK"
     : "PROBLEMS FOUND"
 );

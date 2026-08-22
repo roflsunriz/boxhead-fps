@@ -29,6 +29,7 @@ import {
 import { matchResultMsg, t, onChange } from "./i18n";
 import { initAudio, playHurt, playShieldCharge, playShot } from "./audio";
 import { pickupCount, spawnPickups, throwPlayerGrenade, updateItems } from "./items";
+import { debugMinimapState, updateMinimap } from "./minimap";
 import type { DeathFallDirection, GameDebugApi, PlayerState, TeamId, Tracer } from "./types";
 
 declare global {
@@ -620,6 +621,7 @@ function animate(): void {
 
   updateWeatherFx(dt, player.pos.x, player.pos.z);
   updateEnvironment(dt);
+  updateMinimap(player, bots);
 
   renderer.render(scene, camera);
 }
@@ -690,6 +692,9 @@ window.__game = {
   },
   get lastTracerOrigin() {
     return lastTracerOrigin;
+  },
+  get minimapState() {
+    return debugMinimapState();
   },
   debugEnvSummary() {
     return debugEnvSummary();

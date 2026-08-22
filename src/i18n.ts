@@ -20,7 +20,10 @@ type StringKey =
   | "stand"
   | "crouch"
   | "prone"
-  | "enemyEliminated";
+  | "enemyEliminated"
+  | "minimapTitle"
+  | "minimapAlly"
+  | "minimapEnemy";
 
 const STRINGS: Record<Lang, Record<StringKey, string>> = {
   en: {
@@ -44,6 +47,9 @@ const STRINGS: Record<Lang, Record<StringKey, string>> = {
     crouch: "CROUCH",
     prone: "PRONE",
     enemyEliminated: "ENEMY ELIMINATED",
+    minimapTitle: "TACTICAL RADAR",
+    minimapAlly: "ALLY",
+    minimapEnemy: "ENEMY",
   },
   ja: {
     msgStart:
@@ -67,6 +73,9 @@ const STRINGS: Record<Lang, Record<StringKey, string>> = {
     crouch: "しゃがみ",
     prone: "うつぶせ",
     enemyEliminated: "敵を撃破",
+    minimapTitle: "戦術レーダー",
+    minimapAlly: "味方",
+    minimapEnemy: "敵",
   },
 };
 

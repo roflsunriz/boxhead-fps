@@ -152,6 +152,12 @@ export interface GameDebugApi {
   };
   readonly weatherName: string;
   readonly lastTracerOrigin: { x: number; y: number; z: number } | null;
+  readonly minimapState: {
+    centerX: number;
+    centerY: number;
+    range: number;
+    markers: Array<{ team: TeamId; x: number; y: number; clamped: boolean }>;
+  };
   setWeather(i: number): void;
   setKillTarget(n: number): void;
   tryShoot(): void;

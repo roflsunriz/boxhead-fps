@@ -30,35 +30,92 @@ canvas {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 24px;
-  height: 24px;
+  width: 34px;
+  height: 34px;
 }
-.ch {
+.crosshair-line {
   position: absolute;
   background: #fff;
-  opacity: 0.85;
+  opacity: 0.92;
+  border-radius: 1px;
+  box-shadow:
+    0 0 2px #000,
+    0 0 5px rgba(0, 0, 0, 0.8);
 }
-.ch.v {
+.crosshair-line.top,
+.crosshair-line.bottom {
   width: 2px;
-  height: 8px;
-  left: 11px;
+  height: 11px;
+  left: 16px;
 }
-.ch.v:first-child {
+.crosshair-line.top {
   top: 0;
 }
-.ch.v:last-of-type {
+.crosshair-line.bottom {
   bottom: 0;
 }
-.ch.h {
+.crosshair-line.left,
+.crosshair-line.right {
   height: 2px;
-  width: 8px;
-  top: 11px;
+  width: 11px;
+  top: 16px;
 }
-.ch.h:first-of-type {
+.crosshair-line.left {
   left: 0;
 }
-.ch.h:last-of-type {
+.crosshair-line.right {
   right: 0;
+}
+
+#minimap-panel {
+  position: absolute;
+  top: 54px;
+  right: 16px;
+  width: clamp(132px, 15vw, 180px);
+  padding: 7px;
+  color: #dffaff;
+  background: rgba(3, 9, 15, 0.7);
+  border: 1px solid rgba(112, 221, 240, 0.55);
+  box-shadow:
+    0 0 16px rgba(25, 167, 198, 0.18),
+    inset 0 0 16px rgba(7, 38, 50, 0.65);
+  backdrop-filter: blur(2px);
+}
+#minimap-title {
+  margin-bottom: 4px;
+  color: #9fefff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-align: center;
+}
+#minimap {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+#minimap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.legend-dot {
+  width: 7px;
+  height: 7px;
+  margin-left: 3px;
+  transform: rotate(45deg);
+}
+.legend-dot.ally {
+  background: #35eaff;
+  border-radius: 50%;
+}
+.legend-dot.enemy {
+  background: #ff4938;
 }
 
 #hitmarker {

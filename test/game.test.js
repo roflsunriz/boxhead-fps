@@ -26,7 +26,34 @@ console.log("\n[1] Page load & boot");
 await page.goto(BASE, { waitUntil: "networkidle" });
 await page.waitForFunction(() => window.__game !== undefined, null, { timeout: 15000 });
 check("three.js + game.js booted (window.__game defined)", true);
-check("canvas rendered", (await page.locator("canvas").count()) === 1);
+check(
+  "WebGL game canvas and minimap rendered",
+  (await page.locator("canvas:not(#minimap)").count()) === 1 && (await page.locator("#minimap").count()) === 1
+);
+const crosshairGeometry = await page.evaluate(() => {
+  const crosshair = document.querySelector("#crosshair")?.getBoundingClientRect();
+  const lines = [...document.querySelectorAll(".crosshair-line")].map((line) => line.getBoundingClientRect());
+  if (!crosshair) return { lineCount: lines.length, centerClear: false, minGap: 0 };
+  const centerX = crosshair.left + crosshair.width / 2;
+  const centerY = crosshair.top + crosshair.height / 2;
+  const centerClear = lines.every(
+    (line) =>
+      !(centerX >= line.left && centerX <= line.right && centerY >= line.top && centerY <= line.bottom)
+  );
+  const minGap = Math.min(
+    ...lines.map((line) =>
+      Math.hypot(
+        Math.max(line.left - centerX, 0, centerX - line.right),
+        Math.max(line.top - centerY, 0, centerY - line.bottom)
+      )
+    )
+  );
+  return { lineCount: lines.length, centerClear, minGap };
+});
+check(
+  `crosshair is a four-line cross with an open center (${JSON.stringify(crosshairGeometry)})`,
+  crosshairGeometry.lineCount === 4 && crosshairGeometry.centerClear && crosshairGeometry.minGap >= 5
+);
 await page.waitForTimeout(500);
 check("no console/page errors on load", consoleErrors.length === 0, JSON.stringify(consoleErrors));
 
@@ -463,6 +490,30 @@ check(
     cityCover.faceCoverCount === cityCover.obstacleCount
 );
 await page3.screenshot({ path: "test/feature-cover-city.png" });
+const minimapState = await page3.evaluate(async () => {
+  const g = window.__game;
+  g.player.pos.set(0, 1.7, 0);
+  g.player.yaw = 0;
+  g.enemies.forEach((bot, index) => bot.pos.set(150 + index * 3, 0, 150));
+  const ally = g.enemies.find((bot) => bot.team === "blue");
+  const enemy = g.enemies.find((bot) => bot.team === "red");
+  ally.pos.set(10, 0, 0);
+  enemy.pos.set(0, 0, -10);
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  return g.minimapState;
+});
+const allyMarker = minimapState.markers.find((marker) => marker.team === "blue" && !marker.clamped);
+const enemyMarker = minimapState.markers.find((marker) => marker.team === "red" && !marker.clamped);
+check(
+  `minimap keeps the player centered and rotates nearby teams (${JSON.stringify(minimapState)})`,
+  minimapState.centerX > 0 &&
+    minimapState.centerX === minimapState.centerY &&
+    allyMarker?.x > minimapState.centerX &&
+    Math.abs(allyMarker.y - minimapState.centerY) < 3 &&
+    enemyMarker?.y < minimapState.centerY &&
+    Math.abs(enemyMarker.x - minimapState.centerX) < 3
+);
+await page3.screenshot({ path: "test/feature-minimap-crosshair.png" });
 const allyOutlineState = await page3.evaluate(async () => {
   const g = window.__game;
   const ally = g.enemies.find((en) => en.team === "blue");
