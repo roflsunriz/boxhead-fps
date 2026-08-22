@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-08-22
+
 ### Added
 
 - SemVer形式のタグをpushしたときだけGitHub Pagesへリリースできるように、タグ検証、品質チェック、Pagesベースパス対応ビルド、成果物アップロード、デプロイを行うGitHub Actionsワークフローを追加した。

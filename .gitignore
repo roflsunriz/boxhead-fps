@@ -4,3 +4,4 @@ test/*.png
 test/run.log
 dist/
 package-lock.json
+COMMON-AGENTS.md

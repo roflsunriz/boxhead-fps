@@ -2,6 +2,10 @@
 
 Three.js 製のブラウザ向け FPS ゲーム。TypeScript + Vite(開発)/ Bun バンドラ(ビルド)で構成する。
 
+**[GitHub PagesでBoxhead FPSをプレイ](https://roflsunriz.github.io/boxhead-fps/)**
+
+公開バージョン: **1.0.0**
+
 ## ゲーム内容
 
 - WASD 移動 / マウス視点 / クリック長押しのフルオート射撃 / R リロード / Shift ダッシュ / Space ジャンプ
