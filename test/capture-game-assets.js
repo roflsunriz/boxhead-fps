@@ -37,6 +37,25 @@ await page.evaluate(() => {
   if (canvas instanceof HTMLElement) canvas.style.cursor = "none";
 });
 await page.screenshot({ path: "art/game-bot-review.png" });
+await page.evaluate(() => {
+  const game = window.__game;
+  game.enemies.forEach((enemy, index) => {
+    enemy.pos.set(160 + index * 4, 0, 160);
+    enemy.group.position.copy(enemy.pos);
+  });
+  const ally = game.enemies.find((enemy) => enemy.team === "blue");
+  if (ally) {
+    ally.pos.set(0, 0, 17);
+    ally.group.position.copy(ally.pos);
+    ally.yaw = 0;
+    ally.group.rotation.y = 0;
+    ally.target = null;
+    ally.nextThink = 999;
+    ally.path = [];
+    ally.pathGoal = -1;
+  }
+});
+await page.screenshot({ path: "art/game-ally-iff-review.png" });
 
 await page.evaluate(() => document.querySelector("#start-btn")?.click());
 await page.evaluate(() => {

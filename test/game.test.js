@@ -700,13 +700,21 @@ const allyOutlineState = await page3.evaluate(async () => {
   g.player.pos.set(0, 1.7, 10);
   g.player.yaw = 0;
   ally.pos.set(0, 0, 2);
-  ally.yaw = Math.PI;
+  ally.yaw = 0;
   ally.target = null;
   ally.nextThink = 999;
   ally.path = [];
   ally.pathGoal = -1;
   await new Promise((resolve) => setTimeout(resolve, 80));
   const colors = ally.visual.allyOutline.map((shell) => shell.material.color.getHex());
+  const allyIff = [];
+  const enemyIff = [];
+  ally.group.traverse((part) => {
+    if (part.userData.botPart === "iffBeacon") allyIff.push(part);
+  });
+  enemy.group.traverse((part) => {
+    if (part.userData.botPart === "iffBeacon") enemyIff.push(part);
+  });
   const state = {
     ok: true,
     allyCount: ally.visual.allyOutline.length,
@@ -714,6 +722,14 @@ const allyOutlineState = await page3.evaluate(async () => {
     allVisible: ally.visual.allyOutline.every((shell) => shell.visible),
     allIgnoredByAim: ally.visual.allyOutline.every((shell) => shell.userData.ignoreRaycast === true),
     allCyan: colors.every((color) => color === 0x38eaff),
+    allyIffCount: allyIff.length,
+    enemyIffCount: enemyIff.length,
+    iffVisible: allyIff.every((part) => part.visible),
+    iffCyan: allyIff.every((part) => part.material.color.getHex() === 0x42f5ff),
+    iffIgnoredByAim: allyIff.every((part) => part.userData.ignoreRaycast === true),
+    iffMountedAtRear: allyIff.every(
+      (part) => part.parent?.name === "helmet-rear-iff" && part.parent.position.z > 0.2
+    ),
   };
   return state;
 });
@@ -726,7 +742,18 @@ check(
     allyOutlineState.allIgnoredByAim &&
     allyOutlineState.allCyan
 );
+check(
+  `allies have a cyan rear-helmet IFF only (${JSON.stringify(allyOutlineState)})`,
+  allyOutlineState.ok &&
+    allyOutlineState.allyIffCount === 1 &&
+    allyOutlineState.enemyIffCount === 0 &&
+    allyOutlineState.iffVisible &&
+    allyOutlineState.iffCyan &&
+    allyOutlineState.iffIgnoredByAim &&
+    allyOutlineState.iffMountedAtRear
+);
 await page3.screenshot({ path: "test/feature-ally-outline.png" });
+await page3.screenshot({ path: "test/feature-ally-iff.png" });
 await page3.evaluate(() => {
   const ally = window.__game.enemies.find((en) => en.team === "blue");
   if (ally) ally.pos.set(180, 0, 180);

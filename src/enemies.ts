@@ -119,8 +119,33 @@ function buildBotModel(team: TeamId): {
     new THREE.SphereGeometry(0.255, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.62),
     suit
   );
+  helmet.name = "helmet";
   helmet.position.y = 1.83;
   helmet.scale.z = 1.08;
+  if (team === "blue") {
+    const iff = new THREE.Group();
+    iff.name = "helmet-rear-iff";
+    iff.position.set(0, 0, 0.255);
+    const mount = new THREE.Mesh(
+      new RoundedBoxGeometry(0.19, 0.1, 0.035, 3, 0.018),
+      new THREE.MeshStandardMaterial({ color: 0x11171c, metalness: 0.42, roughness: 0.44 })
+    );
+    mount.name = "iff-mount";
+    mount.userData.ignoreRaycast = true;
+    mount.userData.explodeWithParent = true;
+    const beacon = new THREE.Mesh(
+      new RoundedBoxGeometry(0.135, 0.045, 0.018, 3, 0.012),
+      new THREE.MeshBasicMaterial({ color: 0x42f5ff, toneMapped: false })
+    );
+    beacon.name = "iff-beacon";
+    beacon.position.z = 0.027;
+    beacon.userData.botPart = "iffBeacon";
+    beacon.userData.team = "blue";
+    beacon.userData.ignoreRaycast = true;
+    beacon.userData.explodeWithParent = true;
+    iff.add(mount, beacon);
+    helmet.add(iff);
+  }
   const visor = new THREE.Mesh(
     new RoundedBoxGeometry(0.34, 0.105, 0.045, 3, 0.02),
     new THREE.MeshStandardMaterial({

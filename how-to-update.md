@@ -62,7 +62,7 @@ bun run lint         # ESLint (typescript-eslint flat config、src/ と test/ �
 bun run format       # Prettier 整形
 bun run audit        # bun audit による依存脆弱性スキャン
 bun run validate:release-tag -- v1.2.3  # SemVerタグの検証
-bun run test         # Playwright E2E、91 項目すべて PASS すること
+bun run test         # Playwright E2E、92 項目すべて PASS すること
 node test/responsive.js   # 4 ビューポートのレイアウト検証(ALL VIEWPORTS OK が出ること)
 ```
 
@@ -80,7 +80,7 @@ Vite開発サーバーを8787番で起動した状態で、見た目のエビデ
 node test/capture-model-review.js    # カービンの3/4・反対側・上面・銃口・map-stripped
 node test/export-carbine-parts.js    # action-ready部品manifest
 node test/capture-assets-review.js   # 武器・回復物資・環境小物
-node test/capture-game-assets.js     # ゲーム内ボットと爆発跡
+node test/capture-game-assets.js     # ゲーム内ボット、味方後頭部IFF、爆発跡
 node test/capture-crater-review.js   # クレーター単体の斜光確認
 ```
 
@@ -90,7 +90,7 @@ node test/capture-crater-review.js   # クレーター単体の斜光確認
 2. 右クリックごとにADSがオン／オフになり、サイトの赤点が画面中央へ移動してHUDクロスヘアが消える。
 3. リロード、バリア使用、死亡、ポーズでADSが解除され、FOVと武器位置が腰だめへ戻る。
 4. リロード時に同じマガジングループが抜去・非表示・再挿入される。
-5. ボットのカービン、反動、マズルフラッシュ、味方アウトラインが追従する。
+5. ボットのカービン、反動、マズルフラッシュ、味方アウトラインが追従し、味方だけヘルメット後頭部のIFFがシアン発光する。
 6. pickupと投擲グレネードの取得・物理・爆発判定がモデル置換後も変わらない。
 7. カービンが4方向で平面へ潰れず、意図したstock／handguard穴が残る。
 8. クレーターの焦げ中心、低い不規則縁、瓦礫が見え、円形トーラスのケーキ状外周へ戻っていない。
