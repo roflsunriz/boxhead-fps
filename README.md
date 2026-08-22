@@ -7,6 +7,7 @@ Three.js 製のブラウザ向け FPS ゲーム。TypeScript + Vite(開発)/ Bun
 - WASD 移動 / マウス視点 / クリック射撃 / R リロード / Shift ダッシュ / Space ジャンプ
 - ウェーブ制の敵(人型ロボット)との戦闘。倒すとスコア加算、ウェーブ毎に強化
 - 大気プリセット(Sunny / Cloudy / Rainy / Thunderstorm / Night / Beach Sunset / Underground)を読み込みごとにランダム適用。雨・雷フラッシュ・星空・懐中電灯を含む
+- Beach Sunset と Underground は雰囲気だけでなくマップ自体が変化する。ビーチは波打つ海・ヤシの木・岩場・ヒトデや魚、アンダーグラウンドはコンクリート天井と柱に囲まれた地下空間
 - UI は日本語 / 英語対応(右上の JA/EN ボタンで切替。設定は localStorage に保存)
 
 ## セットアップ

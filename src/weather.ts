@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { fog, ground, hemi, scene, skyColor, sun, flashlight } from "./world";
+import { fog, ground, hemi, scene, skyColor, sun, flashlight, applyEnvironment } from "./world";
 import { requiredElement } from "./dom";
 import type { WeatherPreset } from "./types";
 
@@ -80,9 +80,10 @@ export const WEATHERS: WeatherPreset[] = [
   },
   {
     name: "Beach Sunset",
+    env: "beach",
     sky: 0xff9e6d,
-    fogN: 30,
-    fogF: 130,
+    fogN: 45,
+    fogF: 175,
     hemiSky: 0xffc4a3,
     hemiGnd: 0x5a4a3a,
     hemiI: 0.95,
@@ -94,17 +95,18 @@ export const WEATHERS: WeatherPreset[] = [
   },
   {
     name: "Underground",
+    env: "underground",
     sky: 0x14100c,
     fogN: 3,
-    fogF: 28,
+    fogF: 34,
     hemiSky: 0x4a3f33,
     hemiGnd: 0x1a140e,
-    hemiI: 0.5,
+    hemiI: 0.42,
     sunC: 0x6b5d43,
-    sunI: 0.3,
+    sunI: 0.15,
     sunPos: [0, 40, 0],
-    gnd: 0x6e6258,
-    torch: 320,
+    gnd: 0xffffff,
+    torch: 280,
   },
 ];
 
@@ -132,6 +134,7 @@ function apply(w: WeatherPreset): void {
   if (stars) stars.visible = !!w.stars;
   if (rain) rain.visible = !!w.rain;
   flashlight.intensity = w.torch ?? 60;
+  applyEnvironment(w.env ?? "city");
 }
 
 export function initWeather(): WeatherPreset {

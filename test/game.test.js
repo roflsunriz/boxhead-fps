@@ -47,6 +47,8 @@ check(
   "overlay hidden after start",
   await page.evaluate(() => document.getElementById("overlay").classList.contains("hidden"))
 );
+await page.evaluate(() => window.__game.setWeather(0));
+await page.waitForTimeout(150);
 
 console.log("\n[3] Movement & collision");
 const p0 = await page.evaluate(() => ({ x: window.__game.player.pos.x, z: window.__game.player.pos.z }));
@@ -240,6 +242,8 @@ await page3.click("#start-btn");
 await page3.waitForTimeout(200);
 const wx = await page3.textContent("#weather");
 check(`atmosphere preset applied ("${wx.trim()}")`, wx.trim() !== "—" && wx.trim().length > 2);
+await page3.evaluate(() => window.__game.setWeather(0));
+await page3.waitForTimeout(150);
 const colResult = await page3.evaluate(() => {
   const g = window.__game;
   g.enemies.forEach((en) => en.group.position.set(500, 0, 500));
@@ -261,6 +265,27 @@ if (colResult.ok) {
 } else {
   check("enemy available for collision test", false);
 }
+
+console.log("\n[11] Environment variants (beach / underground)");
+await page3.evaluate(() => {
+  window.__game.setWeather(5);
+  window.__game.player.pos.set(0, 1.7, -90);
+});
+await page3.waitForTimeout(200);
+const beachZ = await page3.evaluate(() => window.__game.player.pos.z);
+check(`beach: player pushed out of deep water (z=${beachZ.toFixed(1)})`, beachZ > -73 && beachZ < 0);
+await page3.evaluate(() => {
+  window.__game.setWeather(6);
+  window.__game.player.pos.set(0, 1.7, 140);
+});
+await page3.waitForTimeout(200);
+const ugZ = await page3.evaluate(() => window.__game.player.pos.z);
+check(`underground: player kept inside bunker walls (z=${ugZ.toFixed(1)})`, Math.abs(ugZ) <= 93.5);
+const ugBack = await page3.evaluate(() => {
+  window.__game.player.pos.set(0, 1.7, -140);
+  return new Promise((resolve) => setTimeout(() => resolve(window.__game.player.pos.z), 200));
+});
+check(`underground: opposite wall also solid (z=${ugBack.toFixed(1)})`, Math.abs(ugBack) <= 93.5);
 await page3.close();
 
 await page.screenshot({ path: "test/screenshot.png" });

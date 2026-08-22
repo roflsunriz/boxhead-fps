@@ -1,7 +1,13 @@
 import * as THREE from "three";
-import { facadeTexture, makeCanvasTexture } from "./textures";
+import {
+  facadeTexture,
+  makeCanvasTexture,
+  sandTexture,
+  concreteTexture,
+  concreteWallTexture,
+} from "./textures";
 import { mulberry32 } from "./random";
-import type { ObstacleBox, TreeCollider } from "./types";
+import type { EnvVariant, ObstacleBox, TreeCollider } from "./types";
 
 export const scene = new THREE.Scene();
 export const skyColor = new THREE.Color(0x87b5d9);
@@ -36,23 +42,36 @@ sun.shadow.camera.top = 70;
 sun.shadow.camera.bottom = -70;
 scene.add(sun);
 
-const groundTex = makeCanvasTexture(
-  256,
-  (ctx, s) => {
-    ctx.fillStyle = "#57753f";
-    ctx.fillRect(0, 0, s, s);
-    for (let i = 0; i < 3500; i++) {
-      const g = 95 + Math.random() * 60;
-      ctx.fillStyle = `rgb(${(g * 0.68) | 0},${g | 0},${(g * 0.42) | 0})`;
-      ctx.fillRect(Math.random() * s, Math.random() * s, 2, 2);
-    }
-  },
-  48
-);
-export const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(400, 400),
-  new THREE.MeshStandardMaterial({ map: groundTex, roughness: 1 })
-);
+const groundTextures: Partial<Record<EnvVariant, THREE.Texture>> = {};
+function getGroundTexture(variant: EnvVariant): THREE.Texture {
+  let tex = groundTextures[variant];
+  if (tex) return tex;
+  if (variant === "beach") {
+    tex = sandTexture();
+  } else if (variant === "underground") {
+    tex = concreteTexture();
+  } else {
+    tex = makeCanvasTexture(
+      256,
+      (ctx, s) => {
+        ctx.fillStyle = "#57753f";
+        ctx.fillRect(0, 0, s, s);
+        for (let i = 0; i < 3500; i++) {
+          const g = 95 + Math.random() * 60;
+          ctx.fillStyle = `rgb(${(g * 0.68) | 0},${g | 0},${(g * 0.42) | 0})`;
+          ctx.fillRect(Math.random() * s, Math.random() * s, 2, 2);
+        }
+      },
+      48
+    );
+  }
+  groundTextures[variant] = tex;
+  return tex;
+}
+
+const groundMat = new THREE.MeshStandardMaterial({ roughness: 1 });
+groundMat.map = getGroundTexture("city");
+export const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), groundMat);
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
@@ -64,92 +83,537 @@ gridMaterial.transparent = true;
 grid.position.y = 0.01;
 scene.add(grid);
 
-const obstacles: ObstacleBox[] = [];
-function addBuilding(x: number, z: number, w: number, h: number, d: number, base: string): void {
-  const roofMat = new THREE.MeshStandardMaterial({ color: 0x3a3e44, roughness: 0.95 });
-  function wallMat(tw: number, th: number): THREE.MeshStandardMaterial {
-    return new THREE.MeshStandardMaterial({ map: facadeTexture(tw, th, base), roughness: 0.9 });
-  }
-  const mx = wallMat(d, h);
-  const mz = wallMat(w, h);
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), [mx, mx, roofMat, roofMat, mz, mz]);
-  m.position.set(x, h / 2, z);
-  m.castShadow = m.receiveShadow = true;
-  scene.add(m);
-  obstacles.push({
+let obstacles: ObstacleBox[] = [];
+let treeColliders: TreeCollider[] = [];
+
+interface EnvBuild {
+  group: THREE.Group;
+  obstacles: ObstacleBox[];
+  treeColliders: TreeCollider[];
+  update?: (dt: number) => void;
+}
+
+function disposeGroup(g: THREE.Group): void {
+  g.traverse((o) => {
+    if (o instanceof THREE.Mesh) {
+      o.geometry.dispose();
+      if (Array.isArray(o.material)) o.material.forEach((m) => m.dispose());
+      else o.material.dispose();
+    }
+  });
+}
+
+function boxObstacle(x: number, z: number, w: number, h: number, d: number): ObstacleBox {
+  return {
     min: new THREE.Vector3(x - w / 2, 0, z - d / 2),
     max: new THREE.Vector3(x + w / 2, h, z + d / 2),
-  });
+  };
 }
-const crateSpots: Array<[number, number, number, number, number]> = [
-  [-18, -12, 6, 5, 6],
-  [22, 15, 8, 7, 5],
-  [10, -25, 5, 4, 12],
-  [-28, 20, 10, 3, 4],
-  [30, -18, 4, 9, 4],
-  [-8, 30, 12, 4, 5],
-  [0, 0, 3, 2, 3],
-  [-40, -30, 7, 6, 7],
-  [42, 32, 6, 8, 6],
-];
-const palettes = ["#8a6f52", "#6e7681", "#9c5a48", "#75808a", "#96795c"];
-crateSpots.forEach(([x, z, w, h, d], i) => addBuilding(x, z, w, h, d, palettes[i % palettes.length]));
 
-const rng = mulberry32(20260821);
+/* ---------------------------------- City --------------------------------- */
 
-function makeTree(scale: number): THREE.Group {
-  const g = new THREE.Group();
-  const trunkH = 1.7 * scale;
-  const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.16 * scale, 0.3 * scale, trunkH, 8),
-    new THREE.MeshStandardMaterial({ color: 0x63452c, roughness: 1 })
-  );
-  trunk.position.y = trunkH / 2;
-  g.add(trunk);
-  let y = trunkH * 0.8;
-  for (let i = 0; i < 3; i++) {
-    const r = (1.6 - i * 0.42) * scale;
-    const ch = (2.0 - i * 0.35) * scale;
-    const cone = new THREE.Mesh(
-      new THREE.ConeGeometry(r, ch, 9),
-      new THREE.MeshStandardMaterial({
-        color: new THREE.Color().setHSL(0.33, 0.45, 0.18 + rng() * 0.09),
-        roughness: 1,
-      })
-    );
-    cone.position.y = y + ch / 2;
-    cone.rotation.y = rng() * Math.PI;
-    g.add(cone);
-    y += ch * 0.55;
+function buildCityEnv(): EnvBuild {
+  const rng = mulberry32(20260821);
+  const group = new THREE.Group();
+  const obs: ObstacleBox[] = [];
+  const trees: TreeCollider[] = [];
+
+  const roofMat = new THREE.MeshStandardMaterial({ color: 0x3a3e44, roughness: 0.95 });
+  function wallMat(tw: number, th: number, base: string): THREE.MeshStandardMaterial {
+    return new THREE.MeshStandardMaterial({ map: facadeTexture(tw, th, base), roughness: 0.9 });
   }
-  return g;
+  function addBuilding(x: number, z: number, w: number, h: number, d: number, base: string): void {
+    const mx = wallMat(d, h, base);
+    const mz = wallMat(w, h, base);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), [mx, mx, roofMat, roofMat, mz, mz]);
+    m.position.set(x, h / 2, z);
+    m.castShadow = m.receiveShadow = true;
+    group.add(m);
+    obs.push(boxObstacle(x, z, w, h, d));
+  }
+
+  const crateSpots: Array<[number, number, number, number, number]> = [
+    [-18, -12, 6, 5, 6],
+    [22, 15, 8, 7, 5],
+    [10, -25, 5, 4, 12],
+    [-28, 20, 10, 3, 4],
+    [30, -18, 4, 9, 4],
+    [-8, 30, 12, 4, 5],
+    [0, 0, 3, 2, 3],
+    [-40, -30, 7, 6, 7],
+    [42, 32, 6, 8, 6],
+  ];
+  const palettes = ["#8a6f52", "#6e7681", "#9c5a48", "#75808a", "#96795c"];
+  crateSpots.forEach(([x, z, w, h, d], i) => addBuilding(x, z, w, h, d, palettes[i % palettes.length]));
+
+  function makeTree(scale: number): THREE.Group {
+    const g = new THREE.Group();
+    const trunkH = 1.7 * scale;
+    const trunk = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.16 * scale, 0.3 * scale, trunkH, 8),
+      new THREE.MeshStandardMaterial({ color: 0x63452c, roughness: 1 })
+    );
+    trunk.position.y = trunkH / 2;
+    g.add(trunk);
+    let y = trunkH * 0.8;
+    for (let i = 0; i < 3; i++) {
+      const r = (1.6 - i * 0.42) * scale;
+      const ch = (2.0 - i * 0.35) * scale;
+      const cone = new THREE.Mesh(
+        new THREE.ConeGeometry(r, ch, 9),
+        new THREE.MeshStandardMaterial({
+          color: new THREE.Color().setHSL(0.33, 0.45, 0.18 + rng() * 0.09),
+          roughness: 1,
+        })
+      );
+      cone.position.y = y + ch / 2;
+      cone.rotation.y = rng() * Math.PI;
+      g.add(cone);
+      y += ch * 0.55;
+    }
+    return g;
+  }
+
+  for (let i = 0; i < 60; i++) {
+    const s = 0.8 + rng() * 0.9;
+    const t = makeTree(s);
+    let x: number;
+    let z: number;
+    let ok: boolean;
+    do {
+      x = (rng() - 0.5) * 180;
+      z = (rng() - 0.5) * 180;
+      ok = true;
+      for (const o of obs) {
+        if (x > o.min.x - 2 && x < o.max.x + 2 && z > o.min.z - 2 && z < o.max.z + 2) {
+          ok = false;
+          break;
+        }
+      }
+    } while (!ok);
+    t.position.set(x, 0, z);
+    t.rotation.y = rng() * Math.PI * 2;
+    t.traverse((o) => {
+      if (o instanceof THREE.Mesh) o.castShadow = true;
+    });
+    group.add(t);
+    trees.push({ x, z, r: 0.4 * s });
+  }
+
+  return { group, obstacles: obs, treeColliders: trees };
 }
 
-const treeColliders: TreeCollider[] = [];
-for (let i = 0; i < 60; i++) {
-  const s = 0.8 + rng() * 0.9;
-  const t = makeTree(s);
-  let x: number;
-  let z: number;
-  let ok: boolean;
-  do {
-    x = (rng() - 0.5) * 180;
-    z = (rng() - 0.5) * 180;
-    ok = true;
-    for (const o of obstacles) {
-      if (x > o.min.x - 2 && x < o.max.x + 2 && z > o.min.z - 2 && z < o.max.z + 2) {
-        ok = false;
-        break;
-      }
-    }
-  } while (!ok);
-  t.position.set(x, 0, z);
-  t.rotation.y = rng() * Math.PI * 2;
-  t.traverse((o) => {
-    if (o instanceof THREE.Mesh) o.castShadow = true;
+/* ---------------------------------- Beach --------------------------------- */
+
+let elapsedBeach = 0;
+
+function buildBeachEnv(): EnvBuild {
+  const rng = mulberry32(777001);
+  const group = new THREE.Group();
+  const obs: ObstacleBox[] = [];
+  const rocks: TreeCollider[] = [];
+
+  obs.push({
+    min: new THREE.Vector3(-210, 0, -210),
+    max: new THREE.Vector3(210, 4, -30),
   });
-  scene.add(t);
-  treeColliders.push({ x, z, r: 0.4 * s });
+
+  const oceanGeo = new THREE.PlaneGeometry(430, 190, 64, 26);
+  oceanGeo.rotateX(-Math.PI / 2);
+  const oceanMat = new THREE.MeshStandardMaterial({
+    color: 0x1d84a6,
+    transparent: true,
+    opacity: 0.8,
+    roughness: 0.25,
+    metalness: 0.08,
+    emissive: 0x073047,
+    emissiveIntensity: 0.55,
+    fog: false,
+  });
+  const ocean = new THREE.Mesh(oceanGeo, oceanMat);
+  ocean.position.set(0, 0.3, -111);
+  group.add(ocean);
+  const oceanBase = Float32Array.from(oceanGeo.getAttribute("position").array);
+
+  const wetSandMat = new THREE.MeshStandardMaterial({ color: 0xb3945c, roughness: 0.85 });
+  const wetSand = new THREE.Mesh(new THREE.PlaneGeometry(430, 8), wetSandMat);
+  wetSand.rotation.x = -Math.PI / 2;
+  wetSand.position.set(0, 0.02, -11.5);
+  group.add(wetSand);
+
+  const foamMat = new THREE.MeshStandardMaterial({
+    color: 0xf2f7f5,
+    transparent: true,
+    opacity: 0.55,
+  });
+  const foam = new THREE.Mesh(new THREE.PlaneGeometry(430, 3), foamMat);
+  foam.rotation.x = -Math.PI / 2;
+  foam.position.set(0, 0.38, -15.4);
+  group.add(foam);
+
+  function scatterSpot(minZ: number, maxZ: number, tries = 24): [number, number] {
+    for (let i = 0; i < tries; i++) {
+      const x = (rng() - 0.5) * 190;
+      const z = minZ + rng() * (maxZ - minZ);
+      let ok = Math.abs(z) > 6 || Math.abs(x) > 6;
+      for (const o of obs) {
+        if (x > o.min.x - 3 && x < o.max.x + 3 && z > o.min.z - 3 && z < o.max.z + 3) ok = false;
+      }
+      for (const c of rocks) {
+        if ((x - c.x) ** 2 + (z - c.z) ** 2 < 36) ok = false;
+      }
+      if (ok) return [x, z];
+    }
+    return [(rng() - 0.5) * 190, minZ + rng() * (maxZ - minZ)];
+  }
+
+  const rockMat = new THREE.MeshStandardMaterial({ color: 0x8a8378, roughness: 0.95 });
+  const darkRockMat = new THREE.MeshStandardMaterial({ color: 0x6b6459, roughness: 0.95 });
+  for (let i = 0; i < 16; i++) {
+    const s = 0.7 + rng() * 1.8;
+    const rock = new THREE.Mesh(
+      rng() < 0.5 ? new THREE.DodecahedronGeometry(s, 0) : new THREE.IcosahedronGeometry(s, 0),
+      rng() < 0.5 ? rockMat : darkRockMat
+    );
+    const [x, z] = scatterSpot(-8, 88);
+    rock.position.set(x, s * 0.35, z);
+    rock.rotation.set(rng() * 0.6, rng() * Math.PI * 2, rng() * 0.6);
+    rock.scale.y = 0.65 + rng() * 0.4;
+    rock.castShadow = rock.receiveShadow = true;
+    group.add(rock);
+    rocks.push({ x, z, r: s * 0.85 });
+  }
+
+  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8a6239, roughness: 1 });
+  const frondMat = new THREE.MeshStandardMaterial({ color: 0x2f7d3a, roughness: 1 });
+  for (let i = 0; i < 22; i++) {
+    const palm = new THREE.Group();
+    const h = 4.5 + rng() * 2.5;
+    const segs = 5;
+    const segLen = h / segs;
+    const dirA = rng() * Math.PI * 2;
+    const bend = 0.1 + rng() * 0.12;
+    let topX = 0;
+    let topZ = 0;
+    for (let sgi = 0; sgi < segs; sgi++) {
+      const t = sgi / (segs - 1);
+      const off = bend * h * t * t;
+      topX = Math.cos(dirA) * off;
+      topZ = Math.sin(dirA) * off;
+      const seg = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.23, segLen, 7), trunkMat);
+      seg.position.set(topX, (sgi + 0.5) * segLen, topZ);
+      seg.rotation.z = -Math.cos(dirA) * bend * 2 * t;
+      seg.rotation.x = Math.sin(dirA) * bend * 2 * t;
+      seg.castShadow = true;
+      palm.add(seg);
+    }
+    for (let f = 0; f < 7; f++) {
+      const ang = (f / 7) * Math.PI * 2 + rng() * 0.4;
+      const pivot = new THREE.Group();
+      pivot.position.set(topX, h + 0.25, topZ);
+      pivot.rotation.y = -ang;
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.05, 2.9), frondMat);
+      blade.position.set(0, 0, 1.35);
+      blade.rotation.x = 0.45 + rng() * 0.3;
+      blade.castShadow = true;
+      pivot.add(blade);
+      palm.add(pivot);
+    }
+    for (let c = 0; c < 3; c++) {
+      const nut = new THREE.Mesh(
+        new THREE.SphereGeometry(0.16, 8, 6),
+        new THREE.MeshStandardMaterial({ color: 0x5c4326, roughness: 1 })
+      );
+      nut.position.set(topX + Math.cos(c * 2.1) * 0.28, h - 0.12, topZ + Math.sin(c * 2.1) * 0.28);
+      palm.add(nut);
+    }
+    const [x, z] = scatterSpot(-4, 90);
+    palm.position.set(x, 0, z);
+    palm.rotation.y = rng() * Math.PI * 2;
+    group.add(palm);
+    rocks.push({ x: x + topX * 0.4, z: z + topZ * 0.4, r: 0.5 });
+  }
+
+  const starColors = [0xe07038, 0xd94f4f, 0xe89b4a, 0xcf5b88];
+  for (let i = 0; i < 12; i++) {
+    const star = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({
+      color: starColors[i % starColors.length],
+      roughness: 0.9,
+    });
+    const armLen = 0.28 + rng() * 0.22;
+    for (let a = 0; a < 5; a++) {
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(armLen, 0.07, 0.13), mat);
+      const ang = (a / 5) * Math.PI * 2;
+      arm.position.set(Math.cos(ang) * armLen * 0.75, 0, Math.sin(ang) * armLen * 0.75);
+      arm.rotation.y = -ang;
+      star.add(arm);
+    }
+    const [x, z] = scatterSpot(-13, -5);
+    star.position.set(x, 0.04, z);
+    star.rotation.y = rng() * Math.PI * 2;
+    group.add(star);
+  }
+
+  const shellMat = new THREE.MeshStandardMaterial({ color: 0xf0e6d4, roughness: 0.7 });
+  for (let i = 0; i < 14; i++) {
+    const shell = new THREE.Mesh(new THREE.SphereGeometry(0.11 + rng() * 0.08, 8, 5), shellMat);
+    shell.scale.y = 0.45;
+    const [x, z] = scatterSpot(-14, -6);
+    shell.position.set(x, 0.03, z);
+    group.add(shell);
+  }
+
+  interface Fish {
+    group: THREE.Group;
+    timer: number;
+    dur: number;
+    x0: number;
+    z0: number;
+    dir: number;
+  }
+  const fishes: Fish[] = [];
+  const fishBodyMat = new THREE.MeshStandardMaterial({ color: 0x4a8fb5, roughness: 0.6 });
+  const fishFinMat = new THREE.MeshStandardMaterial({ color: 0xd97f4a, roughness: 0.7 });
+  for (let i = 0; i < 4; i++) {
+    const fish = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.02, 0.55, 6), fishBodyMat);
+    body.rotation.x = Math.PI / 2;
+    fish.add(body);
+    const fin = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.26, 4), fishFinMat);
+    fin.rotation.x = -Math.PI / 2;
+    fin.position.z = 0.36;
+    fish.add(fin);
+    fish.visible = false;
+    group.add(fish);
+    fishes.push({
+      group: fish,
+      timer: 2 + rng() * 8,
+      dur: 1.3,
+      x0: (rng() - 0.5) * 90,
+      z0: -20 - rng() * 14,
+      dir: rng() < 0.5 ? 1 : -1,
+    });
+  }
+
+  return {
+    group,
+    obstacles: obs,
+    treeColliders: rocks,
+    update(dt: number) {
+      elapsedBeach += dt;
+      const posAttr = oceanGeo.getAttribute("position") as THREE.BufferAttribute;
+      const arr = posAttr.array as Float32Array;
+      for (let i = 0; i < arr.length; i += 3) {
+        const bx = oceanBase[i];
+        const bz = oceanBase[i + 2];
+        arr[i + 1] =
+          Math.sin(bx * 0.16 + elapsedBeach * 1.5) * 0.22 + Math.cos(bz * 0.21 + elapsedBeach * 1.1) * 0.16;
+      }
+      posAttr.needsUpdate = true;
+      foam.position.z = -15.4 + Math.sin(elapsedBeach * 0.7) * 1.1;
+      foamMat.opacity = 0.4 + Math.sin(elapsedBeach * 0.7 + 1.2) * 0.2;
+
+      for (const f of fishes) {
+        if (!f.group.visible) {
+          f.timer -= dt;
+          if (f.timer <= 0) {
+            f.timer = f.dur;
+            f.group.visible = true;
+          }
+          continue;
+        }
+        f.timer -= dt;
+        const t01 = 1 - Math.max(f.timer, 0) / f.dur;
+        if (t01 >= 1) {
+          f.group.visible = false;
+          f.timer = 3 + Math.random() * 8;
+          continue;
+        }
+        const travel = 3.2;
+        f.group.position.set(f.x0 + t01 * travel * f.dir, 0.4 + Math.sin(t01 * Math.PI) * 1.6, f.z0);
+        const vy = Math.cos(t01 * Math.PI);
+        f.group.rotation.x = f.dir > 0 ? vy * 0.9 : -vy * 0.9 + Math.PI;
+      }
+    },
+  };
+}
+
+/* ------------------------------- Underground ------------------------------ */
+
+function buildUndergroundEnv(): EnvBuild {
+  const rng = mulberry32(999003);
+  const group = new THREE.Group();
+  const obs: ObstacleBox[] = [];
+  const colliders: TreeCollider[] = [];
+
+  const wallTex = concreteWallTexture();
+  const wallMat = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.95 });
+  const slabMat = new THREE.MeshStandardMaterial({ map: concreteWallTexture(), roughness: 0.95 });
+  const pillarMat = new THREE.MeshStandardMaterial({ color: 0x9a9a94, roughness: 0.92 });
+
+  const HALF = 90;
+  const wallH = 7;
+  const walls: Array<[number, number, number, number]> = [
+    [0, -HALF - 1, HALF * 2 + 6, 2],
+    [0, HALF + 1, HALF * 2 + 6, 2],
+    [-HALF - 1, 0, 2, HALF * 2 + 6],
+    [HALF + 1, 0, 2, HALF * 2 + 6],
+  ];
+  for (const [x, z, w, d] of walls) {
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(w, wallH, d), wallMat);
+    wall.position.set(x, wallH / 2, z);
+    wall.castShadow = wall.receiveShadow = true;
+    group.add(wall);
+    obs.push(boxObstacle(x, z, w, wallH, d));
+  }
+
+  const ceiling = new THREE.Mesh(new THREE.BoxGeometry(HALF * 2 + 6, 0.8, HALF * 2 + 6), slabMat);
+  ceiling.position.set(0, wallH + 0.4, 0);
+  ceiling.castShadow = ceiling.receiveShadow = true;
+  group.add(ceiling);
+
+  const pillarSize = 1.7;
+  for (const px of [-60, -30, 0, 30, 60]) {
+    for (const pz of [-60, -30, 0, 30, 60]) {
+      if (px === 0 && pz === 0) continue;
+      const pillar = new THREE.Mesh(new THREE.BoxGeometry(pillarSize, wallH, pillarSize), pillarMat);
+      pillar.position.set(px, wallH / 2, pz);
+      pillar.castShadow = pillar.receiveShadow = true;
+      group.add(pillar);
+      obs.push(boxObstacle(px, pz, pillarSize, wallH, pillarSize));
+    }
+  }
+
+  const pipeMat = new THREE.MeshStandardMaterial({ color: 0x4c4a45, roughness: 0.6, metalness: 0.5 });
+  for (const [axis, fixed, yOff] of [
+    ["x", -34, 0],
+    ["x", 18, 0.25],
+    ["z", 52, 0.1],
+    ["z", -66, 0.2],
+  ] as Array<["x" | "z", number, number]>) {
+    const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, HALF * 2, 10), pipeMat);
+    pipe.rotation.z = axis === "x" ? Math.PI / 2 : 0;
+    if (axis === "z") pipe.rotation.x = Math.PI / 2;
+    pipe.position.set(axis === "x" ? 0 : fixed, wallH - 0.35 + yOff, axis === "x" ? fixed : 0);
+    group.add(pipe);
+  }
+
+  const crateMat = new THREE.MeshStandardMaterial({ color: 0x7a5c38, roughness: 0.95 });
+  let placed = 0;
+  while (placed < 12) {
+    const x = (rng() - 0.5) * 150;
+    const z = (rng() - 0.5) * 150;
+    if (Math.abs(x) < 5 && Math.abs(z) < 5) continue;
+    const nx = Math.round(x / 30) * 30;
+    const nz = Math.round(z / 30) * 30;
+    const onPillar =
+      Math.abs(nx) <= 60 &&
+      Math.abs(nz) <= 60 &&
+      !(nx === 0 && nz === 0) &&
+      Math.abs(nx - x) < 2.8 &&
+      Math.abs(nz - z) < 2.8;
+    if (onPillar) continue;
+    const w = 1.6 + rng() * 1.4;
+    const h = 1.4 + rng() * 1.2;
+    const crate = new THREE.Mesh(new THREE.BoxGeometry(w, h, w), crateMat);
+    crate.position.set(x, h / 2, z);
+    crate.rotation.y = rng() * Math.PI;
+    crate.castShadow = crate.receiveShadow = true;
+    group.add(crate);
+    obs.push(boxObstacle(x, z, w * 1.15, h, w * 1.15));
+    placed++;
+  }
+
+  const lampSpots: Array<[number, number]> = [
+    [-45, -45],
+    [45, -45],
+    [0, 0],
+    [-45, 45],
+    [45, 45],
+    [0, -48],
+    [0, 48],
+  ];
+  const bulbMat = new THREE.MeshStandardMaterial({
+    color: 0xfff3d0,
+    emissive: 0xffdf9e,
+    emissiveIntensity: 2.2,
+  });
+  const rodMat = new THREE.MeshStandardMaterial({ color: 0x333330, roughness: 0.8 });
+  for (const [lx, lz] of lampSpots) {
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.9, 6), rodMat);
+    rod.position.set(lx, wallH - 0.05, lz);
+    group.add(rod);
+    const bulb = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.22, 0.7), bulbMat);
+    bulb.position.set(lx, wallH - 0.55, lz);
+    group.add(bulb);
+    const light = new THREE.PointLight(0xffd9a0, 320, 75, 1.5);
+    light.position.set(lx, wallH - 0.9, lz);
+    group.add(light);
+  }
+
+  return { group, obstacles: obs, treeColliders: colliders };
+}
+
+/* ----------------------------- Env management ----------------------------- */
+
+let currentEnvGroup: THREE.Group | null = null;
+let currentUpdate: ((dt: number) => void) | null = null;
+let currentVariant: EnvVariant = "city";
+
+export function applyEnvironment(variant: EnvVariant): void {
+  if (variant === currentVariant && currentEnvGroup) return;
+  if (currentEnvGroup) {
+    scene.remove(currentEnvGroup);
+    disposeGroup(currentEnvGroup);
+  }
+  currentVariant = variant;
+  currentUpdate = null;
+  let build: EnvBuild;
+  if (variant === "beach") build = buildBeachEnv();
+  else if (variant === "underground") build = buildUndergroundEnv();
+  else build = buildCityEnv();
+  currentEnvGroup = build.group;
+  currentUpdate = build.update ?? null;
+  if (variant === "beach") elapsedBeach = 0;
+  obstacles = build.obstacles;
+  treeColliders = build.treeColliders;
+  grid.visible = variant === "city";
+  groundMat.map = getGroundTexture(variant);
+  groundMat.needsUpdate = true;
+  scene.add(currentEnvGroup);
+}
+
+export function updateEnvironment(dt: number): void {
+  currentUpdate?.(dt);
+}
+
+export interface EnvMeshInfo {
+  geo: string;
+  x: number;
+  y: number;
+  z: number;
+  visible: boolean;
+  inFrustumStyleSize: number;
+}
+
+export function debugEnvSummary(): EnvMeshInfo[] {
+  const out: EnvMeshInfo[] = [];
+  currentEnvGroup?.traverse((o) => {
+    if (o instanceof THREE.Mesh) {
+      const p = o.getWorldPosition(new THREE.Vector3());
+      o.geometry.computeBoundingSphere();
+      out.push({
+        geo: o.geometry.type,
+        x: +p.x.toFixed(1),
+        y: +p.y.toFixed(2),
+        z: +p.z.toFixed(1),
+        visible: o.visible,
+        inFrustumStyleSize: +o.geometry.boundingSphere.radius.toFixed(1),
+      });
+    }
+  });
+  return out.filter((m) => m.inFrustumStyleSize > 5).slice(0, 10);
 }
 
 export function collide(pos: THREE.Vector3, radius: number): void {
@@ -161,9 +625,21 @@ export function collide(pos: THREE.Vector3, radius: number): void {
     const dz = pos.z - cz;
     const d2 = dx * dx + dz * dz;
     if (d2 < radius * radius) {
-      const d = Math.sqrt(d2) || 0.001;
-      pos.x = cx + (dx / d) * radius;
-      pos.z = cz + (dz / d) * radius;
+      if (d2 > 1e-6) {
+        const d = Math.sqrt(d2);
+        pos.x = cx + (dx / d) * radius;
+        pos.z = cz + (dz / d) * radius;
+      } else {
+        const pxMin = pos.x - o.min.x;
+        const pxMax = o.max.x - pos.x;
+        const pzMin = pos.z - o.min.z;
+        const pzMax = o.max.z - pos.z;
+        const m = Math.min(pxMin, pxMax, pzMin, pzMax);
+        if (m === pxMin) pos.x = o.min.x - radius;
+        else if (m === pxMax) pos.x = o.max.x + radius;
+        else if (m === pzMin) pos.z = o.min.z - radius;
+        else pos.z = o.max.z + radius;
+      }
     }
   }
   for (const c of treeColliders) {
@@ -177,8 +653,9 @@ export function collide(pos: THREE.Vector3, radius: number): void {
       pos.z = c.z + (dz / d) * rr;
     }
   }
-  pos.x = Math.max(-190, Math.min(190, pos.x));
-  pos.z = Math.max(-190, Math.min(190, pos.z));
+  const limit = currentVariant === "underground" ? 88 : 190;
+  pos.x = Math.max(-limit, Math.min(limit, pos.x));
+  pos.z = Math.max(-limit, Math.min(limit, pos.z));
 }
 
 export const flashlight = new THREE.SpotLight(0xfff4d6, 100, 80, 0.5, 0.55, 1.2);

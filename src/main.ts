@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { camera, collide, ground, renderer, scene } from "./world";
+import { camera, collide, ground, renderer, scene, updateEnvironment, debugEnvSummary } from "./world";
 import { getWeather, initWeather, setWeatherByIndex, updateWeatherFx } from "./weather";
 import { damageEnemy, enemies, setOnEnemyKilled, spawnEnemy } from "./enemies";
 import {
@@ -339,6 +339,7 @@ function animate(): void {
   }
 
   updateWeatherFx(dt, player.pos.x, player.pos.z);
+  updateEnvironment(dt);
 
   renderer.render(scene, camera);
 }
@@ -374,6 +375,9 @@ window.__game = {
   },
   get lastTracerOrigin() {
     return lastTracerOrigin;
+  },
+  debugEnvSummary() {
+    return debugEnvSummary();
   },
   setWeather(i: number): void {
     setWeatherByIndex(i);

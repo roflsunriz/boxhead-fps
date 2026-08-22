@@ -1,7 +1,10 @@
 import * as THREE from "three";
 
+export type EnvVariant = "city" | "beach" | "underground";
+
 export interface WeatherPreset {
   name: string;
+  env?: EnvVariant;
   sky: number;
   fogN: number;
   fogF: number;
@@ -79,4 +82,5 @@ export interface GameDebugApi {
   reload(): void;
   hurtPlayer(dmg: number): void;
   damageEnemy(en: Enemy, dmg: number): void;
+  debugEnvSummary(): Array<{ geo: string; x: number; y: number; z: number; visible: boolean }>;
 }
