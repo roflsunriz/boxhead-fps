@@ -395,6 +395,11 @@ await page2.close();
 
 console.log("\n[10] Enemy obstacle collision & atmosphere");
 const page3 = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+const errs3 = [];
+page3.on("pageerror", (e) => errs3.push(String(e)));
+page3.on("console", (m) => {
+  if (m.type() === "error") errs3.push(m.text());
+});
 await page3.goto(BASE, { waitUntil: "networkidle" });
 await page3.waitForFunction(() => window.__game !== undefined);
 await page3.click("#start-btn");
@@ -440,9 +445,24 @@ await page3.evaluate(() => {
   window.__game.player.pos.set(0, 1.7, -90);
 });
 await page3.waitForTimeout(200);
+const waveBefore = await page3.evaluate(() => window.__game.debugBeachWaveSummary());
+await page3.screenshot({ path: "test/feature-beach-wave-a.png" });
+await page3.waitForTimeout(650);
+const waveAfter = await page3.evaluate(() => window.__game.debugBeachWaveSummary());
+await page3.screenshot({ path: "test/feature-beach-wave-b.png" });
 const beachZ = await page3.evaluate(() => window.__game.player.pos.z);
 const beachCover = await page3.evaluate(() => window.__game.debugCoverSummary());
 check(`beach: player pushed out of deep water (z=${beachZ.toFixed(1)})`, beachZ > -73 && beachZ < 0);
+check(
+  `beach ocean has a displaced wave surface (${JSON.stringify(waveAfter)})`,
+  waveAfter.active && waveAfter.vertexCount >= 3900 && waveAfter.heightRange > 1
+);
+check(
+  "beach waves and breakers travel over time",
+  waveAfter.elapsed > waveBefore.elapsed + 0.4 &&
+    Math.abs(waveAfter.sampleY - waveBefore.sampleY) > 0.01 &&
+    Math.abs(waveAfter.leadBreakerZ - waveBefore.leadBreakerZ) > 0.2
+);
 check(
   `beach has varied face-high cover (${JSON.stringify(beachCover)})`,
   beachCover.obstacleCount >= 35 &&
@@ -468,6 +488,7 @@ const ugBack = await page3.evaluate(() => {
   return new Promise((resolve) => setTimeout(() => resolve(window.__game.player.pos.z), 200));
 });
 check(`underground: opposite wall also solid (z=${ugBack.toFixed(1)})`, Math.abs(ugBack) <= 93.5);
+check("environment switching produces no runtime errors", errs3.length === 0, JSON.stringify(errs3));
 await page3.close();
 
 console.log("\n[12] Match-ending death animation");

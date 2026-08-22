@@ -151,4 +151,12 @@ export interface GameDebugApi {
     minHeight: number;
     faceCoverCount: number;
   };
+  debugBeachWaveSummary(): {
+    active: boolean;
+    elapsed: number;
+    heightRange: number;
+    sampleY: number;
+    leadBreakerZ: number;
+    vertexCount: number;
+  };
 }

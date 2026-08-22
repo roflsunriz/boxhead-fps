@@ -1,5 +1,13 @@
 import * as THREE from "three";
-import { scene, losBlocked, nearestWaypoint, randomWaypoint, findPath, waypointPos } from "./world";
+import {
+  scene,
+  losBlocked,
+  nearestWaypoint,
+  randomWaypoint,
+  findPath,
+  waypointCount,
+  waypointPos,
+} from "./world";
 import { flashHitmarker } from "./ui";
 import type { BotSkill, Enemy, HitFlashMaterial, PlayerState, TeamId } from "./types";
 
@@ -294,7 +302,8 @@ function moveBot(bot: Enemy, dt: number, time: number): void {
       bot.onGround = false;
     }
   } else {
-    if (!bot.path.length || bot.pathGoal < 0) {
+    if (!bot.path.length || bot.pathGoal < 0 || bot.path[0] >= waypointCount()) {
+      bot.path = [];
       setPathTo(bot, waypointPos(randomWaypoint()).x, waypointPos(randomWaypoint()).z);
     } else {
       const node = waypointPos(bot.path[0]);

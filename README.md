@@ -16,7 +16,7 @@ Three.js 製のブラウザ向け FPS ゲーム。TypeScript + Vite(開発)/ Bun
 - ボット AI: ウェイポイントグラフ経路探索、視界による索敵(壁で遮蔽)、個別の体力・弾薬・リロード・ジャンプ・スプリント、Beginner〜Pro のスキルランク(高スキルほど正確かつジグザグ回避を行う)
 - ボットの交戦距離は最大42m。12mを超えると距離に応じて命中率と連射速度が大きく低下し、遠距離から一方的に狙撃されにくい
 - 大気プリセット(Sunny / Cloudy / Rainy / Thunderstorm / Night / Beach Sunset / Underground)を読み込みごとにランダム適用。雨・雷フラッシュ・星空・懐中電灯を含む
-- Beach Sunset と Underground は雰囲気だけでなくマップ自体が変化する。ビーチは波打つ海・ヤシの木・岩場・ヒトデや魚、アンダーグラウンドはコンクリート天井と柱に囲まれた地下空間
+- Beach Sunset と Underground は雰囲気だけでなくマップ自体が変化する。ビーチは岸へ進む立体波・動く白波・ヤシの木・岩場・ヒトデや魚、アンダーグラウンドはコンクリート天井と柱に囲まれた地下空間
 - UI は日本語 / 英語対応(右上の JA/EN ボタンで切替。設定は localStorage に保存)
 
 ## セットアップ
@@ -52,7 +52,7 @@ bun run type-check   # tsc --noEmit (strict, any 禁止)
 bun run lint         # ESLint (typescript-eslint flat config)
 bun run format       # Prettier 整形
 bun run audit        # bun audit による依存脆弱性スキャン
-bun run test         # Playwright E2E (62 項目)
+bun run test         # Playwright E2E (65 項目)
 node test/responsive.js   # 複数ビューポートでのレイアウト検証
 ```
 
@@ -64,6 +64,7 @@ E2E テストはビルド済み `dist/` 成果物に対して実行する。詳�
 | ----------------------------------------------- | -------------------------------------------------------------------- |
 | `src/main.ts`                                   | 入力・射撃・姿勢・バリア・マッチ進行・メインループ                   |
 | `src/items.ts`                                  | ランダムアイテム、取得処理、グレネード物理・爆発                     |
+| `src/beach-waves.ts`                            | ビーチの立体海面、動的法線、岸へ進む白波                             |
 | `src/world.ts`                                  | シーン・カメラ・ライティング・3 環境の生成・衝突判定・ウェイポイント |
 | `src/weather.ts`                                | 大気プリセット・雨・雷・星空                                         |
 | `src/enemies.ts`                                | ボット AI(経路探索・視覚・戦闘・スキルランク)                        |

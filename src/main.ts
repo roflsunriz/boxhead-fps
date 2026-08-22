@@ -2,6 +2,7 @@ import * as THREE from "three";
 import {
   camera,
   collide,
+  debugBeachWaveSummary,
   debugCoverSummary,
   debugEnvSummary,
   ground,
@@ -617,6 +618,9 @@ window.__game = {
   },
   debugCoverSummary() {
     return debugCoverSummary();
+  },
+  debugBeachWaveSummary() {
+    return debugBeachWaveSummary();
   },
   setWeather(i: number): void {
     setWeatherByIndex(i);

@@ -7,6 +7,8 @@ import {
   concreteWallTexture,
 } from "./textures";
 import { mulberry32 } from "./random";
+import { createBeachWaveSystem } from "./beach-waves";
+import type { BeachWaveSummary, BeachWaveSystem } from "./beach-waves";
 import type { EnvVariant, ObstacleBox, TreeCollider } from "./types";
 
 export const scene = new THREE.Scene();
@@ -305,7 +307,7 @@ function buildCityEnv(): EnvBuild {
 
 /* ---------------------------------- Beach --------------------------------- */
 
-let elapsedBeach = 0;
+let currentBeachWaves: BeachWaveSystem | null = null;
 
 function buildBeachEnv(): EnvBuild {
   const rng = mulberry32(777001);
@@ -317,39 +319,9 @@ function buildBeachEnv(): EnvBuild {
     min: new THREE.Vector3(-210, 0, -210),
     max: new THREE.Vector3(210, 4, -30),
   });
-
-  const oceanGeo = new THREE.PlaneGeometry(430, 190, 64, 26);
-  oceanGeo.rotateX(-Math.PI / 2);
-  const oceanMat = new THREE.MeshStandardMaterial({
-    color: 0x1d84a6,
-    transparent: true,
-    opacity: 0.8,
-    roughness: 0.25,
-    metalness: 0.08,
-    emissive: 0x073047,
-    emissiveIntensity: 0.55,
-    fog: false,
-  });
-  const ocean = new THREE.Mesh(oceanGeo, oceanMat);
-  ocean.position.set(0, 0.3, -111);
-  group.add(ocean);
-  const oceanBase = Float32Array.from(oceanGeo.getAttribute("position").array);
-
-  const wetSandMat = new THREE.MeshStandardMaterial({ color: 0xb3945c, roughness: 0.85 });
-  const wetSand = new THREE.Mesh(new THREE.PlaneGeometry(430, 8), wetSandMat);
-  wetSand.rotation.x = -Math.PI / 2;
-  wetSand.position.set(0, 0.02, -11.5);
-  group.add(wetSand);
-
-  const foamMat = new THREE.MeshStandardMaterial({
-    color: 0xf2f7f5,
-    transparent: true,
-    opacity: 0.55,
-  });
-  const foam = new THREE.Mesh(new THREE.PlaneGeometry(430, 3), foamMat);
-  foam.rotation.x = -Math.PI / 2;
-  foam.position.set(0, 0.38, -15.4);
-  group.add(foam);
+  const waveSystem = createBeachWaveSystem();
+  currentBeachWaves = waveSystem;
+  group.add(waveSystem.group);
 
   function scatterSpot(minZ: number, maxZ: number, tries = 24): [number, number] {
     for (let i = 0; i < tries; i++) {
@@ -534,18 +506,7 @@ function buildBeachEnv(): EnvBuild {
     obstacles: obs,
     treeColliders: rocks,
     update(dt: number) {
-      elapsedBeach += dt;
-      const posAttr = oceanGeo.getAttribute("position") as THREE.BufferAttribute;
-      const arr = posAttr.array as Float32Array;
-      for (let i = 0; i < arr.length; i += 3) {
-        const bx = oceanBase[i];
-        const bz = oceanBase[i + 2];
-        arr[i + 1] =
-          Math.sin(bx * 0.16 + elapsedBeach * 1.5) * 0.22 + Math.cos(bz * 0.21 + elapsedBeach * 1.1) * 0.16;
-      }
-      posAttr.needsUpdate = true;
-      foam.position.z = -15.4 + Math.sin(elapsedBeach * 0.7) * 1.1;
-      foamMat.opacity = 0.4 + Math.sin(elapsedBeach * 0.7 + 1.2) * 0.2;
+      waveSystem.update(dt);
 
       for (const f of fishes) {
         if (!f.group.visible) {
@@ -861,13 +822,13 @@ export function applyEnvironment(variant: EnvVariant): void {
   }
   currentVariant = variant;
   currentUpdate = null;
+  currentBeachWaves = null;
   let build: EnvBuild;
   if (variant === "beach") build = buildBeachEnv();
   else if (variant === "underground") build = buildUndergroundEnv();
   else build = buildCityEnv();
   currentEnvGroup = build.group;
   currentUpdate = build.update ?? null;
-  if (variant === "beach") elapsedBeach = 0;
   obstacles = build.obstacles;
   treeColliders = build.treeColliders;
   grid.visible = variant === "city";
@@ -921,6 +882,18 @@ export function debugCoverSummary(): {
     obstacleCount: obstacles.length,
     minHeight: heights.length ? Math.min(...heights) : 0,
     faceCoverCount: heights.filter((h) => h >= 2).length,
+  };
+}
+
+export function debugBeachWaveSummary(): BeachWaveSummary & { active: boolean } {
+  const summary = currentBeachWaves?.debugSummary();
+  return {
+    active: currentVariant === "beach" && summary !== undefined,
+    elapsed: summary?.elapsed ?? 0,
+    heightRange: summary?.heightRange ?? 0,
+    sampleY: summary?.sampleY ?? 0,
+    leadBreakerZ: summary?.leadBreakerZ ?? 0,
+    vertexCount: summary?.vertexCount ?? 0,
   };
 }
 
