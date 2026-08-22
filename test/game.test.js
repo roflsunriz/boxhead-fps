@@ -194,6 +194,23 @@ const e0 = await page.evaluate(() => window.__game.enemies.length);
 check(`bots fielded (count=${e0})`, e0 > 0);
 await page.waitForTimeout(200);
 
+const longRangeTarget = await page.evaluate(async () => {
+  const g = window.__game;
+  const red = g.enemies.find((en) => en.team === "red" && en.alive);
+  if (!red) return { ok: false, targetId: null };
+  g.player.pos.set(0, 1.7, 25);
+  red.pos.set(0, 0, -30);
+  red.yaw = Math.PI;
+  red.target = null;
+  red.nextThink = 0;
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  return { ok: true, targetId: red.target?.id ?? null };
+});
+check(
+  `bots do not acquire the player from 55m (${JSON.stringify(longRangeTarget)})`,
+  longRangeTarget.ok && longRangeTarget.targetId !== -1
+);
+
 const killResult = await page.evaluate(() => {
   const g = window.__game;
   const victim = g.enemies.find((en) => en.team === "red" && en.alive);
@@ -386,6 +403,14 @@ const wx = await page3.textContent("#weather");
 check(`atmosphere preset applied ("${wx.trim()}")`, wx.trim() !== "—" && wx.trim().length > 2);
 await page3.evaluate(() => window.__game.setWeather(0));
 await page3.waitForTimeout(150);
+const cityCover = await page3.evaluate(() => window.__game.debugCoverSummary());
+check(
+  `city has dense face-high cover (${JSON.stringify(cityCover)})`,
+  cityCover.obstacleCount >= 60 &&
+    cityCover.minHeight >= 2 &&
+    cityCover.faceCoverCount === cityCover.obstacleCount
+);
+await page3.screenshot({ path: "test/feature-cover-city.png" });
 const colResult = await page3.evaluate(() => {
   const g = window.__game;
   const red = g.enemies.filter((en) => en.team === "red");
@@ -416,14 +441,28 @@ await page3.evaluate(() => {
 });
 await page3.waitForTimeout(200);
 const beachZ = await page3.evaluate(() => window.__game.player.pos.z);
+const beachCover = await page3.evaluate(() => window.__game.debugCoverSummary());
 check(`beach: player pushed out of deep water (z=${beachZ.toFixed(1)})`, beachZ > -73 && beachZ < 0);
+check(
+  `beach has varied face-high cover (${JSON.stringify(beachCover)})`,
+  beachCover.obstacleCount >= 35 &&
+    beachCover.minHeight >= 2 &&
+    beachCover.faceCoverCount === beachCover.obstacleCount
+);
 await page3.evaluate(() => {
   window.__game.setWeather(6);
   window.__game.player.pos.set(0, 1.7, 140);
 });
 await page3.waitForTimeout(200);
 const ugZ = await page3.evaluate(() => window.__game.player.pos.z);
+const undergroundCover = await page3.evaluate(() => window.__game.debugCoverSummary());
 check(`underground: player kept inside bunker walls (z=${ugZ.toFixed(1)})`, Math.abs(ugZ) <= 93.5);
+check(
+  `underground has dense face-high cover (${JSON.stringify(undergroundCover)})`,
+  undergroundCover.obstacleCount >= 70 &&
+    undergroundCover.minHeight >= 2 &&
+    undergroundCover.faceCoverCount === undergroundCover.obstacleCount
+);
 const ugBack = await page3.evaluate(() => {
   window.__game.player.pos.set(0, 1.7, -140);
   return new Promise((resolve) => setTimeout(() => resolve(window.__game.player.pos.z), 200));

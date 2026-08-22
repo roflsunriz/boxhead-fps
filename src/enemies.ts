@@ -13,6 +13,8 @@ export interface BotContext {
 
 let ctx: BotContext | null = null;
 let onBotKilled: ((victim: Enemy, killerTeam: TeamId) => void) | null = null;
+const BOT_MAX_ENGAGE_RANGE = 42;
+const BOT_FULL_ACCURACY_RANGE = 12;
 
 export function setOnBotKilled(cb: (victim: Enemy, killerTeam: TeamId) => void): void {
   onBotKilled = cb;
@@ -227,7 +229,7 @@ function visibleFoes(bot: Enemy): Foe[] {
 function canSee(bot: Enemy, ex: number, ez: number): boolean {
   const dx = ex - bot.pos.x;
   const dz = ez - bot.pos.z;
-  if (dx * dx + dz * dz > 65 * 65) return false;
+  if (dx * dx + dz * dz > BOT_MAX_ENGAGE_RANGE * BOT_MAX_ENGAGE_RANGE) return false;
   const facing = Math.atan2(-dx, -dz);
   let dYaw = facing - bot.yaw;
   while (dYaw > Math.PI) dYaw -= Math.PI * 2;
@@ -275,7 +277,7 @@ function moveBot(bot: Enemy, dt: number, time: number): void {
     const dz = wpTarget.pos.z - bot.pos.z;
     const dist = Math.hypot(dx, dz) || 0.001;
     bot.yaw = Math.atan2(-dx, -dz);
-    const preferred = 16;
+    const preferred = 13;
     const approach = dist > preferred ? 1 : dist < 9 ? -0.6 : 0;
     mx += (dx / dist) * approach;
     mz += (dz / dist) * approach;
@@ -339,16 +341,24 @@ function tryFire(bot: Enemy, time: number): void {
   }
   const t = bot.target;
   if (!t || time - t.seenAt > 0.45) return;
-  bot.fireT = bot.skill.fireInterval;
-  bot.ammo--;
   const dx = t.pos.x - bot.pos.x;
   const dz = t.pos.z - bot.pos.z;
   const dist = Math.hypot(dx, dz) || 0.001;
-  const aimErr = (1 - bot.skill.accuracy) * (0.055 + dist * 0.0016);
+  if (dist > BOT_MAX_ENGAGE_RANGE) return;
+  bot.fireT = bot.skill.fireInterval + Math.max(0, dist - 16) * 0.012;
+  bot.ammo--;
+  const aimErr = (1 - bot.skill.accuracy) * (0.065 + dist * 0.003);
   const hitRoll = Math.random();
-  const baseHit = bot.skill.accuracy * Math.max(0.15, 1 - dist / 90);
+  const rangeFactor =
+    dist <= BOT_FULL_ACCURACY_RANGE
+      ? 1
+      : Math.max(
+          0.04,
+          1 - (dist - BOT_FULL_ACCURACY_RANGE) / (BOT_MAX_ENGAGE_RANGE - BOT_FULL_ACCURACY_RANGE)
+        );
+  const baseHit = (0.12 + bot.skill.accuracy * 0.42) * rangeFactor * rangeFactor;
   const isPlayerTarget = t.id === -1;
-  const dmg = 18 + bot.skill.accuracy * 22;
+  const dmg = 14 + bot.skill.accuracy * 16;
   if (hitRoll < baseHit * (1 - Math.min(aimErr, 0.8))) {
     if (isPlayerTarget && ctx) ctx.onPlayerHit(dmg, bot.pos);
     else if (!isPlayerTarget) {

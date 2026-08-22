@@ -1,5 +1,14 @@
 import * as THREE from "three";
-import { camera, collide, ground, renderer, scene, updateEnvironment, debugEnvSummary } from "./world";
+import {
+  camera,
+  collide,
+  debugCoverSummary,
+  debugEnvSummary,
+  ground,
+  renderer,
+  scene,
+  updateEnvironment,
+} from "./world";
 import { getWeather, initWeather, setWeatherByIndex, updateWeatherFx } from "./weather";
 import { bots, damageBot, initBots, setOnBotKilled, updateBots } from "./enemies";
 import {
@@ -605,6 +614,9 @@ window.__game = {
   },
   debugEnvSummary() {
     return debugEnvSummary();
+  },
+  debugCoverSummary() {
+    return debugCoverSummary();
   },
   setWeather(i: number): void {
     setWeatherByIndex(i);

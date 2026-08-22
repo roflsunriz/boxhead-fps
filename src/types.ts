@@ -145,4 +145,10 @@ export interface GameDebugApi {
   throwGrenade(): void;
   damageEnemy(en: Enemy, dmg: number): void;
   debugEnvSummary(): Array<{ geo: string; x: number; y: number; z: number; visible: boolean }>;
+  debugCoverSummary(): {
+    variant: EnvVariant;
+    obstacleCount: number;
+    minHeight: number;
+    faceCoverCount: number;
+  };
 }

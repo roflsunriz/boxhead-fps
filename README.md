@@ -11,8 +11,10 @@ Three.js 製のブラウザ向け FPS ゲーム。TypeScript + Vite(開発)/ Bun
 - マップ上にバリアセル、ヘルスキット、グレネードが各 5 個ずつランダム出現し、接近すると取得できる
 - 射撃音・被弾音・アイテム取得音・バリア充填音・爆発音と、攻撃元を示す円周ダメージインジケーターを搭載
 - ヘルスがゼロになると前後左右のいずれかへランダムに倒れ込み、地面へ視点が落ちながら画面全体が赤く染まる死亡演出を搭載
+- 全マップに高さ2m以上の遮蔽物を高密度配置。都市のコンテナ・L字壁・タンク、ビーチの大型岩・木壁・監視小屋、地下の大型箱・防爆壁・タンクを利用できる
 - チームデスマッチ: 青チーム(プレイヤー + アライボット 3)vs 赤チーム(ボット 4)。先に 20 キルで勝利、死亡後はリスポーン
 - ボット AI: ウェイポイントグラフ経路探索、視界による索敵(壁で遮蔽)、個別の体力・弾薬・リロード・ジャンプ・スプリント、Beginner〜Pro のスキルランク(高スキルほど正確かつジグザグ回避を行う)
+- ボットの交戦距離は最大42m。12mを超えると距離に応じて命中率と連射速度が大きく低下し、遠距離から一方的に狙撃されにくい
 - 大気プリセット(Sunny / Cloudy / Rainy / Thunderstorm / Night / Beach Sunset / Underground)を読み込みごとにランダム適用。雨・雷フラッシュ・星空・懐中電灯を含む
 - Beach Sunset と Underground は雰囲気だけでなくマップ自体が変化する。ビーチは波打つ海・ヤシの木・岩場・ヒトデや魚、アンダーグラウンドはコンクリート天井と柱に囲まれた地下空間
 - UI は日本語 / 英語対応(右上の JA/EN ボタンで切替。設定は localStorage に保存)
@@ -50,7 +52,7 @@ bun run type-check   # tsc --noEmit (strict, any 禁止)
 bun run lint         # ESLint (typescript-eslint flat config)
 bun run format       # Prettier 整形
 bun run audit        # bun audit による依存脆弱性スキャン
-bun run test         # Playwright E2E (58 項目)
+bun run test         # Playwright E2E (62 項目)
 node test/responsive.js   # 複数ビューポートでのレイアウト検証
 ```
 
