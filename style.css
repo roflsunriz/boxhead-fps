@@ -85,6 +85,13 @@ canvas {
   transition: opacity 0.4s;
 }
 
+#death-screen {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 35, 20, 0.78), rgba(110, 0, 0, 0.98));
+  opacity: 0;
+}
+
 #damage-indicator {
   position: absolute;
   left: 50%;

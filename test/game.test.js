@@ -266,19 +266,50 @@ await page.evaluate(() => window.__game.hurtPlayer(1000));
 const deathState = await page.evaluate(() => ({
   dead: window.__game.player.dead,
   over: window.__game.gameOver,
+  direction: window.__game.deathView.direction,
 }));
 check(
   `player dies but match continues (dead=${deathState.dead}, matchOver=${deathState.over})`,
   deathState.dead === true && deathState.over === false
 );
+check(
+  `death selects one of four fall directions (${deathState.direction})`,
+  ["forward", "backward", "left", "right"].includes(deathState.direction)
+);
+await page.waitForTimeout(1100);
+const fallenView = await page.evaluate(() => {
+  const view = window.__game.deathView;
+  const red = Number(document.querySelector("#death-screen")?.style.opacity ?? 0);
+  const angleMatches =
+    (view.direction === "forward" && view.pitch < -1.2) ||
+    (view.direction === "backward" && view.pitch > 1.2) ||
+    (view.direction === "left" && view.roll > 1.2) ||
+    (view.direction === "right" && view.roll < -1.2);
+  return { ...view, red, angleMatches };
+});
+check(
+  `camera falls to the ground (${JSON.stringify(fallenView)})`,
+  fallenView.progress === 1 && fallenView.height < 0.4 && fallenView.angleMatches
+);
+check(`death screen turns deep red (opacity=${fallenView.red})`, fallenView.red >= 0.85);
+await page.screenshot({ path: "test/feature-death-fall.png" });
 const respawned = await page.evaluate(async () => {
-  await new Promise((r) => setTimeout(r, 3500));
+  await new Promise((r) => setTimeout(r, 2400));
   const g = window.__game;
-  return { dead: g.player.dead, hp: g.player.hp };
+  return {
+    dead: g.player.dead,
+    hp: g.player.hp,
+    roll: g.deathView.roll,
+    red: Number(document.querySelector("#death-screen")?.style.opacity ?? 0),
+  };
 });
 check(
   `player respawns with full hp (${JSON.stringify(respawned)})`,
   respawned.dead === false && respawned.hp === 100
+);
+check(
+  "respawn clears the death camera and red screen",
+  Math.abs(respawned.roll) < 0.01 && respawned.red === 0
 );
 
 console.log("\n[7b] Match end & result overlay");
@@ -399,6 +430,34 @@ const ugBack = await page3.evaluate(() => {
 });
 check(`underground: opposite wall also solid (z=${ugBack.toFixed(1)})`, Math.abs(ugBack) <= 93.5);
 await page3.close();
+
+console.log("\n[12] Match-ending death animation");
+const page4 = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+await page4.goto(BASE, { waitUntil: "networkidle" });
+await page4.waitForFunction(() => window.__game !== undefined);
+await page4.click("#start-btn");
+await page4.waitForTimeout(150);
+const finalDeathStart = await page4.evaluate(() => {
+  const g = window.__game;
+  g.enemies.forEach((en) => en.pos.set(en.team === "red" ? -180 : 180, 0, en.team === "red" ? -180 : 180));
+  g.setKillTarget(1);
+  g.hurtPlayer(1000);
+  return { dead: g.player.dead, over: g.gameOver };
+});
+check("match-ending death plays before the result screen", finalDeathStart.dead && !finalDeathStart.over);
+await page4.waitForTimeout(1100);
+check(
+  "match-ending death reaches the ground",
+  await page4.evaluate(() => window.__game.deathView.progress === 1 && window.__game.deathView.height < 0.4)
+);
+await page4.waitForTimeout(2100);
+check(
+  "result screen appears after the death animation",
+  await page4.evaluate(
+    () => window.__game.gameOver && document.querySelector("#overlay")?.dataset.screen === "game-over"
+  )
+);
+await page4.close();
 
 await page.screenshot({ path: "test/screenshot.png" });
 await browser.close();

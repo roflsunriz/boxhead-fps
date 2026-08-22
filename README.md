@@ -10,6 +10,7 @@ Three.js 製のブラウザ向け FPS ゲーム。TypeScript + Vite(開発)/ Bun
 - G でグレネードを投射する。最大所持数は 5 個で、時限爆発の範囲内にいるボットへ距離減衰ダメージを与える
 - マップ上にバリアセル、ヘルスキット、グレネードが各 5 個ずつランダム出現し、接近すると取得できる
 - 射撃音・被弾音・アイテム取得音・バリア充填音・爆発音と、攻撃元を示す円周ダメージインジケーターを搭載
+- ヘルスがゼロになると前後左右のいずれかへランダムに倒れ込み、地面へ視点が落ちながら画面全体が赤く染まる死亡演出を搭載
 - チームデスマッチ: 青チーム(プレイヤー + アライボット 3)vs 赤チーム(ボット 4)。先に 20 キルで勝利、死亡後はリスポーン
 - ボット AI: ウェイポイントグラフ経路探索、視界による索敵(壁で遮蔽)、個別の体力・弾薬・リロード・ジャンプ・スプリント、Beginner〜Pro のスキルランク(高スキルほど正確かつジグザグ回避を行う)
 - 大気プリセット(Sunny / Cloudy / Rainy / Thunderstorm / Night / Beach Sunset / Underground)を読み込みごとにランダム適用。雨・雷フラッシュ・星空・懐中電灯を含む
@@ -49,7 +50,7 @@ bun run type-check   # tsc --noEmit (strict, any 禁止)
 bun run lint         # ESLint (typescript-eslint flat config)
 bun run format       # Prettier 整形
 bun run audit        # bun audit による依存脆弱性スキャン
-bun run test         # Playwright E2E (51 項目)
+bun run test         # Playwright E2E (58 項目)
 node test/responsive.js   # 複数ビューポートでのレイアウト検証
 ```
 

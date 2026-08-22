@@ -24,6 +24,7 @@ export interface WeatherPreset {
 export type TeamId = "red" | "blue";
 export type Stance = "stand" | "crouch" | "prone";
 export type PickupKind = "shield" | "health" | "grenade";
+export type DeathFallDirection = "forward" | "backward" | "left" | "right";
 
 export interface BotSkill {
   label: string;
@@ -125,6 +126,13 @@ export interface GameDebugApi {
   readonly reloading: boolean;
   readonly healingShield: boolean;
   readonly pickups: number;
+  readonly deathView: {
+    direction: DeathFallDirection;
+    progress: number;
+    height: number;
+    pitch: number;
+    roll: number;
+  };
   readonly weatherName: string;
   readonly lastTracerOrigin: { x: number; y: number; z: number } | null;
   setWeather(i: number): void;

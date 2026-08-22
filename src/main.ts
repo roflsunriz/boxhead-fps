@@ -8,6 +8,7 @@ import {
   refreshShield,
   setActionProgress,
   setAmmoText,
+  setDeathScreen,
   setInventory,
   setMatchScore,
   setVignette,
@@ -18,7 +19,7 @@ import {
 import { matchResultMsg, t, onChange } from "./i18n";
 import { initAudio, playHurt, playShieldCharge, playShot } from "./audio";
 import { pickupCount, spawnPickups, throwPlayerGrenade, updateItems } from "./items";
-import type { GameDebugApi, PlayerState, TeamId, Tracer } from "./types";
+import type { DeathFallDirection, GameDebugApi, PlayerState, TeamId, Tracer } from "./types";
 
 declare global {
   interface Window {
@@ -204,17 +205,87 @@ const teamScore: Record<TeamId, number> = { red: 0, blue: 0 };
 let killTarget = 20;
 let respawnT = 0;
 let gameOver = false;
+let pendingWinner: TeamId | null = null;
+const deathFallDuration = 0.95;
+const playerRespawnDuration = 3;
+const deathDirections: readonly DeathFallDirection[] = ["forward", "backward", "left", "right"];
+let deathFallDirection: DeathFallDirection = "forward";
+let deathFallT = 0;
+let deathStartedAt = 0;
+let deathStartHeight = 1.7;
+let deathStartYaw = 0;
+let deathStartPitch = 0;
+let deathStartRoll = 0;
 
 function scoreKill(team: TeamId): void {
+  if (gameOver || pendingWinner) return;
   teamScore[team]++;
   setMatchScore(teamScore.red, teamScore.blue);
-  if (teamScore[team] >= killTarget) endMatch(team);
+  if (teamScore[team] >= killTarget) {
+    if (player.dead) pendingWinner = team;
+    else endMatch(team);
+  }
 }
 
 setOnBotKilled((victim, killerTeam) => {
   if (victim.team === killerTeam) return;
   scoreKill(killerTeam);
 });
+
+function beginDeathAnimation(): void {
+  deathFallDirection = deathDirections[Math.floor(Math.random() * deathDirections.length)];
+  deathFallT = 0;
+  deathStartedAt = performance.now();
+  deathStartHeight = camera.position.y;
+  deathStartYaw = camera.rotation.y;
+  deathStartPitch = camera.rotation.x;
+  deathStartRoll = camera.rotation.z;
+  triggerHeld = false;
+  setDeathScreen(0.35);
+}
+
+function updateDeathAnimation(): void {
+  deathFallT = Math.min(deathFallDuration, (performance.now() - deathStartedAt) / 1000);
+  const progress = deathFallT / deathFallDuration;
+  const eased = progress * progress * (3 - 2 * progress);
+  const forwardX = -Math.sin(deathStartYaw);
+  const forwardZ = -Math.cos(deathStartYaw);
+  const rightX = -forwardZ;
+  const rightZ = forwardX;
+  let fallX: number;
+  let fallZ: number;
+  let targetPitch = -0.12;
+  let targetRoll = 0;
+
+  if (deathFallDirection === "forward") {
+    fallX = forwardX;
+    fallZ = forwardZ;
+    targetPitch = -Math.PI / 2 + 0.08;
+  } else if (deathFallDirection === "backward") {
+    fallX = -forwardX;
+    fallZ = -forwardZ;
+    targetPitch = Math.PI / 2 - 0.08;
+  } else if (deathFallDirection === "right") {
+    fallX = rightX;
+    fallZ = rightZ;
+    targetRoll = -Math.PI / 2 + 0.08;
+  } else {
+    fallX = -rightX;
+    fallZ = -rightZ;
+    targetRoll = Math.PI / 2 - 0.08;
+  }
+
+  camera.position.set(
+    player.pos.x + fallX * 0.72 * eased,
+    THREE.MathUtils.lerp(deathStartHeight, 0.28, eased),
+    player.pos.z + fallZ * 0.72 * eased
+  );
+  camera.rotation.order = "YXZ";
+  camera.rotation.y = deathStartYaw;
+  camera.rotation.x = THREE.MathUtils.lerp(deathStartPitch, targetPitch, eased);
+  camera.rotation.z = THREE.MathUtils.lerp(deathStartRoll, targetRoll, eased);
+  setDeathScreen(0.35 + eased * 0.55);
+}
 
 function respawnPlayer(): void {
   player.dead = false;
@@ -223,14 +294,20 @@ function respawnPlayer(): void {
   player.stance = "stand";
   player.pos.set(66 + Math.random() * 8, 1.7, 66 + Math.random() * 8);
   player.vel.set(0, 0, 0);
+  deathFallT = 0;
+  currentEyeOffset = 0;
+  camera.position.copy(player.pos);
+  camera.rotation.set(player.pitch, player.yaw, 0, "YXZ");
   gun.visible = true;
   refreshHealth(100);
   refreshShield(100);
   setInventory(player.shieldCells, player.grenades, player.stance);
   setVignette(0);
+  setDeathScreen(0);
 }
 
 function endMatch(winner: TeamId): void {
+  pendingWinner = null;
   gameOver = true;
   playing = false;
   document.exitPointerLock();
@@ -370,11 +447,12 @@ function hurtPlayer(dmg: number, source?: THREE.Vector3, bypassShield = false): 
   refreshHealth(player.hp);
   if (player.hp <= 0) {
     player.dead = true;
-    respawnT = 3;
+    respawnT = playerRespawnDuration;
     healingShield = false;
     shieldDevice.visible = false;
     setActionProgress(null);
     gun.visible = false;
+    beginDeathAnimation();
     scoreKill("red");
   }
 }
@@ -391,7 +469,7 @@ function animate(): void {
     const stanceMultiplier = player.stance === "stand" ? 1 : player.stance === "crouch" ? 0.62 : 0.32;
     const sprint = keys["ShiftLeft"] && player.stance === "stand" && !healingShield ? 1.6 : 1;
     const healMultiplier = healingShield ? 0.55 : 1;
-    const speed = 8 * sprint * stanceMultiplier * healMultiplier;
+    const speed = player.dead ? 0 : 8 * sprint * stanceMultiplier * healMultiplier;
     const forward = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
     const right = new THREE.Vector3(-forward.z, 0, forward.x);
     const move = new THREE.Vector3();
@@ -403,7 +481,7 @@ function animate(): void {
 
     player.vel.x = move.x;
     player.vel.z = move.z;
-    if (keys["Space"] && player.onGround && player.stance !== "prone" && !healingShield) {
+    if (keys["Space"] && !player.dead && player.onGround && player.stance !== "prone" && !healingShield) {
       player.vel.y = 7;
       player.onGround = false;
     }
@@ -426,6 +504,7 @@ function animate(): void {
     camera.rotation.order = "YXZ";
     camera.rotation.y = player.yaw;
     camera.rotation.x = player.pitch - recoil * 0.04;
+    camera.rotation.z = 0;
 
     gun.position.z = -0.45 + recoil * 0.08;
     gun.rotation.x = recoil * 0.15;
@@ -437,12 +516,18 @@ function animate(): void {
     setAmmoText(reloading ? t("reloading") : `${ammo} / ∞`);
 
     if (player.dead) {
-      respawnT -= dt;
-      if (respawnT <= 0) respawnPlayer();
+      updateDeathAnimation();
+      respawnT = Math.max(0, playerRespawnDuration - (performance.now() - deathStartedAt) / 1000);
+      if (respawnT <= 0) {
+        if (pendingWinner) endMatch(pendingWinner);
+        else respawnPlayer();
+      }
     }
 
-    updateBots(dt, clock.elapsedTime);
-    updateItems(player, dt, clock.elapsedTime);
+    if (!gameOver) {
+      updateBots(dt, clock.elapsedTime);
+      if (!player.dead) updateItems(player, dt, clock.elapsedTime);
+    }
   }
 
   for (let i = tracers.length - 1; i >= 0; i--) {
@@ -502,6 +587,15 @@ window.__game = {
   },
   get pickups() {
     return pickupCount();
+  },
+  get deathView() {
+    return {
+      direction: deathFallDirection,
+      progress: Math.min(1, deathFallT / deathFallDuration),
+      height: camera.position.y,
+      pitch: camera.rotation.x,
+      roll: camera.rotation.z,
+    };
   },
   get weatherName() {
     return getWeather().name;

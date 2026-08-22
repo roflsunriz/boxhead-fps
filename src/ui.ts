@@ -9,6 +9,7 @@ export const ammoEl = requiredElement<HTMLDivElement>("#ammo");
 const scoreEl = requiredElement<HTMLSpanElement>("#score");
 const waveEl = requiredElement<HTMLSpanElement>("#wave");
 export const vignette = requiredElement<HTMLDivElement>("#damage-vignette");
+const deathScreen = requiredElement<HTMLDivElement>("#death-screen");
 const damageIndicator = requiredElement<HTMLDivElement>("#damage-indicator");
 const shieldBar = requiredElement<HTMLDivElement>("#shield-bar");
 const shieldText = requiredElement<HTMLSpanElement>("#shield-text");
@@ -117,4 +118,8 @@ export function showDamageDirection(angleRadians: number): void {
 
 export function setVignette(opacity: number): void {
   vignette.style.opacity = String(Math.min(1, Math.max(0, opacity)));
+}
+
+export function setDeathScreen(opacity: number): void {
+  deathScreen.style.opacity = String(Math.min(0.9, Math.max(0, opacity)));
 }
