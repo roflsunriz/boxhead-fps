@@ -3,6 +3,7 @@ import { t, applyI18n, toggleLang, onChange } from "./i18n";
 import type { Stance } from "./types";
 
 export const hitmarkerEl = requiredElement<HTMLDivElement>("#hitmarker");
+export const crosshairEl = requiredElement<HTMLDivElement>("#crosshair");
 export const healthBar = requiredElement<HTMLDivElement>("#health-bar");
 const healthText = requiredElement<HTMLSpanElement>("#health-text");
 export const ammoEl = requiredElement<HTMLDivElement>("#ammo");

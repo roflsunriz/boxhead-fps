@@ -32,6 +32,7 @@ canvas {
   transform: translate(-50%, -50%);
   width: 34px;
   height: 34px;
+  transition: opacity 80ms linear;
 }
 .crosshair-line {
   position: absolute;

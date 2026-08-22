@@ -125,6 +125,46 @@ await page.keyboard.up("KeyA");
 const sx2 = await page.evaluate(() => window.__game.player.pos.x);
 check(`A strafes LEFT (back past start): ${sx2.toFixed(2)}`, sx2 < sx0);
 
+console.log("\n[3b] Open red-dot ADS toggle");
+const contextMenuPrevented = await page.evaluate(() => {
+  const canvas = document.querySelector("body > canvas");
+  return canvas
+    ? !canvas.dispatchEvent(new MouseEvent("contextmenu", { button: 2, bubbles: true, cancelable: true }))
+    : false;
+});
+check("right click context menu is suppressed on the game canvas", contextMenuPrevented);
+const adsAmmo = await page.evaluate(() => window.__game.ammo);
+await page.evaluate(() => {
+  const canvas = document.querySelector("body > canvas");
+  canvas?.dispatchEvent(new MouseEvent("mousedown", { button: 2, bubbles: true, cancelable: true }));
+});
+await page.waitForTimeout(350);
+const adsOn = await page.evaluate(() => ({ aiming: window.__game.aiming, ...window.__game.aimView }));
+check(
+  `right click toggles red-dot ADS on (${JSON.stringify(adsOn)})`,
+  adsOn.aiming &&
+    adsOn.blend > 0.75 &&
+    adsOn.fov < 64 &&
+    Math.abs(adsOn.gunX) < 0.03 &&
+    adsOn.gunY > -0.13 &&
+    adsOn.gunY < -0.07 &&
+    adsOn.gunZ > -0.57 &&
+    adsOn.gunZ < -0.49 &&
+    adsOn.crosshairOpacity < 0.2 &&
+    (await page.evaluate(() => window.__game.ammo)) === adsAmmo
+);
+await page.screenshot({ path: "test/feature-red-dot-ads.png" });
+await page.evaluate(() => {
+  const canvas = document.querySelector("body > canvas");
+  canvas?.dispatchEvent(new MouseEvent("mousedown", { button: 2, bubbles: true, cancelable: true }));
+});
+await page.waitForTimeout(350);
+const adsOff = await page.evaluate(() => ({ aiming: window.__game.aiming, ...window.__game.aimView }));
+check(
+  `second right click returns to hip fire (${JSON.stringify(adsOff)})`,
+  !adsOff.aiming && adsOff.blend < 0.2 && adsOff.fov > 72 && adsOff.crosshairOpacity > 0.8
+);
+
 console.log("\n[4] Shooting & ammo");
 await page.evaluate(() => {
   const g = window.__game;
@@ -398,9 +438,16 @@ console.log("\n[6] Reload");
 await page.evaluate(() => {
   window.__game.enemies.forEach((en) => en.pos.set(200, 0, 200));
 });
+await page.evaluate(() => {
+  const canvas = document.querySelector("body > canvas");
+  canvas?.dispatchEvent(new MouseEvent("mousedown", { button: 2, bubbles: true, cancelable: true }));
+});
+await page.waitForTimeout(250);
+check("ADS can be entered before reload", await page.evaluate(() => window.__game.aiming));
 const ra0 = await page.evaluate(() => window.__game.ammo);
 await page.evaluate(() => window.__game.reload());
 check("reload flag set", await page.evaluate(() => window.__game.reloading === true));
+check("reload cancels ADS", await page.evaluate(() => window.__game.aiming === false));
 await page.waitForTimeout(450);
 const reloadView = await page.evaluate(() => window.__game.reloadView);
 check(

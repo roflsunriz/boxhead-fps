@@ -159,6 +159,15 @@ export interface GameDebugApi {
   readonly wave: number;
   readonly gameOver: boolean;
   readonly reloading: boolean;
+  readonly aiming: boolean;
+  readonly aimView: {
+    blend: number;
+    fov: number;
+    gunX: number;
+    gunY: number;
+    gunZ: number;
+    crosshairOpacity: number;
+  };
   readonly reloadView: {
     progress: number;
     magazineY: number;

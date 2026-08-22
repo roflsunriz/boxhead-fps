@@ -8,7 +8,7 @@ Three.js 製のブラウザ向け FPS ゲーム。TypeScript + Vite(開発)/ Bun
 
 ## ゲーム内容
 
-- WASD 移動 / マウス視点 / クリック長押しのフルオート射撃 / R リロード / Shift ダッシュ / Space ジャンプ
+- WASD 移動 / マウス視点 / クリック長押しのフルオート射撃 / 右クリックでレッドドットADSをトグル / R リロード / Shift ダッシュ / Space ジャンプ
 - C でしゃがみ、X でうつぶせをトグル。姿勢に応じて視点高と移動速度が変化する
 - F でバリアセルを使用し、充填ゲージと一人称アニメーションの完了後にバリアを 50 回復する
 - G でグレネードを投射する。最大所持数は 5 個で、時限爆発の範囲内にいるボットへ距離減衰ダメージを与える
@@ -79,7 +79,7 @@ bun run lint         # ESLint (typescript-eslint flat config)
 bun run format       # Prettier 整形
 bun run audit        # bun audit による依存脆弱性スキャン
 bun run validate:release-tag -- v1.2.3  # リリースタグ形式の確認
-bun run test         # Playwright E2E (86 項目)
+bun run test         # Playwright E2E (91 項目)
 node test/responsive.js   # 複数ビューポートでのレイアウト検証
 ```
 

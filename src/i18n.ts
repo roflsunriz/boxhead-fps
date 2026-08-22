@@ -27,7 +27,8 @@ type StringKey =
 
 const STRINGS: Record<Lang, Record<StringKey, string>> = {
   en: {
-    msgStart: "WASD move · Mouse aim · Hold click full-auto · C crouch · X prone · F shield · G grenade",
+    msgStart:
+      "WASD move · Mouse aim · Hold click full-auto · Right click red-dot aim · C crouch · X prone · F shield · G grenade",
     play: "CLICK TO PLAY",
     pausedTitle: "PAUSED",
     pausedLockMsg: "Pointer lock was released. Click to resume.",
@@ -53,7 +54,7 @@ const STRINGS: Record<Lang, Record<StringKey, string>> = {
   },
   ja: {
     msgStart:
-      "WASD 移動 · マウス エイム · クリック長押し 連射 · C しゃがみ · X うつぶせ · F バリア · G グレネード",
+      "WASD 移動 · マウス エイム · クリック長押し 連射 · 右クリック レッドドット照準 · C しゃがみ · X うつぶせ · F バリア · G グレネード",
     play: "クリックしてプレイ",
     pausedTitle: "一時停止",
     pausedLockMsg: "ポインタロックが解除されました。クリックで再開します。",

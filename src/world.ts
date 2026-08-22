@@ -8,6 +8,7 @@ import {
   type PbrTextureSet,
 } from "./textures";
 import { createPalmTreeModel, createStarfishModel } from "./models/game-models";
+import { boxObstacle, supportsRealtimeShadows } from "./world-helpers";
 import { mulberry32 } from "./random";
 import { createBeachWaveSystem } from "./beach-waves";
 import type { BeachWaveSummary, BeachWaveSystem } from "./beach-waves";
@@ -23,13 +24,8 @@ export const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 
 export const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-const gl = renderer.getContext();
-const rendererInfoExtension = gl.getExtension("WEBGL_debug_renderer_info");
-const rendererName = rendererInfoExtension
-  ? String(gl.getParameter(rendererInfoExtension.UNMASKED_RENDERER_WEBGL))
-  : "";
-const supportsRealtimeShadows = !/swiftshader|llvmpipe|software/i.test(rendererName);
-renderer.shadowMap.enabled = supportsRealtimeShadows;
+const realtimeShadows = supportsRealtimeShadows(renderer);
+renderer.shadowMap.enabled = realtimeShadows;
 renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 document.body.appendChild(renderer.domElement);
@@ -44,7 +40,7 @@ export const hemi = new THREE.HemisphereLight(0xcfe8ff, 0x3a4a35, 1.1);
 scene.add(hemi);
 export const sun = new THREE.DirectionalLight(0xfff2d8, 1.6);
 sun.position.set(30, 60, 20);
-sun.castShadow = supportsRealtimeShadows;
+sun.castShadow = realtimeShadows;
 sun.shadow.mapSize.set(2048, 2048);
 sun.shadow.camera.left = -70;
 sun.shadow.camera.right = 70;
@@ -121,13 +117,6 @@ function disposeGroup(g: THREE.Group): void {
       else o.material.dispose();
     }
   });
-}
-
-function boxObstacle(x: number, z: number, w: number, h: number, d: number): ObstacleBox {
-  return {
-    min: new THREE.Vector3(x - w / 2, 0, z - d / 2),
-    max: new THREE.Vector3(x + w / 2, h, z + d / 2),
-  };
 }
 
 /* ---------------------------------- City --------------------------------- */

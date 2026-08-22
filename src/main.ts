@@ -13,6 +13,7 @@ import {
 import { getWeather, initWeather, setWeatherByIndex, updateWeatherFx } from "./weather";
 import { bots, damageBot, initBots, setOnBotKilled, updateBots } from "./enemies";
 import {
+  crosshairEl,
   overlay,
   refreshHealth,
   refreshShield,
@@ -93,6 +94,7 @@ document.addEventListener("pointerlockchange", () => {
     overlay.classList.add("hidden");
   } else if (playing && !gameOver) {
     triggerHeld = false;
+    cancelAim(true);
     playing = false;
     renderer.domElement.style.cursor = "default";
     showOverlay("pausedTitle", () => t("pausedLockMsg"), "resume");
@@ -106,6 +108,7 @@ document.addEventListener("mousemove", (e) => {
 });
 addEventListener("keydown", (e) => {
   if (e.code === "Escape" && playing && !locked) {
+    cancelAim(true);
     playing = false;
     renderer.domElement.style.cursor = "default";
     showOverlay("pausedTitle", () => t("pausedMsg"), "resume");
@@ -151,6 +154,13 @@ const gunBasePosition = new THREE.Vector3(0.22, -0.24, -0.62);
 const magazineBaseY = gunMagazine.position.y;
 gun.position.copy(gunBasePosition);
 gun.scale.setScalar(0.28);
+const defaultCameraFov = camera.fov;
+const aimCameraFov = 60;
+const gunAimPosition = new THREE.Vector3(
+  -carbine.aimSocket.position.x * gun.scale.x,
+  -carbine.aimSocket.position.y * gun.scale.y,
+  -0.55 - carbine.aimSocket.position.z * gun.scale.z
+);
 
 const shieldDevice = createPickupModel("shield");
 shieldDevice.position.set(0, -0.31, -0.58);
@@ -193,10 +203,35 @@ let shootCooldown = 0;
 let recoil = 0;
 let lastTracerOrigin: { x: number; y: number; z: number } | null = null;
 let triggerHeld = false;
+let aiming = false;
+let aimBlend = 0;
 let healingShield = false;
 let shieldHealT = 0;
 let shieldHealStartedAt = 0;
 const shieldHealDuration = 2.1;
+
+function cancelAim(immediate = false): void {
+  aiming = false;
+  if (!immediate) return;
+  aimBlend = 0;
+  camera.fov = defaultCameraFov;
+  camera.updateProjectionMatrix();
+  crosshairEl.style.opacity = "1";
+}
+
+function updateAim(dt: number): void {
+  const canAim = aiming && playing && !gameOver && !player.dead && !reloading && !healingShield;
+  const target = canAim ? 1 : 0;
+  aimBlend += (target - aimBlend) * Math.min(1, dt * 16);
+  if (Math.abs(aimBlend - target) < 0.001) aimBlend = target;
+  const eased = aimBlend * aimBlend * (3 - 2 * aimBlend);
+  const nextFov = THREE.MathUtils.lerp(defaultCameraFov, aimCameraFov, eased);
+  if (Math.abs(camera.fov - nextFov) > 0.01) {
+    camera.fov = nextFov;
+    camera.updateProjectionMatrix();
+  }
+  crosshairEl.style.opacity = String(1 - eased);
+}
 
 const teamScore: Record<TeamId, number> = { red: 0, blue: 0 };
 let killTarget = 20;
@@ -231,6 +266,7 @@ setOnBotKilled((victim, killerTeam, playerCaused) => {
 });
 
 function beginDeathAnimation(): void {
+  cancelAim(true);
   deathFallDirection = deathDirections[Math.floor(Math.random() * deathDirections.length)];
   deathFallT = 0;
   deathStartedAt = performance.now();
@@ -286,6 +322,7 @@ function updateDeathAnimation(): void {
 }
 
 function respawnPlayer(): void {
+  cancelAim(true);
   player.dead = false;
   player.hp = 100;
   player.shield = 100;
@@ -304,6 +341,7 @@ function respawnPlayer(): void {
 }
 
 function endMatch(winner: TeamId): void {
+  cancelAim(true);
   pendingWinner = null;
   gameOver = true;
   playing = false;
@@ -315,6 +353,7 @@ function endMatch(winner: TeamId): void {
 
 function reload(): void {
   if (reloading || ammo === magSize || healingShield) return;
+  cancelAim();
   reloading = true;
   reloadProgress = 0;
   reloadAnimationTime = 0.2;
@@ -327,9 +366,10 @@ function updateReloadAnimation(): void {
     gunMagazine.position.y = magazineBaseY;
     gunMagazine.visible = true;
     reloadHand.visible = false;
-    gun.position.y = gunBasePosition.y;
-    gun.position.z = gunBasePosition.z + recoil * 0.08;
-    gun.rotation.x = recoil * 0.15;
+    const easedAim = aimBlend * aimBlend * (3 - 2 * aimBlend);
+    gun.position.lerpVectors(gunBasePosition, gunAimPosition, easedAim);
+    gun.position.z += recoil * THREE.MathUtils.lerp(0.08, 0.035, easedAim);
+    gun.rotation.x = recoil * THREE.MathUtils.lerp(0.15, 0.08, easedAim);
     gun.rotation.z = 0;
     return;
   }
@@ -378,7 +418,16 @@ function updateReloadAnimation(): void {
   }
 }
 
+addEventListener("contextmenu", (event) => {
+  if (playing) event.preventDefault();
+});
 addEventListener("mousedown", (e) => {
+  if (e.button === 2) {
+    e.preventDefault();
+    const gamePointer = locked || e.target === renderer.domElement;
+    if (gamePointer && playing && !gameOver && !player.dead && !reloading && !healingShield) aiming = !aiming;
+    return;
+  }
   if (!playing || e.button !== 0) return;
   triggerHeld = true;
   initAudio();
@@ -389,6 +438,7 @@ addEventListener("mouseup", (e) => {
 });
 addEventListener("blur", () => {
   triggerHeld = false;
+  cancelAim(true);
 });
 addEventListener("keydown", (e) => {
   if (e.code === "KeyR") reload();
@@ -397,6 +447,7 @@ addEventListener("keydown", (e) => {
 function useShieldCell(): void {
   if (healingShield || player.dead || player.shield >= 100 || player.shieldCells <= 0) return;
   healingShield = true;
+  cancelAim();
   shieldHealT = 0;
   shieldHealStartedAt = performance.now();
   reloading = false;
@@ -429,6 +480,7 @@ function updateShieldHeal(dt: number): void {
 
 function throwGrenade(): void {
   if (!playing || player.dead || gameOver || healingShield || player.grenades <= 0) return;
+  cancelAim();
   throwPlayerGrenade(player);
 }
 
@@ -576,6 +628,7 @@ function animate(timestamp = performance.now()): void {
       camera.rotation.x = player.pitch - recoil * 0.04;
       camera.rotation.z = 0;
 
+      updateAim(dt);
       updateReloadAnimation();
       recoil = Math.max(0, recoil - dt * 8);
       muzzleFlash.intensity = Math.max(0, muzzleFlash.intensity - dt * 40);
@@ -653,6 +706,19 @@ window.__game = {
   },
   get reloading() {
     return reloading;
+  },
+  get aiming() {
+    return aiming;
+  },
+  get aimView() {
+    return {
+      blend: aimBlend,
+      fov: camera.fov,
+      gunX: gun.position.x,
+      gunY: gun.position.y,
+      gunZ: gun.position.z,
+      crosshairOpacity: Number(crosshairEl.style.opacity || 1),
+    };
   },
   get reloadView() {
     return {

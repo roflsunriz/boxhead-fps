@@ -8,6 +8,7 @@ export interface CarbineModel {
   magazine: THREE.Group;
   muzzle: THREE.Object3D;
   gripSocket: THREE.Object3D;
+  aimSocket: THREE.Object3D;
 }
 
 interface MaterialKit {
@@ -204,9 +205,13 @@ function createBotCarbineModel(team?: TeamId): CarbineModel {
   gripSocket.name = "grip-socket";
   gripSocket.position.set(0, -0.22, 0.1);
   group.add(gripSocket);
+  const aimSocket = new THREE.Object3D();
+  aimSocket.name = "aim-socket";
+  aimSocket.position.set(0, 0.26, -0.17);
+  group.add(aimSocket);
   receiver.userData.botWeaponMajor = true;
   handguard.userData.botWeaponMajor = true;
-  return { group, magazine, muzzle, gripSocket };
+  return { group, magazine, muzzle, gripSocket, aimSocket };
 }
 
 export function createCarbineModel(team?: TeamId, quality: "hero" | "bot" = "hero"): CarbineModel {
@@ -507,6 +512,14 @@ export function createCarbineModel(team?: TeamId, quality: "hero" | "bot" = "her
   addMesh(optic, "optic-right", roundedBox(0.035, 0.23, 0.19, 0.015), materials.gunmetal, [0.072, 0.12, 0]);
   addMesh(optic, "optic-top", roundedBox(0.16, 0.045, 0.19, 0.012), materials.gunmetal, [0, 0.225, 0]);
   addMesh(optic, "optic-lens", new THREE.PlaneGeometry(0.12, 0.16), materials.lens, [0, 0.13, -0.101]);
+  const redDot = addMesh(
+    optic,
+    "red-dot-reticle",
+    new THREE.SphereGeometry(0.008, 10, 8),
+    new THREE.MeshBasicMaterial({ color: 0xff2b1c, toneMapped: false }),
+    [0, 0.13, -0.108]
+  );
+  redDot.userData.explodeWithParent = true;
   if (detailed) {
     addFastener(optic, materials.darkMetal, 0.085, 0.04, 0.08);
     addFastener(optic, materials.darkMetal, 0.085, 0.04, -0.08);
@@ -519,6 +532,11 @@ export function createCarbineModel(team?: TeamId, quality: "hero" | "bot" = "her
     materials.darkMetal,
     [0.081, 0.08, -0.39]
   );
+
+  const aimSocket = new THREE.Object3D();
+  aimSocket.name = "aim-socket";
+  aimSocket.position.set(0, 0.36, -0.071);
+  group.add(aimSocket);
   addMesh(
     group,
     "status-indicator",
@@ -539,7 +557,7 @@ export function createCarbineModel(team?: TeamId, quality: "hero" | "bot" = "her
     enumerable: false,
     value: {
       nodes,
-      sockets: { muzzle, grip: gripSocket },
+      sockets: { muzzle, grip: gripSocket, aim: aimSocket },
       colliders: {
         receiver: { type: "box", scale: [0.18, 0.24, 0.54] },
         handguard: { type: "box", scale: [0.18, 0.3, 0.92] },
@@ -548,7 +566,7 @@ export function createCarbineModel(team?: TeamId, quality: "hero" | "bot" = "her
     },
   });
   group.userData.reference = "art/references/fps-carbine.png";
-  return { group, magazine, muzzle, gripSocket };
+  return { group, magazine, muzzle, gripSocket, aimSocket };
 }
 
 export function createGrenadeModel(): THREE.Group {
