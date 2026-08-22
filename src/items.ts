@@ -2,7 +2,8 @@ import * as THREE from "three";
 import { playExplosion, playPickup } from "./audio";
 import { bots, damageBot } from "./enemies";
 import { refreshHealth, setInventory } from "./ui";
-import { camera, randomWalkablePoint, scene } from "./world";
+import { leaveBlastMark } from "./persistent-effects";
+import { camera, randomWalkablePoint, raycastEnvironment, scene } from "./world";
 import type { PickupKind, PlayerState } from "./types";
 
 interface WorldPickup {
@@ -15,6 +16,7 @@ interface GrenadeProjectile {
   mesh: THREE.Mesh;
   vel: THREE.Vector3;
   fuse: number;
+  lastContact: { point: THREE.Vector3; normal: THREE.Vector3 } | null;
 }
 
 interface ExplosionFx {
@@ -26,6 +28,27 @@ interface ExplosionFx {
 const pickups: WorldPickup[] = [];
 const grenadesInFlight: GrenadeProjectile[] = [];
 const explosions: ExplosionFx[] = [];
+const grenadeRaycaster = new THREE.Raycaster();
+const blastProbeDirections = [
+  new THREE.Vector3(0, -1, 0),
+  new THREE.Vector3(1, 0, 0),
+  new THREE.Vector3(-1, 0, 0),
+  new THREE.Vector3(0, 0, 1),
+  new THREE.Vector3(0, 0, -1),
+  new THREE.Vector3(0, 1, 0),
+];
+
+function nearestBlastSurface(position: THREE.Vector3): { point: THREE.Vector3; normal: THREE.Vector3 } {
+  let best: { distance: number; point: THREE.Vector3; normal: THREE.Vector3 } | null = null;
+  for (const direction of blastProbeDirections) {
+    grenadeRaycaster.set(position, direction);
+    grenadeRaycaster.near = 0.01;
+    grenadeRaycaster.far = 2.4;
+    const hit = raycastEnvironment(grenadeRaycaster);
+    if (hit && (!best || hit.distance < best.distance)) best = hit;
+  }
+  return best ?? { point: new THREE.Vector3(position.x, 0, position.z), normal: new THREE.Vector3(0, 1, 0) };
+}
 
 function pickupModel(kind: PickupKind): THREE.Group {
   const group = new THREE.Group();
@@ -101,6 +124,11 @@ function explodeGrenade(grenade: GrenadeProjectile): void {
   const pos = grenade.mesh.position.clone();
   scene.remove(grenade.mesh);
   playExplosion();
+  const surface =
+    grenade.lastContact && grenade.lastContact.point.distanceTo(pos) < 0.5
+      ? grenade.lastContact
+      : nearestBlastSurface(pos);
+  leaveBlastMark(surface.point, surface.normal);
   for (const bot of bots) {
     if (!bot.alive || bot.team !== "red") continue;
     const dist = bot.pos.distanceTo(pos);
@@ -142,6 +170,7 @@ export function throwPlayerGrenade(player: PlayerState): boolean {
     mesh,
     vel: dir.multiplyScalar(22).add(new THREE.Vector3(0, 5.5, 0)),
     fuse: 2.35,
+    lastContact: null,
   });
   player.grenades--;
   setInventory(player.shieldCells, player.grenades, player.stance);
@@ -161,14 +190,35 @@ export function updateItems(player: PlayerState, dt: number, time: number): void
     const grenade = grenadesInFlight[i];
     grenade.fuse -= dt;
     grenade.vel.y -= 18 * dt;
-    grenade.mesh.position.addScaledVector(grenade.vel, dt);
+    const travel = grenade.vel.clone().multiplyScalar(dt);
+    const travelDistance = travel.length();
+    let collided = false;
+    if (travelDistance > 0.0001) {
+      grenadeRaycaster.set(grenade.mesh.position, travel.normalize());
+      grenadeRaycaster.near = 0.01;
+      grenadeRaycaster.far = travelDistance + 0.2;
+      const hit = raycastEnvironment(grenadeRaycaster);
+      if (hit && hit.distance <= travelDistance + 0.2) {
+        grenade.mesh.position.copy(hit.point).addScaledVector(hit.normal, 0.21);
+        const inwardSpeed = grenade.vel.dot(hit.normal);
+        if (inwardSpeed < 0) grenade.vel.addScaledVector(hit.normal, -1.46 * inwardSpeed);
+        grenade.vel.multiplyScalar(0.78);
+        grenade.lastContact = { point: hit.point.clone(), normal: hit.normal.clone() };
+        collided = true;
+      }
+    }
+    if (!collided) grenade.mesh.position.addScaledVector(grenade.vel, dt);
     grenade.mesh.rotation.x += dt * 9;
     grenade.mesh.rotation.z += dt * 6;
-    if (grenade.mesh.position.y < 0.3) {
+    if (!collided && grenade.mesh.position.y < 0.3) {
       grenade.mesh.position.y = 0.3;
       grenade.vel.y = Math.abs(grenade.vel.y) * 0.46;
       grenade.vel.x *= 0.76;
       grenade.vel.z *= 0.76;
+      grenade.lastContact = {
+        point: new THREE.Vector3(grenade.mesh.position.x, 0, grenade.mesh.position.z),
+        normal: new THREE.Vector3(0, 1, 0),
+      };
     }
     if (grenade.fuse <= 0) {
       explodeGrenade(grenade);

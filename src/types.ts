@@ -25,7 +25,7 @@ export type TeamId = "red" | "blue";
 export type Stance = "stand" | "crouch" | "prone";
 export type PickupKind = "shield" | "health" | "grenade";
 export type DeathFallDirection = "forward" | "backward" | "left" | "right";
-export type PersistentEffectKind = "bulletMarks" | "magazines" | "corpses";
+export type PersistentEffectKind = "bulletMarks" | "magazines" | "corpses" | "blastMarks";
 
 export interface PersistentEffectQueueSummary {
   count: number;
@@ -39,6 +39,7 @@ export interface PersistentEffectsSummary {
   bulletMarks: PersistentEffectQueueSummary;
   magazines: PersistentEffectQueueSummary;
   corpses: PersistentEffectQueueSummary;
+  blastMarks: PersistentEffectQueueSummary;
 }
 
 export interface BotSkill {

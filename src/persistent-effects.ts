@@ -6,6 +6,7 @@ export const PERSISTENT_EFFECT_LIMITS = {
   bulletMarks: 128,
   magazines: 24,
   corpses: 12,
+  blastMarks: 20,
 } as const;
 
 interface EffectRecord {
@@ -24,6 +25,7 @@ let nextEffectId = 1;
 const bulletMarks: EffectRecord[] = [];
 const magazines: MagazineRecord[] = [];
 const corpses: EffectRecord[] = [];
+const blastMarks: EffectRecord[] = [];
 
 const bulletMarkGeometry = new THREE.CircleGeometry(0.065, 10);
 const bulletMarkMaterial = new THREE.MeshBasicMaterial({
@@ -45,6 +47,64 @@ const magazineBodyMaterial = new THREE.MeshStandardMaterial({
 });
 const magazineBandMaterial = new THREE.MeshStandardMaterial({ color: 0xff5533, roughness: 0.6 });
 const surfaceForward = new THREE.Vector3(0, 0, 1);
+
+function createCraterBowlGeometry(): THREE.BufferGeometry {
+  const rings = 6;
+  const segments = 32;
+  const positions: number[] = [0, 0, 0.012];
+  const indices: number[] = [];
+  for (let ring = 1; ring <= rings; ring++) {
+    const t = ring / rings;
+    const radius = t * 0.9;
+    const depth = 0.012 + t * t * 0.045;
+    for (let segment = 0; segment < segments; segment++) {
+      const angle = (segment / segments) * Math.PI * 2;
+      const uneven = 1 + Math.sin(segment * 5.7) * 0.035 + Math.cos(segment * 2.3) * 0.025;
+      positions.push(Math.cos(angle) * radius * uneven, Math.sin(angle) * radius * uneven, depth);
+    }
+  }
+  for (let segment = 0; segment < segments; segment++) {
+    indices.push(0, 1 + segment, 1 + ((segment + 1) % segments));
+  }
+  for (let ring = 1; ring < rings; ring++) {
+    const innerStart = 1 + (ring - 1) * segments;
+    const outerStart = innerStart + segments;
+    for (let segment = 0; segment < segments; segment++) {
+      const next = (segment + 1) % segments;
+      indices.push(innerStart + segment, outerStart + segment, outerStart + next);
+      indices.push(innerStart + segment, outerStart + next, innerStart + next);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+const craterBowlGeometry = createCraterBowlGeometry();
+const craterScorchGeometry = new THREE.CircleGeometry(1.25, 36);
+const craterRimGeometry = new THREE.TorusGeometry(0.88, 0.07, 6, 32);
+const craterBowlMaterial = new THREE.MeshStandardMaterial({
+  color: 0x211713,
+  roughness: 1,
+  metalness: 0,
+  side: THREE.DoubleSide,
+  polygonOffset: true,
+  polygonOffsetFactor: -3,
+  polygonOffsetUnits: -3,
+});
+const craterScorchMaterial = new THREE.MeshBasicMaterial({
+  color: 0x080706,
+  transparent: true,
+  opacity: 0.62,
+  depthWrite: false,
+  polygonOffset: true,
+  polygonOffsetFactor: -2,
+  polygonOffsetUnits: -2,
+  side: THREE.DoubleSide,
+});
+const craterRimMaterial = new THREE.MeshStandardMaterial({ color: 0x30231b, roughness: 1 });
 
 function removeEffect(record: EffectRecord): void {
   scene.remove(record.object);
@@ -144,6 +204,30 @@ export function leaveBotCorpse(source: THREE.Group): void {
   retainEffect(corpses, record, PERSISTENT_EFFECT_LIMITS.corpses);
 }
 
+export function leaveBlastMark(point: THREE.Vector3, normal: THREE.Vector3): void {
+  const group = new THREE.Group();
+  const scorch = new THREE.Mesh(craterScorchGeometry, craterScorchMaterial);
+  const bowl = new THREE.Mesh(craterBowlGeometry, craterBowlMaterial);
+  const rim = new THREE.Mesh(craterRimGeometry, craterRimMaterial);
+  scorch.position.z = 0.004;
+  bowl.position.z = 0.008;
+  rim.position.z = 0.04;
+  bowl.receiveShadow = rim.receiveShadow = true;
+  group.add(scorch, bowl, rim);
+  const worldNormal = normal.clone().normalize();
+  group.position.copy(point).addScaledVector(worldNormal, 0.008);
+  group.quaternion.setFromUnitVectors(surfaceForward, worldNormal);
+  group.rotateZ(Math.random() * Math.PI * 2);
+  const scale = 0.88 + Math.random() * 0.24;
+  group.scale.set(scale, scale * (0.9 + Math.random() * 0.16), scale);
+  group.traverse((object) => {
+    object.userData.ignoreRaycast = true;
+  });
+  const record: EffectRecord = { id: nextEffectId++, object: group };
+  group.userData.persistentEffectId = record.id;
+  retainEffect(blastMarks, record, PERSISTENT_EFFECT_LIMITS.blastMarks);
+}
+
 export function updatePersistentEffects(dt: number): void {
   for (const magazine of magazines) {
     if (magazine.settled) continue;
@@ -176,6 +260,7 @@ export function persistentEffectsSummary(): PersistentEffectsSummary {
     bulletMarks: queueSummary(bulletMarks, PERSISTENT_EFFECT_LIMITS.bulletMarks),
     magazines: queueSummary(magazines, PERSISTENT_EFFECT_LIMITS.magazines),
     corpses: queueSummary(corpses, PERSISTENT_EFFECT_LIMITS.corpses),
+    blastMarks: queueSummary(blastMarks, PERSISTENT_EFFECT_LIMITS.blastMarks),
   };
 }
 
@@ -188,6 +273,7 @@ export function debugPopulatePersistentEffects(
     const offset = new THREE.Vector3((i % 8) * 0.12, 0.08, Math.floor(i / 8) * 0.12);
     if (kind === "bulletMarks") leaveBulletMark(offset, new THREE.Vector3(0, 1, 0));
     else if (kind === "magazines") dropMagazine(offset, new THREE.Quaternion(), new THREE.Vector3());
-    else leaveBotCorpse(corpseSource);
+    else if (kind === "corpses") leaveBotCorpse(corpseSource);
+    else leaveBlastMark(offset, new THREE.Vector3(0, 1, 0));
   }
 }

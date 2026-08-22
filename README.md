@@ -4,7 +4,7 @@ Three.js 製のブラウザ向け FPS ゲーム。TypeScript + Vite(開発)/ Bun
 
 **[GitHub PagesでBoxhead FPSをプレイ](https://roflsunriz.github.io/boxhead-fps/)**
 
-公開バージョン: **1.0.0**
+公開バージョン: **1.1.0**
 
 ## ゲーム内容
 
@@ -12,6 +12,7 @@ Three.js 製のブラウザ向け FPS ゲーム。TypeScript + Vite(開発)/ Bun
 - C でしゃがみ、X でうつぶせをトグル。姿勢に応じて視点高と移動速度が変化する
 - F でバリアセルを使用し、充填ゲージと一人称アニメーションの完了後にバリアを 50 回復する
 - G でグレネードを投射する。最大所持数は 5 個で、時限爆発の範囲内にいるボットへ距離減衰ダメージを与える
+- グレネードは地面や障害物で反射し、爆発地点の接触面へ立体的なえぐれと黒い焦げ跡を残す。爆発跡は最新20個を保持する
 - マップ上にバリアセル、ヘルスキット、グレネードが各 5 個ずつランダム出現し、接近すると取得できる
 - 射撃音・被弾音・アイテム取得音・バリア充填音・爆発音と、攻撃元を示す円周ダメージインジケーターを搭載
 - リロード時は補助手で古い弾倉を抜き、新しい弾倉を差し戻す一人称アニメーションを再生
@@ -60,8 +61,8 @@ bun run preview   # dist/ を 8787 番ポートで配信
 その後、SemVer形式のタグをpushすると、型検査・lint・依存監査・Pages用ビルドを通過した成果物が自動デプロイされる。
 
 ```powershell
-git tag -a v1.0.0 -m "v1.0.0"
-git push origin v1.0.0
+git tag -a v1.1.0 -m "v1.1.0"
+git push origin v1.1.0
 ```
 
 `v1.2.3`、`v1.2.3-rc.1`、`v1.2.3+build.4`などを受け付ける。不正な形式のタグはデプロイ前に失敗する。Pagesのベースパスはリポジトリ設定から自動取得するため、プロジェクトサイトとカスタムドメインの両方に対応する。
@@ -76,7 +77,7 @@ bun run lint         # ESLint (typescript-eslint flat config)
 bun run format       # Prettier 整形
 bun run audit        # bun audit による依存脆弱性スキャン
 bun run validate:release-tag -- v1.2.3  # リリースタグ形式の確認
-bun run test         # Playwright E2E (84 項目)
+bun run test         # Playwright E2E (86 項目)
 node test/responsive.js   # 複数ビューポートでのレイアウト検証
 ```
 

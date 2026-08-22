@@ -234,10 +234,20 @@ const grenadeResult = await page.evaluate(() => {
     grenades: g.player.grenades,
     hud: document.querySelector("#grenades")?.textContent,
     pickups: g.pickups,
+    blastMarksBefore: g.persistentEffects.blastMarks.count,
   };
 });
 check("G throws and consumes one grenade", grenadeResult.grenades === 4 && grenadeResult.hud === "4");
 check(`15 random pickups spawned (${grenadeResult.pickups})`, grenadeResult.pickups === 15);
+await page.waitForTimeout(2600);
+const grenadeBlastMark = await page.evaluate(() => window.__game.persistentEffects.blastMarks);
+check(
+  `grenade explosion leaves a capped persistent crater (${JSON.stringify(grenadeBlastMark)})`,
+  grenadeBlastMark.count === grenadeResult.blastMarksBefore + 1 &&
+    grenadeBlastMark.max === 20 &&
+    grenadeBlastMark.allAttached
+);
+await page.screenshot({ path: "test/feature-grenade-crater.png" });
 
 console.log("\n[5] Enemy spawn, damage, kill, score");
 await page.evaluate(() => window.__game.hurtPlayer(0));
@@ -428,12 +438,12 @@ check(
 const fifoEffects = await page.evaluate(() => {
   const g = window.__game;
   const before = g.persistentEffects;
-  for (const kind of ["bulletMarks", "magazines", "corpses"]) {
+  for (const kind of ["bulletMarks", "magazines", "corpses", "blastMarks"]) {
     g.debugPopulatePersistentEffects(kind, before[kind].max + 3);
   }
   return { before, after: g.persistentEffects };
 });
-for (const kind of ["bulletMarks", "magazines", "corpses"]) {
+for (const kind of ["bulletMarks", "magazines", "corpses", "blastMarks"]) {
   const beforeQueue = fifoEffects.before[kind];
   const afterQueue = fifoEffects.after[kind];
   check(
@@ -688,7 +698,7 @@ const colResult = await page3.evaluate(() => {
   return { ok: true, z0: bot.pos.z };
 });
 if (colResult.ok) {
-  await page3.waitForTimeout(2000);
+  await page3.waitForTimeout(2300);
   const moved = await page3.evaluate(() => {
     const bot = window.__game.enemies.find((en) => en.team === "red");
     return {
@@ -794,7 +804,7 @@ await page3.evaluate(() => {
 await page3.waitForTimeout(200);
 const waveBefore = await page3.evaluate(() => window.__game.debugBeachWaveSummary());
 await page3.screenshot({ path: "test/feature-beach-wave-a.png" });
-await page3.waitForTimeout(650);
+await page3.waitForTimeout(850);
 const waveAfter = await page3.evaluate(() => window.__game.debugBeachWaveSummary());
 await page3.screenshot({ path: "test/feature-beach-wave-b.png" });
 const beachZ = await page3.evaluate(() => window.__game.player.pos.z);
