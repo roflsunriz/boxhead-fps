@@ -499,7 +499,9 @@ function tryShoot(): void {
     let root: THREE.Object3D = hit.object;
     while (root.parent && !bots.some((en) => en.group === root)) root = root.parent;
     const target = bots.find((en) => en.group === root);
-    if (target) damageBot(target, 25, "blue", true);
+    if (target) {
+      damageBot(target, 25, { id: -1, team: "blue", pos: player.pos, playerCaused: true });
+    }
   }
 
   const origin = muzzle.getWorldPosition(new THREE.Vector3());
@@ -732,7 +734,7 @@ window.__game = {
   useShieldCell,
   throwGrenade,
   damageEnemy(en: (typeof bots)[number], dmg: number): void {
-    damageBot(en, dmg, "blue", true);
+    damageBot(en, dmg, { id: -1, team: "blue", pos: player.pos, playerCaused: true });
   },
 };
 animate();

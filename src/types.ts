@@ -42,6 +42,13 @@ export interface BotTarget {
   seenAt: number;
 }
 
+export interface BotDamageSource {
+  id: number;
+  team: TeamId;
+  pos: THREE.Vector3;
+  playerCaused?: boolean;
+}
+
 export interface Bot {
   id: number;
   team: TeamId;

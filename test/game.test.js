@@ -262,6 +262,46 @@ check(
   longRangeTarget.ok && longRangeTarget.targetId !== -1
 );
 
+const retaliation = await page.evaluate(async () => {
+  const g = window.__game;
+  const red = g.enemies.find((en) => en.team === "red" && en.alive);
+  if (!red) return { ok: false };
+  g.player.pos.set(0, 1.7, 25);
+  red.pos.set(0, 0, 15);
+  red.yaw = 0;
+  red.target = null;
+  red.nextThink = 10;
+  red.fireT = 0;
+  const shotsBefore = red.visual.shotCount;
+  g.damageEnemy(red, 10);
+  const targetId = red.target?.id ?? null;
+  const targetX = red.target?.pos.x ?? Number.NaN;
+  const targetZ = red.target?.pos.z ?? Number.NaN;
+  const dx = g.player.pos.x - red.pos.x;
+  const dz = g.player.pos.z - red.pos.z;
+  const dist = Math.hypot(dx, dz);
+  const facingDot = (-Math.sin(red.yaw) * dx + -Math.cos(red.yaw) * dz) / dist;
+  await new Promise((resolve) => setTimeout(resolve, 250));
+  return {
+    ok: true,
+    targetId,
+    targetX,
+    targetZ,
+    facingDot,
+    shotsBefore,
+    shotsAfter: red.visual.shotCount,
+  };
+});
+check(
+  `shot enemy identifies, faces, and fires at attacker (${JSON.stringify(retaliation)})`,
+  retaliation.ok &&
+    retaliation.targetId === -1 &&
+    Math.abs(retaliation.targetX) < 0.01 &&
+    Math.abs(retaliation.targetZ - 25) < 0.01 &&
+    retaliation.facingDot > 0.99 &&
+    retaliation.shotsAfter > retaliation.shotsBefore
+);
+
 const killResult = await page.evaluate(() => {
   const g = window.__game;
   const victim = g.enemies.find((en) => en.team === "red" && en.alive);

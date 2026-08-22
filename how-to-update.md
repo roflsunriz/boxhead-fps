@@ -62,7 +62,7 @@ bun run lint         # ESLint (typescript-eslint flat config、src/ と test/ �
 bun run format       # Prettier 整形
 bun run audit        # bun audit による依存脆弱性スキャン
 bun run validate:release-tag -- v1.2.3  # SemVerタグの検証
-bun run test         # Playwright E2E、77 項目すべて PASS すること
+bun run test         # Playwright E2E、78 項目すべて PASS すること
 node test/responsive.js   # 4 ビューポートのレイアウト検証(ALL VIEWPORTS OK が出ること)
 ```
 

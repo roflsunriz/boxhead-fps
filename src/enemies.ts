@@ -9,7 +9,7 @@ import {
   waypointPos,
 } from "./world";
 import { flashHitmarker } from "./ui";
-import type { BotSkill, Enemy, HitFlashMaterial, PlayerState, TeamId } from "./types";
+import type { BotDamageSource, BotSkill, Enemy, HitFlashMaterial, PlayerState, TeamId } from "./types";
 
 export const bots: Enemy[] = [];
 let nextBotId = 1;
@@ -21,6 +21,7 @@ export interface BotContext {
 
 let ctx: BotContext | null = null;
 let onBotKilled: ((victim: Enemy, killerTeam: TeamId, playerCaused: boolean) => void) | null = null;
+let currentBotTime = 0;
 const BOT_MAX_ENGAGE_RANGE = 42;
 const BOT_FULL_ACCURACY_RANGE = 12;
 
@@ -351,6 +352,17 @@ function setPathTo(bot: Enemy, gx: number, gz: number): void {
   bot.pathGoal = goal;
 }
 
+function alertBotToAttacker(bot: Enemy, source: BotDamageSource): void {
+  if (bot.team === source.team) return;
+  bot.target = { id: source.id, pos: source.pos.clone(), seenAt: currentBotTime };
+  const dx = source.pos.x - bot.pos.x;
+  const dz = source.pos.z - bot.pos.z;
+  if (Math.hypot(dx, dz) > 0.001) bot.yaw = Math.atan2(-dx, -dz);
+  bot.strafeT = 0;
+  bot.fireT = Math.min(bot.fireT, bot.skill.reaction * 0.35);
+  setPathTo(bot, source.pos.x, source.pos.z);
+}
+
 function walkSpeed(bot: Enemy): number {
   return bot.target ? 4.1 + bot.skill.accuracy * 1.1 : 2.6;
 }
@@ -440,6 +452,7 @@ function tryFire(bot: Enemy, time: number): void {
   const dz = t.pos.z - bot.pos.z;
   const dist = Math.hypot(dx, dz) || 0.001;
   if (dist > BOT_MAX_ENGAGE_RANGE) return;
+  if (!canSee(bot, t.pos.x, t.pos.z)) return;
   bot.fireT = bot.skill.fireInterval + Math.max(0, dist - 16) * 0.012;
   bot.ammo--;
   bot.visual.fireFlashT = 0.1;
@@ -464,7 +477,7 @@ function tryFire(bot: Enemy, time: number): void {
     if (isPlayerTarget && ctx) ctx.onPlayerHit(dmg, bot.pos);
     else if (!isPlayerTarget) {
       const victim = bots.find((b) => b.id === t.id);
-      if (victim) damageBot(victim, dmg, bot.team);
+      if (victim) damageBot(victim, dmg, { id: bot.id, team: bot.team, pos: bot.pos });
     }
   }
   if (bot.ammo <= 0) startReload(bot);
@@ -532,17 +545,19 @@ function animateVisual(bot: Enemy, dt: number): void {
   }
 }
 
-export function damageBot(bot: Enemy, dmg: number, attackerTeam: TeamId, playerCaused = false): void {
+export function damageBot(bot: Enemy, dmg: number, source: BotDamageSource): void {
   if (!bot.alive) return;
   bot.hp -= dmg;
   bot.visual.mats.forEach((m) => m.color.setHex(0xffffff));
   bot.visual.hitTimer = 0.08;
-  if (bot.team !== attackerTeam && attackerTeam === "blue") flashHitmarker();
+  if (bot.team !== source.team && source.team === "blue") flashHitmarker();
   if (bot.hp <= 0) {
     bot.alive = false;
     bot.respawnT = 4.5;
     bot.group.visible = false;
-    if (onBotKilled) onBotKilled(bot, attackerTeam, playerCaused);
+    if (onBotKilled) onBotKilled(bot, source.team, source.playerCaused ?? false);
+  } else {
+    alertBotToAttacker(bot, source);
   }
 }
 
@@ -552,6 +567,7 @@ export function playerVisibleFrom(bot: Enemy): boolean {
 }
 
 export function updateBots(dt: number, time: number): void {
+  currentBotTime = time;
   for (const bot of bots) {
     if (!bot.alive) {
       bot.respawnT -= dt;
