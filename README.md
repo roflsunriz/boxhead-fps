@@ -49,6 +49,18 @@ bun run build     # dist/ へバンドル出力(Bun のバンドラ使用。roll
 bun run preview   # dist/ を 8787 番ポートで配信
 ```
 
+## GitHub Pages へのリリース
+
+リポジトリの Settings → Pages → Build and deployment → Source を、初回だけ `GitHub Actions` に設定する。
+その後、SemVer形式のタグをpushすると、型検査・lint・依存監査・Pages用ビルドを通過した成果物が自動デプロイされる。
+
+```powershell
+git tag -a v1.0.0 -m "v1.0.0"
+git push origin v1.0.0
+```
+
+`v1.2.3`、`v1.2.3-rc.1`、`v1.2.3+build.4`などを受け付ける。不正な形式のタグはデプロイ前に失敗する。Pagesのベースパスはリポジトリ設定から自動取得するため、プロジェクトサイトとカスタムドメインの両方に対応する。
+
 ## 検証
 
 `bun run preview` で `dist/` を配信した状態で:
@@ -58,6 +70,7 @@ bun run type-check   # tsc --noEmit (strict, any 禁止)
 bun run lint         # ESLint (typescript-eslint flat config)
 bun run format       # Prettier 整形
 bun run audit        # bun audit による依存脆弱性スキャン
+bun run validate:release-tag -- v1.2.3  # リリースタグ形式の確認
 bun run test         # Playwright E2E (77 項目)
 node test/responsive.js   # 複数ビューポートでのレイアウト検証
 ```

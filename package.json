@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "bun build ./index.html --outdir dist --minify",
+    "validate:release-tag": "bun scripts/validate-semver-tag.ts",
     "preview": "bunx serve -l 8787 dist",
     "lint": "eslint .",
     "format": "prettier --write .",
