@@ -519,11 +519,15 @@ function hurtPlayer(dmg: number, source?: THREE.Vector3, bypassShield = false): 
   player.hp -= healthDamage;
   playHurt();
   if (source) {
-    const worldBearing = Math.atan2(source.x - player.pos.x, -(source.z - player.pos.z));
-    let relative = worldBearing - player.yaw;
-    while (relative > Math.PI) relative -= Math.PI * 2;
-    while (relative < -Math.PI) relative += Math.PI * 2;
-    showDamageDirection(relative);
+    const sourceX = source.x - player.pos.x;
+    const sourceZ = source.z - player.pos.z;
+    const forwardX = -Math.sin(player.yaw);
+    const forwardZ = -Math.cos(player.yaw);
+    const rightX = -forwardZ;
+    const rightZ = forwardX;
+    const rightComponent = sourceX * rightX + sourceZ * rightZ;
+    const forwardComponent = sourceX * forwardX + sourceZ * forwardZ;
+    showDamageDirection(Math.atan2(rightComponent, forwardComponent));
   }
   refreshHealth(player.hp);
   if (player.hp <= 0) {

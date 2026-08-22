@@ -114,6 +114,7 @@ export function setActionProgress(label: string | null, progress = 0): void {
 
 export function showDamageDirection(angleRadians: number): void {
   damageIndicator.style.transform = `translate(-50%, -50%) rotate(${angleRadians}rad)`;
+  damageIndicator.dataset.angle = String(angleRadians);
   damageIndicator.classList.remove("show");
   void damageIndicator.offsetWidth;
   damageIndicator.classList.add("show");

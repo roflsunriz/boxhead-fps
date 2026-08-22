@@ -191,14 +191,38 @@ check(
 
 const indicator = await page.evaluate(() => {
   const g = window.__game;
-  g.player.shield = 100;
-  g.hurtPlayerFrom(10, g.player.pos.x + 10, g.player.pos.z);
+  const originalYaw = g.player.yaw;
+  const cases = [
+    { name: "north-facing front", yaw: 0, dx: 0, dz: -10, expected: 0 },
+    { name: "north-facing right", yaw: 0, dx: 10, dz: 0, expected: Math.PI / 2 },
+    { name: "north-facing back", yaw: 0, dx: 0, dz: 10, expected: Math.PI },
+    { name: "north-facing left", yaw: 0, dx: -10, dz: 0, expected: -Math.PI / 2 },
+    { name: "west-facing front", yaw: Math.PI / 2, dx: -10, dz: 0, expected: 0 },
+    { name: "west-facing right", yaw: Math.PI / 2, dx: 0, dz: -10, expected: Math.PI / 2 },
+    { name: "west-facing back", yaw: Math.PI / 2, dx: 10, dz: 0, expected: Math.PI },
+    { name: "west-facing left", yaw: Math.PI / 2, dx: 0, dz: 10, expected: -Math.PI / 2 },
+  ];
   const el = document.querySelector("#damage-indicator");
-  return { shown: el?.classList.contains("show"), transform: el?.style.transform ?? "" };
+  const readings = cases.map((testCase) => {
+    g.player.yaw = testCase.yaw;
+    g.player.shield = 100;
+    g.hurtPlayerFrom(1, g.player.pos.x + testCase.dx, g.player.pos.z + testCase.dz);
+    const actual = Number(el?.dataset.angle ?? Number.NaN);
+    const error = Math.atan2(Math.sin(actual - testCase.expected), Math.cos(actual - testCase.expected));
+    return { name: testCase.name, actual, expected: testCase.expected, error };
+  });
+  g.player.yaw = originalYaw;
+  return {
+    shown: el?.classList.contains("show"),
+    transform: el?.style.transform ?? "",
+    readings,
+  };
 });
 check(
-  "damage indicator shows the attack direction",
-  indicator.shown && indicator.transform.includes("rotate(")
+  `damage indicator matches all attack directions (${JSON.stringify(indicator.readings)})`,
+  indicator.shown &&
+    indicator.transform.includes("rotate(") &&
+    indicator.readings.every((reading) => Math.abs(reading.error) < 0.001)
 );
 await page.screenshot({ path: "test/feature-damage-direction.png" });
 
