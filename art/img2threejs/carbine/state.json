@@ -10,7 +10,7 @@
       "scope": "setup",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\reference-analysis.md"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\reference-analysis.md"
       ],
       "reason": "",
       "command": "Read grimoire/intake/image_analysis.md and analyze {reference}"
@@ -20,7 +20,7 @@
       "scope": "setup",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\reference-analysis.md"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\reference-analysis.md"
       ],
       "reason": "",
       "command": "Read grimoire/intake/validation_rubric.md and record a pass, conditional, or reject verdict for {reference}"
@@ -30,7 +30,7 @@
       "scope": "setup",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\reference-admission.json"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\reference-admission.json"
       ],
       "reason": "",
       "command": "python3 forge/stage1_intake/check_reference_admission.py {reference}"
@@ -39,7 +39,7 @@
       "id": "local-spec-search",
       "scope": "setup",
       "status": "done",
-      "evidence": ["C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\assessment.json"],
+      "evidence": ["C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\assessment.json"],
       "reason": "",
       "command": "Run the local evidence search before authoring the assessment"
     },
@@ -47,7 +47,7 @@
       "id": "pre-spec-assessment",
       "scope": "setup",
       "status": "done",
-      "evidence": ["C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\assessment.json"],
+      "evidence": ["C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\assessment.json"],
       "reason": "",
       "command": "python3 forge/stage2_spec/new_pre_spec_assessment.py \"<name>\" --image {reference} --out assessment.json"
     },
@@ -56,7 +56,7 @@
       "scope": "setup",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\detail-inventory.json"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\detail-inventory.json"
       ],
       "reason": "",
       "command": "python3 forge/stage1_intake/build_detail_inventory.py {reference} --mode grid-3x3 --out-dir detail-inventory --out di.json"
@@ -66,7 +66,7 @@
       "scope": "setup",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\projection-route.md"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\projection-route.md"
       ],
       "reason": "",
       "command": "Record whether projection is required; if required run solve_camera_pose.py, delight_albedo.py, and bake_projected_texture.py, otherwise skip with a reason"
@@ -76,7 +76,7 @@
       "scope": "setup",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
       ],
       "reason": "",
       "command": "python3 forge/stage2_spec/new_sculpt_spec.py \"<name>\" --image {reference} --assessment assessment.json --out object-sculpt-spec.json"
@@ -86,7 +86,7 @@
       "scope": "setup",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\material-evidence\\README.md"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\material-evidence\\README.md"
       ],
       "reason": "",
       "command": "python3 forge/stage1_intake/material_region_analysis.py --manifest material-regions.json --out-dir material-evidence --out material-analysis.json (single-crop route: analyze_texture.py + extract_pbr_evidence.py per verified crop; otherwise skip with a reason)"
@@ -96,7 +96,7 @@
       "scope": "setup",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
       ],
       "reason": "",
       "command": "python3 forge/stage2_spec/apply_material_analysis.py {spec} material-analysis.json --in-place"
@@ -106,7 +106,7 @@
       "scope": "setup",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
       ],
       "reason": "",
       "command": "python3 forge/stage2_spec/validate_sculpt_spec.py {spec} --strict-quality"
@@ -115,7 +115,7 @@
       "id": "build-current-pass",
       "scope": "pass",
       "status": "done",
-      "evidence": ["C:\\Users\\UserName\\Documents\\fps-test\\src\\models\\game-models.ts"],
+      "evidence": ["C:\\Users\\UserName\\Documents\\boxhead-fps\\src\\models\\game-models.ts"],
       "reason": "",
       "command": "python3 forge/stage3_build/generate_threejs_factory.py {spec} --out src/createObjectModel.ts --pass-id {pass_id}"
     },
@@ -124,7 +124,7 @@
       "scope": "pass",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\render-reference.png"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\render-reference.png"
       ],
       "reason": "",
       "command": "Render {pass_id} and capture the fixed review view plus meaningful orbit views"
@@ -142,7 +142,7 @@
       "scope": "pass",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
       ],
       "reason": "",
       "command": "python3 forge/stage4_review/diagnose_render.py --reference {reference} --render <shot> --spec {spec} --pass-id {pass_id} --in-place"
@@ -151,7 +151,9 @@
       "id": "multi-angle-review",
       "scope": "pass",
       "status": "done",
-      "evidence": ["C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\render-muzzle.png"],
+      "evidence": [
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\render-muzzle.png"
+      ],
       "reason": "",
       "command": "python3 forge/stage4_review/diagnose_render_multi_angle.py --reference <fixed-shot> --orbit <orbit-shot> --orbit <orbit-shot>"
     },
@@ -160,7 +162,7 @@
       "scope": "pass",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
       ],
       "reason": "",
       "command": "python3 forge/stage3_build/orchestrate_passes.py check {spec} --pass-id {pass_id}"
@@ -170,7 +172,7 @@
       "scope": "pass",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
       ],
       "reason": "",
       "command": "Create the comparison sheet, inspect it with agent vision, and append exactly one review action"
@@ -180,7 +182,7 @@
       "scope": "pass",
       "status": "done",
       "evidence": [
-        "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
+        "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
       ],
       "reason": "",
       "command": "python3 forge/stage3_build/orchestrate_passes.py sync {spec} --in-place"
@@ -211,8 +213,8 @@
     "maxTotal": 6
   },
   "artifacts": {
-    "reference": "C:\\Users\\UserName\\Documents\\fps-test\\art\\references\\fps-carbine.png",
-    "spec": "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
+    "reference": "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\references\\fps-carbine.png",
+    "spec": "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
   },
   "passHistory": [
     {
@@ -223,7 +225,9 @@
           "id": "build-current-pass",
           "scope": "pass",
           "status": "done",
-          "evidence": ["C:\\Users\\UserName\\Documents\\fps-test\\src\\models\\create-fps-carbine-model.ts"],
+          "evidence": [
+            "C:\\Users\\UserName\\Documents\\boxhead-fps\\src\\models\\create-fps-carbine-model.ts"
+          ],
           "reason": "",
           "command": "python3 forge/stage3_build/generate_threejs_factory.py {spec} --out src/createObjectModel.ts --pass-id {pass_id}"
         },
@@ -232,7 +236,7 @@
           "scope": "pass",
           "status": "done",
           "evidence": [
-            "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\render-reference.png"
+            "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\render-reference.png"
           ],
           "reason": "",
           "command": "Render {pass_id} and capture the fixed review view plus meaningful orbit views"
@@ -252,7 +256,7 @@
           "scope": "pass",
           "status": "done",
           "evidence": [
-            "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
+            "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
           ],
           "reason": "",
           "command": "python3 forge/stage4_review/diagnose_render.py --reference {reference} --render <shot> --spec {spec} --pass-id {pass_id} --in-place"
@@ -261,7 +265,9 @@
           "id": "multi-angle-review",
           "scope": "pass",
           "status": "done",
-          "evidence": ["C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\render-top.png"],
+          "evidence": [
+            "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\render-top.png"
+          ],
           "reason": "",
           "command": "python3 forge/stage4_review/diagnose_render_multi_angle.py --reference <fixed-shot> --orbit <orbit-shot> --orbit <orbit-shot>"
         },
@@ -270,7 +276,7 @@
           "scope": "pass",
           "status": "done",
           "evidence": [
-            "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
+            "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
           ],
           "reason": "",
           "command": "python3 forge/stage3_build/orchestrate_passes.py check {spec} --pass-id {pass_id}"
@@ -280,7 +286,7 @@
           "scope": "pass",
           "status": "done",
           "evidence": [
-            "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
+            "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
           ],
           "reason": "",
           "command": "Create the comparison sheet, inspect it with agent vision, and append exactly one review action"
@@ -290,7 +296,7 @@
           "scope": "pass",
           "status": "done",
           "evidence": [
-            "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
+            "C:\\Users\\UserName\\Documents\\boxhead-fps\\art\\img2threejs\\carbine\\object-sculpt-spec.json"
           ],
           "reason": "",
           "command": "python3 forge/stage3_build/orchestrate_passes.py sync {spec} --in-place"

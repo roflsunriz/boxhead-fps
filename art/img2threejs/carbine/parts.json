@@ -2,450 +2,1855 @@
   "model": "fps-carbine",
   "parts": [
     {
-      "name": "receiver",
-      "kind": "part",
-      "module": "receiver",
-      "triangles": 0
-    },
-    {
-      "name": "handguard",
-      "kind": "part",
-      "module": "handguard",
-      "triangles": 0
-    },
-    {
-      "name": "rail",
-      "kind": "part",
-      "module": "rail",
-      "triangles": 0
-    },
-    {
-      "name": "barrel",
-      "kind": "part",
-      "module": "barrel",
-      "triangles": 0
-    },
-    {
-      "name": "stock",
-      "kind": "part",
-      "module": "stock",
-      "triangles": 0
-    },
-    {
-      "name": "grip",
-      "kind": "part",
-      "module": "grip",
-      "triangles": 0
-    },
-    {
-      "name": "magazine",
-      "kind": "part",
-      "module": "magazine",
-      "triangles": 0
-    },
-    {
-      "name": "optic",
-      "kind": "part",
-      "module": "optic",
-      "triangles": 0
-    },
-    {
       "name": "root",
       "kind": "part",
       "module": "root",
-      "triangles": 0
-    },
-    {
-      "name": "fps-carbine",
-      "kind": "part",
-      "module": "fps-carbine",
-      "triangles": 0
+      "meshes": 217,
+      "triangles": 38606,
+      "unnamedMeshes": 0
     },
     {
       "name": "receiver-assembly",
       "kind": "part",
       "module": "receiver-assembly",
-      "triangles": 0
-    },
-    {
-      "name": "lower-receiver",
-      "kind": "part",
-      "module": "lower-receiver",
-      "triangles": 0
-    },
-    {
-      "name": "upper-receiver",
-      "kind": "part",
-      "module": "upper-receiver",
-      "triangles": 0
-    },
-    {
-      "name": "rear-buffer-ring",
-      "kind": "part",
-      "module": "rear-buffer-ring",
-      "triangles": 0
-    },
-    {
-      "name": "ejection-port",
-      "kind": "part",
-      "module": "ejection-port",
-      "triangles": 0
-    },
-    {
-      "name": "bolt-carrier",
-      "kind": "part",
-      "module": "bolt-carrier",
-      "triangles": 0
-    },
-    {
-      "name": "magwell",
-      "kind": "part",
-      "module": "magwell",
-      "triangles": 0
-    },
-    {
-      "name": "trigger-guard-front",
-      "kind": "part",
-      "module": "trigger-guard-front",
-      "triangles": 0
-    },
-    {
-      "name": "trigger",
-      "kind": "part",
-      "module": "trigger",
-      "triangles": 0
-    },
-    {
-      "name": "fastener",
-      "kind": "part",
-      "module": "fastener",
-      "triangles": 0
-    },
-    {
-      "name": "fastener-slot",
-      "kind": "part",
-      "module": "fastener-slot",
-      "triangles": 0
+      "meshes": 53,
+      "triangles": 7888,
+      "unnamedMeshes": 0
     },
     {
       "name": "handguard-assembly",
       "kind": "part",
       "module": "handguard-assembly",
-      "triangles": 0
-    },
-    {
-      "name": "vented-handguard",
-      "kind": "part",
-      "module": "vented-handguard",
-      "triangles": 0
-    },
-    {
-      "name": "inner-barrel-shadow",
-      "kind": "part",
-      "module": "inner-barrel-shadow",
-      "triangles": 0
-    },
-    {
-      "name": "top-rail",
-      "kind": "part",
-      "module": "top-rail",
-      "triangles": 0
-    },
-    {
-      "name": "rail-base",
-      "kind": "part",
-      "module": "rail-base",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-0",
-      "kind": "part",
-      "module": "rail-tooth-0",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-1",
-      "kind": "part",
-      "module": "rail-tooth-1",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-2",
-      "kind": "part",
-      "module": "rail-tooth-2",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-3",
-      "kind": "part",
-      "module": "rail-tooth-3",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-4",
-      "kind": "part",
-      "module": "rail-tooth-4",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-5",
-      "kind": "part",
-      "module": "rail-tooth-5",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-6",
-      "kind": "part",
-      "module": "rail-tooth-6",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-7",
-      "kind": "part",
-      "module": "rail-tooth-7",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-8",
-      "kind": "part",
-      "module": "rail-tooth-8",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-9",
-      "kind": "part",
-      "module": "rail-tooth-9",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-10",
-      "kind": "part",
-      "module": "rail-tooth-10",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-11",
-      "kind": "part",
-      "module": "rail-tooth-11",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-12",
-      "kind": "part",
-      "module": "rail-tooth-12",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-13",
-      "kind": "part",
-      "module": "rail-tooth-13",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-14",
-      "kind": "part",
-      "module": "rail-tooth-14",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-15",
-      "kind": "part",
-      "module": "rail-tooth-15",
-      "triangles": 0
-    },
-    {
-      "name": "rail-tooth-16",
-      "kind": "part",
-      "module": "rail-tooth-16",
-      "triangles": 0
+      "meshes": 32,
+      "triangles": 9180,
+      "unnamedMeshes": 0
     },
     {
       "name": "barrel-assembly",
       "kind": "part",
       "module": "barrel-assembly",
-      "triangles": 0
-    },
-    {
-      "name": "gas-block",
-      "kind": "part",
-      "module": "gas-block",
-      "triangles": 0
-    },
-    {
-      "name": "muzzle-brake",
-      "kind": "part",
-      "module": "muzzle-brake",
-      "triangles": 0
-    },
-    {
-      "name": "muzzle-port",
-      "kind": "part",
-      "module": "muzzle-port",
-      "triangles": 0
-    },
-    {
-      "name": "muzzle-bore",
-      "kind": "part",
-      "module": "muzzle-bore",
-      "triangles": 0
-    },
-    {
-      "name": "muzzle-socket",
-      "kind": "part",
-      "module": "muzzle-socket",
-      "triangles": 0
+      "meshes": 12,
+      "triangles": 672,
+      "unnamedMeshes": 0
     },
     {
       "name": "stock-assembly",
       "kind": "part",
       "module": "stock-assembly",
-      "triangles": 0
-    },
-    {
-      "name": "buffer-tube",
-      "kind": "part",
-      "module": "buffer-tube",
-      "triangles": 0
-    },
-    {
-      "name": "stock-shell",
-      "kind": "part",
-      "module": "stock-shell",
-      "triangles": 0
-    },
-    {
-      "name": "stock-cheek-rest",
-      "kind": "part",
-      "module": "stock-cheek-rest",
-      "triangles": 0
-    },
-    {
-      "name": "butt-pad",
-      "kind": "part",
-      "module": "butt-pad",
-      "triangles": 0
-    },
-    {
-      "name": "butt-pad-ridge",
-      "kind": "part",
-      "module": "butt-pad-ridge",
-      "triangles": 0
+      "meshes": 30,
+      "triangles": 6360,
+      "unnamedMeshes": 0
     },
     {
       "name": "grip-assembly",
       "kind": "part",
       "module": "grip-assembly",
-      "triangles": 0
-    },
-    {
-      "name": "pistol-grip",
-      "kind": "part",
-      "module": "pistol-grip",
-      "triangles": 0
-    },
-    {
-      "name": "grip-socket",
-      "kind": "part",
-      "module": "grip-socket",
-      "triangles": 0
+      "meshes": 5,
+      "triangles": 1300,
+      "unnamedMeshes": 0
     },
     {
       "name": "magazine-assembly",
       "kind": "part",
       "module": "magazine-assembly",
-      "triangles": 0
+      "meshes": 22,
+      "triangles": 5432,
+      "unnamedMeshes": 0
     },
     {
-      "name": "magazine-shell",
+      "name": "top-rail",
       "kind": "part",
-      "module": "magazine-shell",
-      "triangles": 0
-    },
-    {
-      "name": "magazine-rib",
-      "kind": "part",
-      "module": "magazine-rib",
-      "triangles": 0
-    },
-    {
-      "name": "magazine-floorplate",
-      "kind": "part",
-      "module": "magazine-floorplate",
-      "triangles": 0
+      "module": "top-rail",
+      "meshes": 32,
+      "triangles": 3152,
+      "unnamedMeshes": 0
     },
     {
       "name": "optic-assembly",
       "kind": "part",
       "module": "optic-assembly",
-      "triangles": 0
+      "meshes": 27,
+      "triangles": 3422,
+      "unnamedMeshes": 0
     },
     {
-      "name": "optic-base",
+      "name": "fps-carbine",
       "kind": "part",
-      "module": "optic-base",
-      "triangles": 0
+      "module": "fps-carbine",
+      "meshes": 217,
+      "triangles": 38606,
+      "unnamedMeshes": 0
     },
     {
-      "name": "optic-left",
+      "name": "upper-receiver",
       "kind": "part",
-      "module": "optic-left",
-      "triangles": 0
+      "module": "upper-receiver",
+      "meshes": 1,
+      "triangles": 528,
+      "unnamedMeshes": 0
     },
     {
-      "name": "optic-right",
+      "name": "receiver-opposite-wall",
       "kind": "part",
-      "module": "optic-right",
-      "triangles": 0
+      "module": "receiver-opposite-wall",
+      "meshes": 1,
+      "triangles": 108,
+      "unnamedMeshes": 0
     },
     {
-      "name": "optic-top",
+      "name": "receiver-roof",
       "kind": "part",
-      "module": "optic-top",
-      "triangles": 0
+      "module": "receiver-roof",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
     },
     {
-      "name": "optic-lens",
+      "name": "ejection-pocket",
       "kind": "part",
-      "module": "optic-lens",
-      "triangles": 0
+      "module": "ejection-pocket",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
     },
     {
-      "name": "status-indicator-base",
+      "name": "bolt-carrier",
       "kind": "part",
-      "module": "status-indicator-base",
-      "triangles": 0
+      "module": "bolt-carrier",
+      "meshes": 1,
+      "triangles": 128,
+      "unnamedMeshes": 0
     },
     {
-      "name": "status-indicator",
+      "name": "rear-bolt-housing",
       "kind": "part",
-      "module": "status-indicator",
-      "triangles": 0
+      "module": "rear-bolt-housing",
+      "meshes": 1,
+      "triangles": 128,
+      "unnamedMeshes": 0
     },
     {
-      "name": "handguard-shell",
+      "name": "lower-receiver",
       "kind": "part",
-      "module": "handguard-shell",
-      "triangles": 0
+      "module": "lower-receiver",
+      "meshes": 1,
+      "triangles": 108,
+      "unnamedMeshes": 0
     },
     {
-      "name": "barrel-core",
+      "name": "magwell",
       "kind": "part",
-      "module": "barrel-core",
-      "triangles": 0
+      "module": "magwell",
+      "meshes": 1,
+      "triangles": 76,
+      "unnamedMeshes": 0
     },
     {
       "name": "trigger-guard",
       "kind": "part",
       "module": "trigger-guard",
-      "triangles": 0
+      "meshes": 1,
+      "triangles": 192,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "trigger",
+      "kind": "part",
+      "module": "trigger",
+      "meshes": 1,
+      "triangles": 144,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "ejection-port-cover",
+      "kind": "part",
+      "module": "ejection-port-cover",
+      "meshes": 1,
+      "triangles": 60,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "cover-panel-border-0.12",
+      "kind": "part",
+      "module": "cover-panel-border-0.12",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "cover-panel-0.12",
+      "kind": "part",
+      "module": "cover-panel-0.12",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "cover-panel-border-0.3",
+      "kind": "part",
+      "module": "cover-panel-border-0.3",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "cover-panel-0.3",
+      "kind": "part",
+      "module": "cover-panel-0.3",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "cover-hinge",
+      "kind": "part",
+      "module": "cover-hinge",
+      "meshes": 1,
+      "triangles": 128,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "cover-latch",
+      "kind": "part",
+      "module": "cover-latch",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "shell-deflector",
+      "kind": "part",
+      "module": "shell-deflector",
+      "meshes": 1,
+      "triangles": 60,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "forward-assist",
+      "kind": "part",
+      "module": "forward-assist",
+      "meshes": 1,
+      "triangles": 128,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "charging-handle",
+      "kind": "part",
+      "module": "charging-handle",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "charging-latch",
+      "kind": "part",
+      "module": "charging-latch",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin--1--0.255-rim",
+      "kind": "part",
+      "module": "receiver-pin--1--0.255-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin--1--0.255",
+      "kind": "part",
+      "module": "receiver-pin--1--0.255",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin--1--0.255-socket",
+      "kind": "part",
+      "module": "receiver-pin--1--0.255-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin--1--0.14-rim",
+      "kind": "part",
+      "module": "receiver-pin--1--0.14-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin--1--0.14",
+      "kind": "part",
+      "module": "receiver-pin--1--0.14",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin--1--0.14-socket",
+      "kind": "part",
+      "module": "receiver-pin--1--0.14-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin--1-0.42-rim",
+      "kind": "part",
+      "module": "receiver-pin--1-0.42-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin--1-0.42",
+      "kind": "part",
+      "module": "receiver-pin--1-0.42",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin--1-0.42-socket",
+      "kind": "part",
+      "module": "receiver-pin--1-0.42-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin--1-0.11-rim",
+      "kind": "part",
+      "module": "receiver-pin--1-0.11-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin--1-0.11",
+      "kind": "part",
+      "module": "receiver-pin--1-0.11",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin--1-0.11-socket",
+      "kind": "part",
+      "module": "receiver-pin--1-0.11-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "selector-lever--1",
+      "kind": "part",
+      "module": "selector-lever--1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-upper-seam--1",
+      "kind": "part",
+      "module": "receiver-upper-seam--1",
+      "meshes": 1,
+      "triangles": 192,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magwell-lip--1",
+      "kind": "part",
+      "module": "magwell-lip--1",
+      "meshes": 1,
+      "triangles": 144,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-lower-seam--1",
+      "kind": "part",
+      "module": "receiver-lower-seam--1",
+      "meshes": 1,
+      "triangles": 144,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin-1--0.255-rim",
+      "kind": "part",
+      "module": "receiver-pin-1--0.255-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin-1--0.255",
+      "kind": "part",
+      "module": "receiver-pin-1--0.255",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin-1--0.255-socket",
+      "kind": "part",
+      "module": "receiver-pin-1--0.255-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin-1--0.14-rim",
+      "kind": "part",
+      "module": "receiver-pin-1--0.14-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin-1--0.14",
+      "kind": "part",
+      "module": "receiver-pin-1--0.14",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin-1--0.14-socket",
+      "kind": "part",
+      "module": "receiver-pin-1--0.14-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin-1-0.42-rim",
+      "kind": "part",
+      "module": "receiver-pin-1-0.42-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin-1-0.42",
+      "kind": "part",
+      "module": "receiver-pin-1-0.42",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin-1-0.42-socket",
+      "kind": "part",
+      "module": "receiver-pin-1-0.42-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin-1-0.11-rim",
+      "kind": "part",
+      "module": "receiver-pin-1-0.11-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin-1-0.11",
+      "kind": "part",
+      "module": "receiver-pin-1-0.11",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-pin-1-0.11-socket",
+      "kind": "part",
+      "module": "receiver-pin-1-0.11-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "selector-lever-1",
+      "kind": "part",
+      "module": "selector-lever-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-upper-seam-1",
+      "kind": "part",
+      "module": "receiver-upper-seam-1",
+      "meshes": 1,
+      "triangles": 192,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magwell-lip-1",
+      "kind": "part",
+      "module": "magwell-lip-1",
+      "meshes": 1,
+      "triangles": 144,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "receiver-lower-seam-1",
+      "kind": "part",
+      "module": "receiver-lower-seam-1",
+      "meshes": 1,
+      "triangles": 144,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-opposite",
+      "kind": "part",
+      "module": "handguard-opposite",
+      "meshes": 1,
+      "triangles": 2208,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt--1-0.565-rim",
+      "kind": "part",
+      "module": "handguard-bolt--1-0.565-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt--1-0.565",
+      "kind": "part",
+      "module": "handguard-bolt--1-0.565",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt--1-0.565-socket",
+      "kind": "part",
+      "module": "handguard-bolt--1-0.565-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt--1-1.145-rim",
+      "kind": "part",
+      "module": "handguard-bolt--1-1.145-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt--1-1.145",
+      "kind": "part",
+      "module": "handguard-bolt--1-1.145",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt--1-1.145-socket",
+      "kind": "part",
+      "module": "handguard-bolt--1-1.145-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt--1-1.11-rim",
+      "kind": "part",
+      "module": "handguard-bolt--1-1.11-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt--1-1.11",
+      "kind": "part",
+      "module": "handguard-bolt--1-1.11",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt--1-1.11-socket",
+      "kind": "part",
+      "module": "handguard-bolt--1-1.11-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bevel--1",
+      "kind": "part",
+      "module": "handguard-bevel--1",
+      "meshes": 1,
+      "triangles": 192,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-shell",
+      "kind": "part",
+      "module": "handguard-shell",
+      "meshes": 1,
+      "triangles": 2208,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt-1-0.565-rim",
+      "kind": "part",
+      "module": "handguard-bolt-1-0.565-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt-1-0.565",
+      "kind": "part",
+      "module": "handguard-bolt-1-0.565",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt-1-0.565-socket",
+      "kind": "part",
+      "module": "handguard-bolt-1-0.565-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt-1-1.145-rim",
+      "kind": "part",
+      "module": "handguard-bolt-1-1.145-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt-1-1.145",
+      "kind": "part",
+      "module": "handguard-bolt-1-1.145",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt-1-1.145-socket",
+      "kind": "part",
+      "module": "handguard-bolt-1-1.145-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt-1-1.11-rim",
+      "kind": "part",
+      "module": "handguard-bolt-1-1.11-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt-1-1.11",
+      "kind": "part",
+      "module": "handguard-bolt-1-1.11",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bolt-1-1.11-socket",
+      "kind": "part",
+      "module": "handguard-bolt-1-1.11-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bevel-1",
+      "kind": "part",
+      "module": "handguard-bevel-1",
+      "meshes": 1,
+      "triangles": 192,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-top",
+      "kind": "part",
+      "module": "handguard-top",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "handguard-bottom",
+      "kind": "part",
+      "module": "handguard-bottom",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "lower-accessory-rail",
+      "kind": "part",
+      "module": "lower-accessory-rail",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "lower-rail-tooth-0",
+      "kind": "part",
+      "module": "lower-rail-tooth-0",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "lower-rail-tooth-1",
+      "kind": "part",
+      "module": "lower-rail-tooth-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "lower-rail-tooth-2",
+      "kind": "part",
+      "module": "lower-rail-tooth-2",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "lower-rail-tooth-3",
+      "kind": "part",
+      "module": "lower-rail-tooth-3",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "lower-rail-tooth-4",
+      "kind": "part",
+      "module": "lower-rail-tooth-4",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "lower-rail-tooth-5",
+      "kind": "part",
+      "module": "lower-rail-tooth-5",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "lower-rail-tooth-6",
+      "kind": "part",
+      "module": "lower-rail-tooth-6",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "barrel-core",
+      "kind": "part",
+      "module": "barrel-core",
+      "meshes": 1,
+      "triangles": 128,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "barrel-collar",
+      "kind": "part",
+      "module": "barrel-collar",
+      "meshes": 1,
+      "triangles": 128,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "muzzle-brake",
+      "kind": "part",
+      "module": "muzzle-brake",
+      "meshes": 10,
+      "triangles": 416,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "muzzle-band-1.31",
+      "kind": "part",
+      "module": "muzzle-band-1.31",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "muzzle-band-1.4",
+      "kind": "part",
+      "module": "muzzle-band-1.4",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "muzzle-band-1.51",
+      "kind": "part",
+      "module": "muzzle-band-1.51",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "muzzle-bridge-0",
+      "kind": "part",
+      "module": "muzzle-bridge-0",
+      "meshes": 1,
+      "triangles": 12,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "muzzle-bridge-1",
+      "kind": "part",
+      "module": "muzzle-bridge-1",
+      "meshes": 1,
+      "triangles": 12,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "muzzle-bridge-2",
+      "kind": "part",
+      "module": "muzzle-bridge-2",
+      "meshes": 1,
+      "triangles": 12,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "muzzle-bridge-3",
+      "kind": "part",
+      "module": "muzzle-bridge-3",
+      "meshes": 1,
+      "triangles": 12,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "muzzle-bore",
+      "kind": "part",
+      "module": "muzzle-bore",
+      "meshes": 1,
+      "triangles": 48,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "muzzle-face-1.3",
+      "kind": "part",
+      "module": "muzzle-face-1.3",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "muzzle-face-1.522",
+      "kind": "part",
+      "module": "muzzle-face-1.522",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "buffer-tube",
+      "kind": "part",
+      "module": "buffer-tube",
+      "meshes": 1,
+      "triangles": 128,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-sleeve",
+      "kind": "part",
+      "module": "stock-sleeve",
+      "meshes": 1,
+      "triangles": 128,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-shell",
+      "kind": "part",
+      "module": "stock-shell",
+      "meshes": 1,
+      "triangles": 192,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-cheek-rest",
+      "kind": "part",
+      "module": "stock-cheek-rest",
+      "meshes": 1,
+      "triangles": 108,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "butt-pad",
+      "kind": "part",
+      "module": "butt-pad",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "butt-tread-0",
+      "kind": "part",
+      "module": "butt-tread-0",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "butt-tread-1",
+      "kind": "part",
+      "module": "butt-tread-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "butt-tread-2",
+      "kind": "part",
+      "module": "butt-tread-2",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "butt-tread-3",
+      "kind": "part",
+      "module": "butt-tread-3",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "butt-tread-4",
+      "kind": "part",
+      "module": "butt-tread-4",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "butt-tread-5",
+      "kind": "part",
+      "module": "butt-tread-5",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "butt-tread-6",
+      "kind": "part",
+      "module": "butt-tread-6",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "butt-tread-7",
+      "kind": "part",
+      "module": "butt-tread-7",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "butt-tread-8",
+      "kind": "part",
+      "module": "butt-tread-8",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "butt-tread-9",
+      "kind": "part",
+      "module": "butt-tread-9",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "butt-tread-10",
+      "kind": "part",
+      "module": "butt-tread-10",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-slider-inset--1",
+      "kind": "part",
+      "module": "stock-slider-inset--1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-adjustment--1",
+      "kind": "part",
+      "module": "stock-adjustment--1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-pivot--1-rim",
+      "kind": "part",
+      "module": "stock-pivot--1-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-pivot--1",
+      "kind": "part",
+      "module": "stock-pivot--1",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-pivot--1-socket",
+      "kind": "part",
+      "module": "stock-pivot--1-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-inner-brace--1",
+      "kind": "part",
+      "module": "stock-inner-brace--1",
+      "meshes": 1,
+      "triangles": 144,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-slider-inset-1",
+      "kind": "part",
+      "module": "stock-slider-inset-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-adjustment-1",
+      "kind": "part",
+      "module": "stock-adjustment-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-pivot-1-rim",
+      "kind": "part",
+      "module": "stock-pivot-1-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-pivot-1",
+      "kind": "part",
+      "module": "stock-pivot-1",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-pivot-1-socket",
+      "kind": "part",
+      "module": "stock-pivot-1-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-inner-brace-1",
+      "kind": "part",
+      "module": "stock-inner-brace-1",
+      "meshes": 1,
+      "triangles": 144,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "buffer-lock-ring",
+      "kind": "part",
+      "module": "buffer-lock-ring",
+      "meshes": 1,
+      "triangles": 128,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "stock-front-ring",
+      "kind": "part",
+      "module": "stock-front-ring",
+      "meshes": 1,
+      "triangles": 128,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "pistol-grip",
+      "kind": "part",
+      "module": "pistol-grip",
+      "meshes": 1,
+      "triangles": 572,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "grip-stipple-panel--1",
+      "kind": "part",
+      "module": "grip-stipple-panel--1",
+      "meshes": 1,
+      "triangles": 76,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "grip-panel-border--1",
+      "kind": "part",
+      "module": "grip-panel-border--1",
+      "meshes": 1,
+      "triangles": 288,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "grip-stipple-panel-1",
+      "kind": "part",
+      "module": "grip-stipple-panel-1",
+      "meshes": 1,
+      "triangles": 76,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "grip-panel-border-1",
+      "kind": "part",
+      "module": "grip-panel-border-1",
+      "meshes": 1,
+      "triangles": 288,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-shell",
+      "kind": "part",
+      "module": "magazine-shell",
+      "meshes": 1,
+      "triangles": 572,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-floorplate",
+      "kind": "part",
+      "module": "magazine-floorplate",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-panel--1-0-0",
+      "kind": "part",
+      "module": "magazine-panel--1-0-0",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-panel--1-0-1",
+      "kind": "part",
+      "module": "magazine-panel--1-0-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-rib--1-0",
+      "kind": "part",
+      "module": "magazine-rib--1-0",
+      "meshes": 1,
+      "triangles": 96,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-panel--1-1-0",
+      "kind": "part",
+      "module": "magazine-panel--1-1-0",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-panel--1-1-1",
+      "kind": "part",
+      "module": "magazine-panel--1-1-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-rib--1-1",
+      "kind": "part",
+      "module": "magazine-rib--1-1",
+      "meshes": 1,
+      "triangles": 96,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-panel--1-2-0",
+      "kind": "part",
+      "module": "magazine-panel--1-2-0",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-panel--1-2-1",
+      "kind": "part",
+      "module": "magazine-panel--1-2-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-rib--1-2",
+      "kind": "part",
+      "module": "magazine-rib--1-2",
+      "meshes": 1,
+      "triangles": 96,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-edge--1",
+      "kind": "part",
+      "module": "magazine-edge--1",
+      "meshes": 1,
+      "triangles": 192,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-panel-1-0-0",
+      "kind": "part",
+      "module": "magazine-panel-1-0-0",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-panel-1-0-1",
+      "kind": "part",
+      "module": "magazine-panel-1-0-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-rib-1-0",
+      "kind": "part",
+      "module": "magazine-rib-1-0",
+      "meshes": 1,
+      "triangles": 96,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-panel-1-1-0",
+      "kind": "part",
+      "module": "magazine-panel-1-1-0",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-panel-1-1-1",
+      "kind": "part",
+      "module": "magazine-panel-1-1-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-rib-1-1",
+      "kind": "part",
+      "module": "magazine-rib-1-1",
+      "meshes": 1,
+      "triangles": 96,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-panel-1-2-0",
+      "kind": "part",
+      "module": "magazine-panel-1-2-0",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-panel-1-2-1",
+      "kind": "part",
+      "module": "magazine-panel-1-2-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-rib-1-2",
+      "kind": "part",
+      "module": "magazine-rib-1-2",
+      "meshes": 1,
+      "triangles": 96,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "magazine-edge-1",
+      "kind": "part",
+      "module": "magazine-edge-1",
+      "meshes": 1,
+      "triangles": 192,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-base",
+      "kind": "part",
+      "module": "rail-base",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-0",
+      "kind": "part",
+      "module": "rail-tooth-0",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-1",
+      "kind": "part",
+      "module": "rail-tooth-1",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-2",
+      "kind": "part",
+      "module": "rail-tooth-2",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-3",
+      "kind": "part",
+      "module": "rail-tooth-3",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-4",
+      "kind": "part",
+      "module": "rail-tooth-4",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-5",
+      "kind": "part",
+      "module": "rail-tooth-5",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-6",
+      "kind": "part",
+      "module": "rail-tooth-6",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-7",
+      "kind": "part",
+      "module": "rail-tooth-7",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-8",
+      "kind": "part",
+      "module": "rail-tooth-8",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-9",
+      "kind": "part",
+      "module": "rail-tooth-9",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-10",
+      "kind": "part",
+      "module": "rail-tooth-10",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-11",
+      "kind": "part",
+      "module": "rail-tooth-11",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-12",
+      "kind": "part",
+      "module": "rail-tooth-12",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-13",
+      "kind": "part",
+      "module": "rail-tooth-13",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-14",
+      "kind": "part",
+      "module": "rail-tooth-14",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-15",
+      "kind": "part",
+      "module": "rail-tooth-15",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-16",
+      "kind": "part",
+      "module": "rail-tooth-16",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-17",
+      "kind": "part",
+      "module": "rail-tooth-17",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-18",
+      "kind": "part",
+      "module": "rail-tooth-18",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-19",
+      "kind": "part",
+      "module": "rail-tooth-19",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-20",
+      "kind": "part",
+      "module": "rail-tooth-20",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-21",
+      "kind": "part",
+      "module": "rail-tooth-21",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-22",
+      "kind": "part",
+      "module": "rail-tooth-22",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-23",
+      "kind": "part",
+      "module": "rail-tooth-23",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-24",
+      "kind": "part",
+      "module": "rail-tooth-24",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-25",
+      "kind": "part",
+      "module": "rail-tooth-25",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-26",
+      "kind": "part",
+      "module": "rail-tooth-26",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-27",
+      "kind": "part",
+      "module": "rail-tooth-27",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-28",
+      "kind": "part",
+      "module": "rail-tooth-28",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-29",
+      "kind": "part",
+      "module": "rail-tooth-29",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "rail-tooth-30",
+      "kind": "part",
+      "module": "rail-tooth-30",
+      "meshes": 1,
+      "triangles": 92,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-base",
+      "kind": "part",
+      "module": "optic-base",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
     },
     {
       "name": "optic-hood",
       "kind": "part",
       "module": "optic-hood",
-      "triangles": 0
+      "meshes": 1,
+      "triangles": 192,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-electronics",
+      "kind": "part",
+      "module": "optic-electronics",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-lens",
+      "kind": "part",
+      "module": "optic-lens",
+      "meshes": 1,
+      "triangles": 2,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "red-dot-reticle",
+      "kind": "part",
+      "module": "red-dot-reticle",
+      "meshes": 1,
+      "triangles": 168,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-adjuster--1-rim",
+      "kind": "part",
+      "module": "optic-adjuster--1-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-adjuster--1",
+      "kind": "part",
+      "module": "optic-adjuster--1",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-adjuster--1-socket",
+      "kind": "part",
+      "module": "optic-adjuster--1-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-mount-front--1-rim",
+      "kind": "part",
+      "module": "optic-mount-front--1-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-mount-front--1",
+      "kind": "part",
+      "module": "optic-mount-front--1",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-mount-front--1-socket",
+      "kind": "part",
+      "module": "optic-mount-front--1-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-mount-rear--1-rim",
+      "kind": "part",
+      "module": "optic-mount-rear--1-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-mount-rear--1",
+      "kind": "part",
+      "module": "optic-mount-rear--1",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-mount-rear--1-socket",
+      "kind": "part",
+      "module": "optic-mount-rear--1-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-hood-foot--1",
+      "kind": "part",
+      "module": "optic-hood-foot--1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-hood-wear--1",
+      "kind": "part",
+      "module": "optic-hood-wear--1",
+      "meshes": 1,
+      "triangles": 240,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-adjuster-1-rim",
+      "kind": "part",
+      "module": "optic-adjuster-1-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-adjuster-1",
+      "kind": "part",
+      "module": "optic-adjuster-1",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-adjuster-1-socket",
+      "kind": "part",
+      "module": "optic-adjuster-1-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-mount-front-1-rim",
+      "kind": "part",
+      "module": "optic-mount-front-1-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-mount-front-1",
+      "kind": "part",
+      "module": "optic-mount-front-1",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-mount-front-1-socket",
+      "kind": "part",
+      "module": "optic-mount-front-1-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-mount-rear-1-rim",
+      "kind": "part",
+      "module": "optic-mount-rear-1-rim",
+      "meshes": 1,
+      "triangles": 160,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-mount-rear-1",
+      "kind": "part",
+      "module": "optic-mount-rear-1",
+      "meshes": 1,
+      "triangles": 64,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-mount-rear-1-socket",
+      "kind": "part",
+      "module": "optic-mount-rear-1-socket",
+      "meshes": 1,
+      "triangles": 6,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-hood-foot-1",
+      "kind": "part",
+      "module": "optic-hood-foot-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "optic-hood-wear-1",
+      "kind": "part",
+      "module": "optic-hood-wear-1",
+      "meshes": 1,
+      "triangles": 240,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "status-indicator-base--1",
+      "kind": "part",
+      "module": "status-indicator-base--1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "status-indicator--1",
+      "kind": "part",
+      "module": "status-indicator--1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "status-indicator-base-1",
+      "kind": "part",
+      "module": "status-indicator-base-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "status-indicator-1",
+      "kind": "part",
+      "module": "status-indicator-1",
+      "meshes": 1,
+      "triangles": 300,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "muzzle-socket",
+      "kind": "part",
+      "module": "muzzle-socket",
+      "meshes": 0,
+      "triangles": 0,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "grip-socket",
+      "kind": "part",
+      "module": "grip-socket",
+      "meshes": 0,
+      "triangles": 0,
+      "unnamedMeshes": 0
+    },
+    {
+      "name": "aim-socket",
+      "kind": "part",
+      "module": "aim-socket",
+      "meshes": 0,
+      "triangles": 0,
+      "unnamedMeshes": 0
     }
   ],
   "unnamedMeshes": 0,
-  "integralMeshes": 72
+  "integralMeshes": 217,
+  "triangles": 38606
 }

@@ -16,12 +16,39 @@
       canvas {
         display: block;
       }
+      #review-tools {
+        position: fixed;
+        left: 16px;
+        bottom: 16px;
+        padding: 12px 16px;
+        color: #eee;
+        background: #202427e8;
+        font: 13px system-ui;
+        border-radius: 8px;
+      }
+      #review-tools label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      #part-name {
+        margin-top: 6px;
+        color: #a7d8d8;
+      }
     </style>
   </head>
   <body>
+    <aside id="review-tools" hidden>
+      <div>ドラッグで回転 · ホイールで拡大 · 部品をクリック</div>
+      <label>分解表示 <input id="explode" type="range" min="0" max="1" step="0.01" value="0" /></label>
+      <div id="part-name">カービンライフル</div>
+    </aside>
     <script type="module">
       import * as THREE from "three";
+      import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+      import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
       import { createCarbineModel } from "/src/models/game-models.ts";
+      import { carbineTexturesReady } from "/src/models/carbine-materials.ts";
 
       const params = new URLSearchParams(location.search);
       const view = params.get("view") ?? "reference";
@@ -37,6 +64,9 @@
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.18;
       document.body.append(renderer.domElement);
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      scene.environmentIntensity = 0.7;
 
       const camera = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.01, 100);
       const model = createCarbineModel().group;
@@ -71,23 +101,74 @@
       ground.rotation.x = -Math.PI / 2;
       ground.position.y = -1.65;
       ground.receiveShadow = true;
-      scene.add(ground);
+      if (params.get("ground") === "1") scene.add(ground);
 
       const box = new THREE.Box3().setFromObject(model);
       const center = box.getCenter(new THREE.Vector3());
       const radius = Math.max(1, box.getBoundingSphere(new THREE.Sphere()).radius);
       const directions = {
-        reference: new THREE.Vector3(0.32, 0.22, 1),
+        reference: new THREE.Vector3(0.4, 0.3, 1),
+        side: new THREE.Vector3(0, 0, 1),
+        rear: new THREE.Vector3(-1, 0.05, 0.001),
         opposite: new THREE.Vector3(-0.32, 0.18, -1),
         top: new THREE.Vector3(0.001, 1, 0.001),
         muzzle: new THREE.Vector3(1, 0.05, 0.001),
       };
       const direction = directions[view] ?? directions.reference;
-      const distanceFactor = view === "muzzle" ? 1.8 : view === "top" ? 2.8 : 2.95;
+      const distanceFactor = view === "muzzle" || view === "rear" ? 3.2 : view === "top" ? 2.8 : 2.35;
       camera.position.copy(center).addScaledVector(direction.normalize(), radius * distanceFactor);
       camera.lookAt(center);
+      window.__modelReviewView = view;
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.target.copy(center);
+      controls.enableDamping = true;
+      if (params.get("interactive") === "1") {
+        document.querySelector("#review-tools").hidden = false;
+        const parts = model.children.filter((part) => part.isGroup);
+        const positions = parts.map((part) => part.position.clone());
+        const centers = parts.map((part) =>
+          new THREE.Box3().setFromObject(part).getCenter(new THREE.Vector3())
+        );
+        const inverse = new THREE.Matrix4().copy(model.matrixWorld).invert();
+        const localCenter = center.clone().applyMatrix4(inverse);
+        const offsets = centers.map((partCenter) => partCenter.applyMatrix4(inverse).sub(localCenter));
+        document.querySelector("#explode").addEventListener("input", (event) => {
+          const amount = Number(event.target.value);
+          parts.forEach((part, i) => part.position.copy(positions[i]).addScaledVector(offsets[i], amount));
+        });
+        const ray = new THREE.Raycaster();
+        renderer.domElement.addEventListener("click", (event) => {
+          ray.setFromCamera(
+            new THREE.Vector2((event.clientX / innerWidth) * 2 - 1, 1 - (event.clientY / innerHeight) * 2),
+            camera
+          );
+          const hit = ray.intersectObject(model, true)[0];
+          if (hit) {
+            let part = hit.object;
+            while (part.parent && !parts.includes(part)) part = part.parent;
+            const labels = {
+              "receiver-assembly": "レシーバー",
+              "stock-assembly": "ストック",
+              "grip-assembly": "グリップ",
+              "magazine-assembly": "弾倉",
+              "handguard-assembly": "ハンドガード",
+              "barrel-assembly": "銃身・銃口",
+              "top-rail": "上部レール",
+              "optic-assembly": "サイト",
+            };
+            document.querySelector("#part-name").textContent = labels[part.name] ?? "カービンライフル";
+          }
+        });
+      }
+      addEventListener("resize", () => {
+        renderer.setSize(innerWidth, innerHeight);
+        camera.aspect = innerWidth / innerHeight;
+        camera.updateProjectionMatrix();
+      });
 
+      await carbineTexturesReady;
       renderer.setAnimationLoop(() => {
+        controls.update();
         renderer.render(scene, camera);
         window.__modelReviewReady = true;
       });

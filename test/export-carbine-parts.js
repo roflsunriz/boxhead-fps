@@ -1,28 +1,55 @@
 import { writeFile } from "node:fs/promises";
-import { chromium } from "playwright";
+import { evaluate, outputDirectory, withReviewPage } from "./capture-model-review.js";
 
-const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 800, height: 600 } });
-await page.goto("http://127.0.0.1:8787/test/model-review.html?view=reference", { waitUntil: "networkidle" });
-await page.waitForFunction(() => window.__modelReviewReady === true);
-const manifest = await page.evaluate(() => {
-  const model = window.__carbineModel;
-  const runtime = model.userData.sculptRuntime;
-  const partNames = Object.keys(runtime.nodes);
-  let unnamedMeshes = 0;
-  let integralMeshes = 0;
-  model.traverse((object) => {
-    if (object.isMesh !== true) return;
-    integralMeshes++;
-    if (!object.name) unnamedMeshes++;
-  });
-  return {
-    model: model.name,
-    parts: partNames.map((name) => ({ name, kind: "part", module: name, triangles: 0 })),
-    unnamedMeshes,
-    integralMeshes,
-  };
+await withReviewPage(async ({ cdp, navigate, errors, browserVersion }) => {
+  await navigate("view=reference");
+  const manifest = await evaluate(
+    cdp,
+    `(() => {
+    const model = window.__carbineModel;
+    const runtime = model?.userData.sculptRuntime;
+    if (!runtime?.nodes) throw new Error('Carbine sculpt runtime missing');
+    const countGeometry = root => {
+      let meshes = 0, triangles = 0, unnamedMeshes = 0;
+      root.traverse(object => {
+        if (!object.isMesh) return;
+        meshes++;
+        if (!object.name) unnamedMeshes++;
+        triangles += (object.geometry.index?.count ?? object.geometry.attributes.position.count) / 3
+          * (object.isInstancedMesh ? object.count : 1);
+      });
+      return { meshes, triangles, unnamedMeshes };
+    };
+    const total = countGeometry(model);
+    if (!total.meshes || !total.triangles) throw new Error('Carbine geometry missing');
+    return {
+      model: model.name,
+      parts: Object.entries(runtime.nodes).map(([name, node]) => ({
+        name, kind: 'part', module: name, ...countGeometry(node)
+      })),
+      unnamedMeshes: total.unnamedMeshes,
+      integralMeshes: total.meshes,
+      triangles: total.triangles,
+    };
+  })()`
+  );
+  if (errors.length) throw new Error(JSON.stringify(errors));
+  await writeFile(`${outputDirectory}/parts.json`, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  await writeFile(
+    `${outputDirectory}/parts-evidence.json`,
+    `${JSON.stringify(
+      {
+        capturedAt: new Date().toISOString(),
+        browserVersion,
+        errors,
+        meshes: manifest.integralMeshes,
+        triangles: manifest.triangles,
+        parts: manifest.parts.length,
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
 });
-await writeFile("art/img2threejs/carbine/parts.json", `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
-await browser.close();
-console.log("カービン部品manifestを保存しました。");
+console.log("カービン部品manifestと計測結果を保存しました。");

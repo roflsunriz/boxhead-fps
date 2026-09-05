@@ -1,0 +1,26 @@
+{
+  "referenceAreaFraction": 0.23133229166666666,
+  "angles": [
+    {
+      "path": "art\\img2threejs\\carbine\\render-opposite.png",
+      "areaFraction": 0.23810208333333333,
+      "ratio": 1.0292643608805876,
+      "degenerate": false
+    },
+    {
+      "path": "art\\img2threejs\\carbine\\render-top.png",
+      "areaFraction": 0.07050625,
+      "ratio": 0.3047834329225186,
+      "degenerate": false
+    },
+    {
+      "path": "art\\img2threejs\\carbine\\render-muzzle.png",
+      "areaFraction": 0.0,
+      "ratio": 0.0,
+      "degenerate": true
+    }
+  ],
+  "degenerate": true,
+  "collapseRatio": 0.15,
+  "note": "deterministic; zero token; a flat-plane-faking-a-volume collapses in silhouette area when orbited"
+}

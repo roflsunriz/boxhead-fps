@@ -1,6 +1,6 @@
 import { chromium } from "playwright";
 
-const BASE = "http://localhost:8787";
+const BASE = process.env.GAME_TEST_URL ?? "http://localhost:8787";
 let passed = 0,
   failed = 0;
 function check(name, cond, extra = "") {
@@ -13,7 +13,7 @@ function check(name, cond, extra = "") {
   }
 }
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ channel: "chrome", headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 
 const consoleErrors = [];
@@ -56,6 +56,40 @@ check(
 );
 await page.waitForTimeout(500);
 check("no console/page errors on load", consoleErrors.length === 0, JSON.stringify(consoleErrors));
+
+const carbineTextureState = await page.evaluate(() => {
+  let scene = window.__game.enemies[0].group;
+  while (scene.parent) scene = scene.parent;
+  const carbine = scene.getObjectByName("fps-carbine");
+  const receiver = carbine?.getObjectByName("upper-receiver");
+  const material = receiver?.material;
+  const image = material?.map?.image;
+  const context = image?.getContext?.("2d");
+  const samples = context
+    ? [0.2, 0.4, 0.6, 0.8].flatMap((y) =>
+        [0.2, 0.4, 0.6, 0.8].map((x) =>
+          [
+            ...context.getImageData(Math.floor(image.width * x), Math.floor(image.height * y), 1, 1).data,
+          ].join(",")
+        )
+      )
+    : [];
+  return {
+    atlasLoaded: performance
+      .getEntriesByType("resource")
+      .some((entry) => entry.name.includes("carbine-surface-atlas") && entry.responseEnd > 0),
+    mapWidth: image?.width ?? 0,
+    distinctColors: new Set(samples).size,
+    separateRoughness: !!material?.roughnessMap && material.roughnessMap !== material.map,
+  };
+});
+check(
+  `carbine image atlas is loaded and painted onto receiver (${JSON.stringify(carbineTextureState)})`,
+  carbineTextureState.atlasLoaded &&
+    carbineTextureState.mapWidth >= 512 &&
+    carbineTextureState.distinctColors > 1 &&
+    carbineTextureState.separateRoughness
+);
 
 console.log("\n[2] Pointer lock");
 await page.click("#start-btn");
@@ -140,18 +174,52 @@ await page.evaluate(() => {
 });
 await page.waitForTimeout(350);
 const adsOn = await page.evaluate(() => ({ aiming: window.__game.aiming, ...window.__game.aimView }));
+const opticView = await page.evaluate(() => {
+  let scene = window.__game.enemies[0].group;
+  while (scene.parent) scene = scene.parent;
+  const carbine = scene.getObjectByName("fps-carbine");
+  const reticle = carbine?.getObjectByName("red-dot-reticle");
+  const lens = carbine?.getObjectByName("optic-lens");
+  let camera = carbine?.parent;
+  while (camera && !camera.isCamera) camera = camera.parent;
+  if (!camera || !reticle || !lens) return null;
+  scene.updateMatrixWorld(true);
+  const point = reticle.getWorldPosition(reticle.position.clone()).project(camera);
+  return {
+    x: point.x,
+    y: point.y,
+    z: point.z,
+    reticleVisible: reticle.visible,
+    lensVisible: lens.visible,
+    transparent: lens.material.transparent,
+    opacity: lens.material.opacity,
+  };
+});
+const opticOccluders = await page.evaluate(() => window.__game.debugAimOcclusion());
+check(
+  `ADS sightline has no opaque obstruction (${JSON.stringify(opticOccluders)})`,
+  opticOccluders.length === 0
+);
 check(
   `right click toggles red-dot ADS on (${JSON.stringify(adsOn)})`,
   adsOn.aiming &&
     adsOn.blend > 0.75 &&
     adsOn.fov < 64 &&
-    Math.abs(adsOn.gunX) < 0.03 &&
-    adsOn.gunY > -0.13 &&
-    adsOn.gunY < -0.07 &&
-    adsOn.gunZ > -0.57 &&
-    adsOn.gunZ < -0.49 &&
     adsOn.crosshairOpacity < 0.2 &&
     (await page.evaluate(() => window.__game.ammo)) === adsAmmo
+);
+check(
+  `ADS reticle projects through transparent lens near screen center (${JSON.stringify(opticView)})`,
+  opticView &&
+    Math.abs(opticView.x) < 0.035 &&
+    Math.abs(opticView.y) < 0.035 &&
+    opticView.z > -1 &&
+    opticView.z < 1 &&
+    opticView.reticleVisible &&
+    opticView.lensVisible &&
+    opticView.transparent &&
+    opticView.opacity > 0 &&
+    opticView.opacity < 0.5
 );
 await page.screenshot({ path: "test/feature-red-dot-ads.png" });
 await page.evaluate(() => {
@@ -176,18 +244,42 @@ await page.evaluate(() => {
   g.player.pitch = 0;
 });
 const a0 = await page.evaluate(() => window.__game.ammo);
-const muzzleDist = await page.evaluate(() => {
+await page.waitForFunction(
+  () => {
+    const game = window.__game;
+    let scene = game.enemies[0].group;
+    while (scene.parent) scene = scene.parent;
+    let camera = scene.getObjectByName("fps-carbine")?.parent;
+    while (camera && !camera.isCamera) camera = camera.parent;
+    return (
+      camera &&
+      Math.hypot(camera.position.x - game.player.pos.x, camera.position.z - game.player.pos.z) < 0.01 &&
+      Math.abs(camera.rotation.y - game.player.yaw) < 0.01
+    );
+  },
+  null,
+  { timeout: 15000 }
+);
+await page.screenshot({ path: "test/feature-carbine-hip.png" });
+const muzzleCheck = await page.evaluate(() => {
   window.__game.tryShoot();
   const o = window.__game.lastTracerOrigin;
-  const p = window.__game.player.pos;
-  return o ? Math.hypot(o.x - p.x, o.y - p.y, o.z - p.z) : -1;
+  let scene = window.__game.enemies[0].group;
+  while (scene.parent) scene = scene.parent;
+  const carbine = scene.getObjectByName("fps-carbine");
+  const muzzle = carbine?.getObjectByName("muzzle-socket");
+  let camera = carbine?.parent;
+  while (camera && !camera.isCamera) camera = camera.parent;
+  if (!o || !muzzle || !camera) return null;
+  const world = muzzle.getWorldPosition(muzzle.position.clone());
+  return { socketError: world.distanceTo(o), cameraDistance: camera.position.distanceTo(o) };
 });
 await page.waitForTimeout(50);
 const a1 = await page.evaluate(() => window.__game.ammo);
 check(`ammo decrements (${a0} -> ${a1})`, a1 === a0 - 1);
 check(
-  `tracer originates at gun muzzle, not camera (eye -> origin = ${muzzleDist.toFixed(2)})`,
-  muzzleDist > 0.8 && muzzleDist < 1.4
+  `tracer originates exactly at the gun muzzle (${JSON.stringify(muzzleCheck)})`,
+  muzzleCheck && muzzleCheck.socketError < 1e-5 && muzzleCheck.cameraDistance > 0.3
 );
 
 await page.waitForTimeout(100);
@@ -465,7 +557,20 @@ const ra0 = await page.evaluate(() => window.__game.ammo);
 await page.evaluate(() => window.__game.reload());
 check("reload flag set", await page.evaluate(() => window.__game.reloading === true));
 check("reload cancels ADS", await page.evaluate(() => window.__game.aiming === false));
-await page.waitForTimeout(450);
+await page.waitForFunction(
+  () => {
+    const view = window.__game.reloadView;
+    return (
+      view.progress > 0.2 &&
+      view.progress < 0.7 &&
+      view.handVisible &&
+      (view.magazineY < -0.3 || !view.magazineVisible) &&
+      view.gunY < -0.22
+    );
+  },
+  null,
+  { timeout: 15000 }
+);
 const reloadView = await page.evaluate(() => window.__game.reloadView);
 check(
   `reload visibly removes the magazine (${JSON.stringify(reloadView)})`,
@@ -476,7 +581,21 @@ check(
     reloadView.gunY < -0.22
 );
 await page.screenshot({ path: "test/feature-magazine-reload.png" });
-await page.waitForTimeout(100);
+await page.waitForFunction(
+  () => {
+    const view = window.__game.reloadView;
+    return (
+      view.progress > 0.5 &&
+      view.progress < 0.99 &&
+      view.magazineVisible &&
+      view.magazineY > -0.47 &&
+      view.magazineY <= -0.129 &&
+      view.handVisible
+    );
+  },
+  null,
+  { timeout: 15000 }
+);
 const reloadInsertView = await page.evaluate(() => window.__game.reloadView);
 check(
   `reload inserts the replacement magazine (${JSON.stringify(reloadInsertView)})`,
@@ -488,7 +607,9 @@ check(
     reloadInsertView.handVisible
 );
 await page.screenshot({ path: "test/feature-magazine-insert.png" });
-await page.waitForTimeout(850);
+await page.waitForFunction(() => window.__game.ammo === 30 && !window.__game.reloading, null, {
+  timeout: 15000,
+});
 check(
   `reload refills magazine (${ra0} -> full)`,
   await page.evaluate(() => window.__game.ammo === 30 && !window.__game.reloading)
@@ -644,8 +765,26 @@ console.log("\n[9] Fallback look mode (pointer lock unavailable)");
 const page2 = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errs2 = [];
 page2.on("pageerror", (e) => errs2.push(String(e)));
+page2.on("console", (message) => {
+  if (message.type() === "error") errs2.push(message.text());
+});
 await page2.goto(BASE, { waitUntil: "networkidle" });
-await page2.waitForFunction(() => window.__game !== undefined);
+try {
+  await page2.waitForFunction(() => window.__game !== undefined);
+} catch (error) {
+  console.error(
+    "Fallback page boot failed",
+    JSON.stringify({
+      errors: errs2,
+      state: await page2.evaluate(() => ({
+        url: location.href,
+        readyState: document.readyState,
+        canvasCount: document.querySelectorAll("canvas").length,
+      })),
+    })
+  );
+  throw error;
+}
 await page2.click("#start-btn");
 await page2.waitForTimeout(300);
 const y0 = await page2.evaluate(() => window.__game.player.yaw);
@@ -902,7 +1041,18 @@ await page3.evaluate(() => {
 await page3.waitForTimeout(200);
 const waveBefore = await page3.evaluate(() => window.__game.debugBeachWaveSummary());
 await page3.screenshot({ path: "test/feature-beach-wave-a.png" });
-await page3.waitForTimeout(850);
+await page3.waitForFunction(
+  (before) => {
+    const after = window.__game.debugBeachWaveSummary();
+    return (
+      after.elapsed > before.elapsed + 0.4 &&
+      Math.abs(after.sampleY - before.sampleY) > 0.01 &&
+      Math.abs(after.leadBreakerZ - before.leadBreakerZ) > 0.2
+    );
+  },
+  waveBefore,
+  { timeout: 15000 }
+);
 const waveAfter = await page3.evaluate(() => window.__game.debugBeachWaveSummary());
 await page3.screenshot({ path: "test/feature-beach-wave-b.png" });
 const beachZ = await page3.evaluate(() => window.__game.player.pos.z);

@@ -152,6 +152,7 @@ export interface PlayerState {
 }
 
 export interface GameDebugApi {
+  debugAimOcclusion(): string[];
   readonly player: PlayerState;
   readonly enemies: readonly Enemy[];
   readonly ammo: number;

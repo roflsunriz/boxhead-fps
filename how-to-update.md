@@ -70,7 +70,7 @@ node test/responsive.js   # 4 ビューポートのレイアウト検証(ALL VIE
 
 ## 3DモデルとPBRテクスチャの更新
 
-- 製品で読み込むモデルの生成元は `src/models/game-models.ts`。カービン、グレネード、医療キット、シールドセル、ヒトデを名前付きThree.js階層として管理し、ヤシの生成APIも再公開する。
+- 製品モデルの公開APIは `src/models/game-models.ts`。カービンは `src/models/carbine-model.ts`、画像テクスチャの割当・部品別UV塗装は `src/models/carbine-materials.ts` で管理する。`src/assets/carbine-surface-atlas.png` はBunがビルド成果物へ同梱するため、ソース側だけでなく `dist/` の画像取得も確認する。
 - 樹木は `src/models/broadleaf-tree.ts`（都市のケヤキ・クスノキ風広葉樹）と `src/models/palm-tree.ts`（ヤシ）を編集する。広葉樹は幹から大枝・小枝へ分岐する形と、枝先の葉の間隔を確認する。黄金角を使った配置は、方向の偏りや葉の重なりを抑えるための視覚表現であり、生物学的な成長や日射の最適化を厳密に計算するものではない。確認項目は [verification.md](verification.md) を参照。
 - 地表、建物、金属、樹脂、ゴム、樹皮のテクスチャ生成元は `src/textures.ts`。albedoはsRGB、roughness・normal・AOはlinear dataとして別キャンバスへ生成し、同じ画像を複数チャンネルへ使い回さない。
 - カービンの参照画像とプロンプトは `art/references/`、`img2threejs` の分析・spec・クロップ・PBRエビデンス・レビュー履歴は `art/img2threejs/carbine/` に置く。単一画像から見えない右側面・下面・内部機構と傷位置は近似であり、追加画像なしに完全一致を主張しない。
@@ -78,7 +78,7 @@ node test/responsive.js   # 4 ビューポートのレイアウト検証(ALL VIE
 Vite開発サーバーを8787番で起動した状態で、見た目のエビデンスを再生成する。
 
 ```powershell
-node test/capture-model-review.js    # カービンの3/4・反対側・上面・銃口・map-stripped
+node test/capture-model-review.js    # カービン6方向・map-stripped（Google Chromeが必要）
 node test/export-carbine-parts.js    # action-ready部品manifest
 node test/capture-assets-review.js   # 武器・回復物資・環境小物
 node test/capture-game-assets.js     # ゲーム内ボット、味方後頭部IFF、爆発跡
@@ -90,20 +90,31 @@ node test/capture-crater-review.js   # クレーター単体の斜光確認
 
 ビルド成果物を配信して `node test/capture-tree-review.js --game` を実行すると、都市とビーチの樹木も撮影できる。
 
-1. 一人称カービンが画面下右を過度に覆わず、マズルからトレーサーが出る。
+1. 一人称カービンが肩付けの位置にあり、腰だめ・照準時ともストックの大部分が見えない。画面下右を過度に覆わず、実際のマズルからトレーサーが出る。
 2. 右クリックごとにADSがオン／オフになり、サイトの赤点が画面中央へ移動してHUDクロスヘアが消える。
 3. リロード、バリア使用、死亡、ポーズでADSが解除され、FOVと武器位置が腰だめへ戻る。
 4. リロード時に同じマガジングループが抜去・非表示・再挿入される。
 5. ボットのカービン、反動、マズルフラッシュ、味方アウトラインが追従し、味方だけヘルメット後頭部のIFFがシアン発光する。
 6. pickupと投擲グレネードの取得・物理・爆発判定がモデル置換後も変わらない。
-7. カービンが4方向で平面へ潰れず、意図したstock／handguard穴が残る。
+7. カービンが6方向で平面へ潰れず、意図したstock／handguard穴が残る。`/test/model-review.html?interactive=1` で回転・ズーム・分解・部品選択を確認する。
 8. クレーターの焦げ中心、低い不規則縁、瓦礫が見え、円形トーラスのケーキ状外周へ戻っていない。
+
+8787番がWindows側の予約などで `EACCES` になる場合は、空きポートを指定できる。
+
+```powershell
+bun run dev -- --host 127.0.0.1 --port 18787
+$env:MODEL_REVIEW_URL = 'http://127.0.0.1:18787'
+node test/capture-model-review.js
+node test/export-carbine-parts.js
+```
+
+ゲームE2E・画面サイズ確認は `GAME_TEST_URL` でビルド成果物の配信URLを指定する（既定は8787番）。レビューはVite、ゲームE2Eは `dist/` 配信に分ける。
 
 ## ロールバック/復旧方針
 
 - ソースは `index.html` / `style.css` / `src/`。構成は README.md の表を参照。問題発生時は Git の該当コミットへ戻せば復旧する。
 - ビルド成果物 `dist/` は生成物であり手編集しない。壊れたら `bun run build` で再生成する。
-- 3Dモデルの変更を戻す場合は `src/models/game-models.ts` と `src/models/broadleaf-tree.ts` / `src/models/palm-tree.ts`、接続元の `src/main.ts` / `src/items.ts` / `src/enemies.ts` / `src/world.ts`、PBR生成元の `src/textures.ts` を同じコミット単位で戻す。`art/` の参照・specだけを戻しても実ゲームの形状は戻らない。
+- 3Dモデルの変更を戻す場合は `src/models/`、接続元の `src/main.ts` / `src/items.ts` / `src/enemies.ts` / `src/world.ts`、PBR生成元の `src/textures.ts`、画像テクスチャの `src/assets/` を同じコミット単位で戻す。`art/` の参照・specだけを戻しても実ゲームの形状は戻らない。
 - three.js は npm 依存(bundler 解決)のため CDN 障害の影響を受けない。
 - typescript-eslint は TS 7 未対応のため、`typescript` は 6.x に固定している。TS 7 対応後の更新時は `typescript-eslint` の対応状況を先に確認すること。
 - テストが失敗した場合はまず `test/run.log` の失敗項目名と、8787 ポートで `dist/` が配信されているかを確認すること。UI 文言関連の失敗時は、言語設定(ja/en)の違いが原因ではないかを確認すること。

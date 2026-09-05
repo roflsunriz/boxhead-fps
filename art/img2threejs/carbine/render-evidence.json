@@ -1,0 +1,77 @@
+{
+  "capturedAt": "2026-09-05T18:05:05.133Z",
+  "views": [
+    {
+      "name": "reference",
+      "path": "art/img2threejs/carbine/render-reference.png",
+      "model": "fps-carbine",
+      "meshes": 217,
+      "triangles": 38606,
+      "unnamedMeshes": 0,
+      "view": "reference",
+      "viewport": [1200, 800]
+    },
+    {
+      "name": "opposite",
+      "path": "art/img2threejs/carbine/render-opposite.png",
+      "model": "fps-carbine",
+      "meshes": 217,
+      "triangles": 38606,
+      "unnamedMeshes": 0,
+      "view": "opposite",
+      "viewport": [1200, 800]
+    },
+    {
+      "name": "top",
+      "path": "art/img2threejs/carbine/render-top.png",
+      "model": "fps-carbine",
+      "meshes": 217,
+      "triangles": 38606,
+      "unnamedMeshes": 0,
+      "view": "top",
+      "viewport": [1200, 800]
+    },
+    {
+      "name": "muzzle",
+      "path": "art/img2threejs/carbine/render-muzzle.png",
+      "model": "fps-carbine",
+      "meshes": 217,
+      "triangles": 38606,
+      "unnamedMeshes": 0,
+      "view": "muzzle",
+      "viewport": [1200, 800]
+    },
+    {
+      "name": "side",
+      "path": "art/img2threejs/carbine/render-side.png",
+      "model": "fps-carbine",
+      "meshes": 217,
+      "triangles": 38606,
+      "unnamedMeshes": 0,
+      "view": "side",
+      "viewport": [1200, 800]
+    },
+    {
+      "name": "rear",
+      "path": "art/img2threejs/carbine/render-rear.png",
+      "model": "fps-carbine",
+      "meshes": 217,
+      "triangles": 38606,
+      "unnamedMeshes": 0,
+      "view": "rear",
+      "viewport": [1200, 800]
+    },
+    {
+      "name": "map-stripped",
+      "path": "art/img2threejs/carbine/render-map-stripped.png",
+      "model": "fps-carbine",
+      "meshes": 217,
+      "triangles": 38606,
+      "unnamedMeshes": 0,
+      "view": "reference",
+      "viewport": [1200, 800]
+    }
+  ],
+  "errors": [],
+  "browserVersion": "152.0.7977.77"
+}

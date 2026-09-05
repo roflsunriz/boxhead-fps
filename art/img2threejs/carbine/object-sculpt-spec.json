@@ -846,7 +846,9 @@
     "右側面の操作部は左3/4参照と機械的に矛盾しない簡略形状として実装する。",
     "内部機構はゲーム中に見える排莢ポート、銃口、magwellだけを造形する。",
     "断面幅は銃口・上面レビューで平面化しない範囲へ推定する。",
-    "傷位置は参照の頻度と方向を保つ決定論的procedural wearで近似する。"
+    "傷位置は参照の頻度と方向を保つ決定論的procedural wearで近似する。",
+    "2026-09-06 user requested full reconstruction: resume the stopped approximation. Side-profile coordinates u=forward, y=up, width=x; product transform maps u to -z. Stock u=-1.02..-0.30; receiver=-0.30..0.50; handguard=0.50..1.18; muzzle=1.50. Grip sweeps backward to u=-0.42 at y=-0.63; magazine curves forward to u=0.55 at y=-0.93. Visible shape is authoritative; hidden geometry remains inferred.",
+    "Spec positions describe assembly bounds in reference-facing u/y/depth coordinates, not THREE parent-local transforms; runtime pivots and sockets are authoritative in factory and measured part manifest."
   ],
   "coordinateFrame": {
     "front": "camera-facing side in the reference image",
@@ -979,7 +981,7 @@
       "topologyClass": "assembled-solid",
       "topologyRationale": "中央レシーバーは数えられる平面と実ベベルを持つ剛体アセンブリで、他の全アセンブリの基準座標を提供する。",
       "geometryDescriptor": {
-        "topologyIntent": "low-poly blockout with bevel-ready edges",
+        "topologyIntent": "Image-observed bevelled shell/solid with thickness; profile coordinates in src/models/carbine-model.ts",
         "edgeTreatment": {
           "type": "none",
           "bevelRadius": 0.0,
@@ -992,14 +994,14 @@
       "parent": null,
       "attachment": null,
       "dimensions": {
-        "width": 1.7,
-        "height": 0.62,
-        "depth": 0.48,
+        "width": 2.62,
+        "height": 1.43,
+        "depth": 0.24,
         "units": "relative",
-        "confidence": 0.5
+        "confidence": 0.85
       },
       "transform": {
-        "position": [0, 0, 0],
+        "position": [0.22, -0.2, 0],
         "rotation": [0, 0, 0],
         "scale": [1, 1, 1]
       },
@@ -1089,16 +1091,16 @@
       "topologyRationale": "upper/lower receiverとmagwellをまとめた中央の横長剛体ボリューム。",
       "parent": "root",
       "dimensions": {
-        "width": 1.7,
-        "height": 0.62,
-        "depth": 0.48,
+        "width": 0.86,
+        "height": 0.52,
+        "depth": 0.19,
         "units": "relative",
-        "confidence": 0.92
+        "confidence": 0.85
       },
       "transform": {
-        "position": [0, 0, 0],
+        "position": [0.09, -0.07, 0],
         "rotation": [0, 0, 0],
-        "scale": [1.7, 0.62, 0.48]
+        "scale": [1, 1, 1]
       },
       "actionProfile": {
         "animationRole": "static-part",
@@ -1126,6 +1128,9 @@
         "secondaryAlbedo": "rgba(43, 43, 43, 1.0)",
         "materialClass": "metal",
         "materialClassConfidence": 0.96
+      },
+      "geometryDescriptor": {
+        "topologyIntent": "Image-observed bevelled shell/solid with thickness; profile coordinates in src/models/carbine-model.ts"
       }
     },
     {
@@ -1140,16 +1145,16 @@
       "topologyRationale": "成形ポリマー側板とゴムパッドから成る独立剛体アセンブリ。",
       "parent": "root",
       "dimensions": {
-        "width": 1.25,
-        "height": 0.72,
-        "depth": 0.38,
+        "width": 0.76,
+        "height": 0.62,
+        "depth": 0.18,
         "units": "relative",
-        "confidence": 0.84
+        "confidence": 0.85
       },
       "transform": {
-        "position": [-1.43, 0.05, 0],
+        "position": [-0.7, -0.1, 0],
         "rotation": [0, 0, 0],
-        "scale": [1.25, 0.72, 0.38]
+        "scale": [1, 1, 1]
       },
       "actionProfile": {
         "animationRole": "static-part"
@@ -1163,6 +1168,9 @@
         "secondaryAlbedo": "rgba(50, 49, 46, 1.0)",
         "materialClass": "plastic",
         "materialClassConfidence": 0.9
+      },
+      "geometryDescriptor": {
+        "topologyIntent": "Image-observed bevelled shell/solid with thickness; profile coordinates in src/models/carbine-model.ts"
       }
     },
     {
@@ -1177,16 +1185,16 @@
       "topologyRationale": "バレルを囲う薄肉の有孔金属シェルで、上下レールと内壁を持つ。",
       "parent": "root",
       "dimensions": {
-        "width": 1.45,
-        "height": 0.52,
-        "depth": 0.42,
+        "width": 0.69,
+        "height": 0.31,
+        "depth": 0.19,
         "units": "relative",
-        "confidence": 0.9
+        "confidence": 0.85
       },
       "transform": {
-        "position": [1.48, 0.04, 0],
+        "position": [0.845, 0.005, 0],
         "rotation": [0, 0, 0],
-        "scale": [1.45, 0.52, 0.42]
+        "scale": [1, 1, 1]
       },
       "actionProfile": {
         "animationRole": "static-part"
@@ -1200,6 +1208,9 @@
         "secondaryAlbedo": "rgba(43, 43, 43, 1.0)",
         "materialClass": "metal",
         "materialClassConfidence": 0.96
+      },
+      "geometryDescriptor": {
+        "topologyIntent": "Image-observed bevelled shell/solid with thickness; profile coordinates in src/models/carbine-model.ts"
       }
     },
     {
@@ -1226,14 +1237,15 @@
         "evidenceRefs": ["full-object"]
       },
       "dimensions": {
-        "radius": 0.13,
-        "length": 2.0,
+        "width": 1.12,
+        "height": 0.13,
+        "depth": 0.13,
         "units": "relative",
-        "confidence": 0.78
+        "confidence": 0.85
       },
       "transform": {
-        "position": [2.5, 0.02, 0],
-        "rotation": [0, 0, 1.5708],
+        "position": [0.96, 0.005, 0],
+        "rotation": [0, 0, 0],
         "scale": [1, 1, 1]
       },
       "actionProfile": {
@@ -1248,6 +1260,9 @@
         "secondaryAlbedo": "rgba(15, 15, 15, 1.0)",
         "materialClass": "metal",
         "materialClassConfidence": 0.9
+      },
+      "geometryDescriptor": {
+        "topologyIntent": "Image-observed bevelled shell/solid with thickness; profile coordinates in src/models/carbine-model.ts"
       }
     },
     {
@@ -1274,15 +1289,15 @@
         "evidenceRefs": ["full-object"]
       },
       "dimensions": {
-        "width": 0.42,
-        "height": 0.92,
-        "depth": 0.38,
+        "width": 0.38,
+        "height": 0.55,
+        "depth": 0.176,
         "units": "relative",
-        "confidence": 0.9
+        "confidence": 0.85
       },
       "transform": {
-        "position": [-0.55, -0.78, 0],
-        "rotation": [0, 0, -0.24],
+        "position": [-0.3, -0.4, 0],
+        "rotation": [0, 0, 0],
         "scale": [1, 1, 1]
       },
       "actionProfile": {
@@ -1303,6 +1318,9 @@
         "secondaryAlbedo": "rgba(44, 43, 43, 1.0)",
         "materialClass": "plastic",
         "materialClassConfidence": 0.97
+      },
+      "geometryDescriptor": {
+        "topologyIntent": "Image-observed bevelled shell/solid with thickness; profile coordinates in src/models/carbine-model.ts"
       }
     },
     {
@@ -1329,15 +1347,15 @@
         "evidenceRefs": ["full-object"]
       },
       "dimensions": {
-        "width": 0.52,
-        "height": 1.22,
-        "depth": 0.4,
+        "width": 0.42,
+        "height": 0.72,
+        "depth": 0.18,
         "units": "relative",
-        "confidence": 0.9
+        "confidence": 0.85
       },
       "transform": {
-        "position": [0.32, -0.91, 0],
-        "rotation": [0, 0, -0.1],
+        "position": [0.33, -0.28, 0],
+        "rotation": [0, 0, 0],
         "scale": [1, 1, 1]
       },
       "actionProfile": {
@@ -1352,6 +1370,9 @@
         "secondaryAlbedo": "rgba(30, 30, 30, 1.0)",
         "materialClass": "plastic",
         "materialClassConfidence": 0.96
+      },
+      "geometryDescriptor": {
+        "topologyIntent": "Image-observed bevelled shell/solid with thickness; profile coordinates in src/models/carbine-model.ts"
       }
     },
     {
@@ -1366,16 +1387,16 @@
       "topologyRationale": "箱型フード、レンズ、基部、fastenerから成る独立機械アセンブリ。",
       "parent": "root",
       "dimensions": {
-        "width": 0.55,
-        "height": 0.58,
-        "depth": 0.45,
+        "width": 0.34,
+        "height": 0.29,
+        "depth": 0.24,
         "units": "relative",
-        "confidence": 0.9
+        "confidence": 0.85
       },
       "transform": {
-        "position": [0.18, 0.64, 0],
+        "position": [0.1, 0.35, 0],
         "rotation": [0, 0, 0],
-        "scale": [0.55, 0.58, 0.45]
+        "scale": [1, 1, 1]
       },
       "actionProfile": {
         "animationRole": "static-part"
@@ -1395,6 +1416,9 @@
         "secondaryAlbedo": "rgba(32, 33, 34, 1.0)",
         "materialClass": "metal",
         "materialClassConfidence": 0.94
+      },
+      "geometryDescriptor": {
+        "topologyIntent": "Image-observed bevelled shell/solid with thickness; profile coordinates in src/models/carbine-model.ts"
       }
     },
     {
@@ -2977,7 +3001,8 @@
     "Create stable pivot groups, sockets, collider proxies, and destruction metadata before visual polish.",
     "Refine forms with bevels, tapers, bends, and procedural noise.",
     "Run reference PBR extraction for important source-image materials and stop when confidence is below the target threshold.",
-    "Add material variation before adding expensive micro-geometry."
+    "Add material variation before adding expensive micro-geometry.",
+    "Rebuild silhouette from bevelled closed profiles, polygonal stock/trigger openings, curved magazine profile and hollow handguard walls. No circular substitute for triangular stock opening."
   ],
   "animationAnchors": [
     "root pivot node supports whole-object translation, rotation, scale, and visibility changes",
@@ -3306,6 +3331,232 @@
       "renderHash": "089cd162b0269d13",
       "passId": "blockout",
       "mapStrippedRender": "C:\\Users\\UserName\\Documents\\fps-test\\art\\img2threejs\\carbine\\render-map-stripped.png"
+    },
+    {
+      "passed": false,
+      "checks": {
+        "silhouetteIoU": 0.4575,
+        "aspectRatioDelta": 0.1509,
+        "scaleDelta": 0.0884,
+        "bilateralSymmetryError": 0.2072,
+        "colorDelta": {
+          "checked": 22,
+          "maxDeltaE": 33.0,
+          "perComponent": [
+            {
+              "componentId": null,
+              "deltaE": 6.2
+            },
+            {
+              "componentId": null,
+              "deltaE": 6.2
+            },
+            {
+              "componentId": null,
+              "deltaE": 8.64
+            },
+            {
+              "componentId": null,
+              "deltaE": 6.2
+            },
+            {
+              "componentId": null,
+              "deltaE": 9.15
+            },
+            {
+              "componentId": null,
+              "deltaE": 3.56
+            },
+            {
+              "componentId": null,
+              "deltaE": 5.24
+            },
+            {
+              "componentId": null,
+              "deltaE": 1.99
+            },
+            {
+              "componentId": null,
+              "deltaE": 5.26
+            },
+            {
+              "componentId": null,
+              "deltaE": 14.07
+            },
+            {
+              "componentId": null,
+              "deltaE": 9.15
+            },
+            {
+              "componentId": null,
+              "deltaE": 6.2
+            },
+            {
+              "componentId": null,
+              "deltaE": 2.9
+            },
+            {
+              "componentId": null,
+              "deltaE": 1.47
+            },
+            {
+              "componentId": null,
+              "deltaE": 6.2
+            },
+            {
+              "componentId": null,
+              "deltaE": 9.15
+            },
+            {
+              "componentId": null,
+              "deltaE": 9.15
+            },
+            {
+              "componentId": null,
+              "deltaE": 5.96
+            },
+            {
+              "componentId": null,
+              "deltaE": 5.24
+            },
+            {
+              "componentId": null,
+              "deltaE": 5.26
+            },
+            {
+              "componentId": null,
+              "deltaE": 1.99
+            },
+            {
+              "componentId": null,
+              "deltaE": 33.0
+            }
+          ],
+          "gated": false
+        }
+      },
+      "failures": [
+        "silhouette IoU 0.458 is below threshold 0.85",
+        "aspect-ratio delta 0.151 exceeds threshold 0.05",
+        "scale delta 0.088 exceeds threshold 0.08",
+        "blockout requires --map-stripped-render evidence"
+      ],
+      "maskWarnings": [],
+      "renderHash": "2411b73648e83d24",
+      "passId": "blockout"
+    },
+    {
+      "passed": false,
+      "checks": {
+        "silhouetteIoU": 0.6997,
+        "aspectRatioDelta": 0.0754,
+        "scaleDelta": 0.0975,
+        "bilateralSymmetryError": 0.1785,
+        "colorDelta": {
+          "checked": 22,
+          "maxDeltaE": 31.51,
+          "perComponent": [
+            {
+              "componentId": null,
+              "deltaE": 3.47
+            },
+            {
+              "componentId": null,
+              "deltaE": 3.47
+            },
+            {
+              "componentId": null,
+              "deltaE": 3.33
+            },
+            {
+              "componentId": null,
+              "deltaE": 3.47
+            },
+            {
+              "componentId": null,
+              "deltaE": 4.77
+            },
+            {
+              "componentId": null,
+              "deltaE": 6.61
+            },
+            {
+              "componentId": null,
+              "deltaE": 2.19
+            },
+            {
+              "componentId": null,
+              "deltaE": 6.07
+            },
+            {
+              "componentId": null,
+              "deltaE": 5.37
+            },
+            {
+              "componentId": null,
+              "deltaE": 9.71
+            },
+            {
+              "componentId": null,
+              "deltaE": 4.77
+            },
+            {
+              "componentId": null,
+              "deltaE": 3.47
+            },
+            {
+              "componentId": null,
+              "deltaE": 6.85
+            },
+            {
+              "componentId": null,
+              "deltaE": 4.49
+            },
+            {
+              "componentId": null,
+              "deltaE": 3.47
+            },
+            {
+              "componentId": null,
+              "deltaE": 4.77
+            },
+            {
+              "componentId": null,
+              "deltaE": 4.77
+            },
+            {
+              "componentId": null,
+              "deltaE": 1.96
+            },
+            {
+              "componentId": null,
+              "deltaE": 2.19
+            },
+            {
+              "componentId": null,
+              "deltaE": 5.37
+            },
+            {
+              "componentId": null,
+              "deltaE": 6.07
+            },
+            {
+              "componentId": null,
+              "deltaE": 31.51
+            }
+          ],
+          "gated": false
+        }
+      },
+      "failures": [
+        "silhouette IoU 0.700 is below threshold 0.85",
+        "aspect-ratio delta 0.075 exceeds threshold 0.05",
+        "scale delta 0.098 exceeds threshold 0.08"
+      ],
+      "maskWarnings": [],
+      "renderHash": "024bef39d08b4bf2",
+      "passId": "blockout",
+      "mapStrippedRender": "art\\img2threejs\\carbine\\render-map-stripped.png"
     }
   ]
 }

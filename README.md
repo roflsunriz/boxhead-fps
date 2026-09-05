@@ -89,29 +89,30 @@ E2E テストはビルド済み `dist/` 成果物に対して実行する。詳�
 
 ## 構成
 
-| ファイル                                                   | 責務                                                                 |
-| ---------------------------------------------------------- | -------------------------------------------------------------------- |
-| `src/main.ts`                                              | 入力・射撃・姿勢・バリア・マッチ進行・メインループ                   |
-| `src/items.ts`                                             | ランダムアイテム、取得処理、グレネード物理・爆発                     |
-| `src/persistent-effects.ts`                                | 弾倉・弾痕・死体の生成、物理、上限付き保持                           |
-| `src/minimap.ts`                                           | プレイヤー中心の回転式ミニマップ描画と座標変換                       |
-| `src/beach-waves.ts`                                       | ビーチの立体海面、動的法線、岸へ進む白波                             |
-| `src/world.ts`                                             | シーン・カメラ・ライティング・3 環境の生成・衝突判定・ウェイポイント |
-| `src/weather.ts`                                           | 大気プリセット・雨・雷・星空                                         |
-| `src/enemies.ts`                                           | ボット AI(経路探索・視覚・戦闘・スキルランク)                        |
-| `src/ui.ts`                                                | HUD・オーバーレイの DOM 操作                                         |
-| `src/i18n.ts`                                              | 日本語 / 英語文字列辞書                                              |
-| `src/textures.ts`                                          | 手続きテクスチャ生成                                                 |
-| `src/models/game-models.ts`                                | カービン、グレネード、回復物資、ヒトデとヤシ生成API                  |
-| `src/models/broadleaf-tree.ts` / `src/models/palm-tree.ts` | 都市の広葉樹とビーチのヤシの手続き型モデル                           |
-| `src/audio.ts`                                             | Web Audio API によるゲーム効果音                                     |
-| `src/types.ts` / `src/dom.ts` / `src/random.ts`            | 共有型・DOM ヘルパー・シード固定 RNG                                 |
+| ファイル                                                          | 責務                                                                 |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `src/main.ts`                                                     | 入力・射撃・姿勢・バリア・マッチ進行・メインループ                   |
+| `src/items.ts`                                                    | ランダムアイテム、取得処理、グレネード物理・爆発                     |
+| `src/persistent-effects.ts`                                       | 弾倉・弾痕・死体の生成、物理、上限付き保持                           |
+| `src/minimap.ts`                                                  | プレイヤー中心の回転式ミニマップ描画と座標変換                       |
+| `src/beach-waves.ts`                                              | ビーチの立体海面、動的法線、岸へ進む白波                             |
+| `src/world.ts`                                                    | シーン・カメラ・ライティング・3 環境の生成・衝突判定・ウェイポイント |
+| `src/weather.ts`                                                  | 大気プリセット・雨・雷・星空                                         |
+| `src/enemies.ts`                                                  | ボット AI(経路探索・視覚・戦闘・スキルランク)                        |
+| `src/ui.ts`                                                       | HUD・オーバーレイの DOM 操作                                         |
+| `src/i18n.ts`                                                     | 日本語 / 英語文字列辞書                                              |
+| `src/textures.ts`                                                 | 手続きテクスチャ生成                                                 |
+| `src/models/game-models.ts`                                       | カービン、グレネード、回復物資、ヒトデとヤシ生成API                  |
+| `src/models/carbine-model.ts` / `src/models/carbine-materials.ts` | カービンの立体形状、部品別UV・画像テクスチャ・材質                   |
+| `src/models/broadleaf-tree.ts` / `src/models/palm-tree.ts`        | 都市の広葉樹とビーチのヤシの手続き型モデル                           |
+| `src/audio.ts`                                                    | Web Audio API によるゲーム効果音                                     |
+| `src/types.ts` / `src/dom.ts` / `src/random.ts`                   | 共有型・DOM ヘルパー・シード固定 RNG                                 |
 
 ## 3Dアート参照と検証
 
-オリジナルのカービン参照画像、生成プロンプト、`img2threejs` の分析・spec・PBR抽出・比較結果は `art/` に保存している。製品コードはバイナリモデルを読み込まず、`src/models/game-models.ts` で編集可能なThree.js階層として構築する。
+オリジナルのカービン参照画像、生成プロンプト、`img2threejs` の分析・spec・PBR抽出・比較結果は `art/` に保存している。カービンは `src/models/carbine-model.ts` で編集可能なThree.js階層として構築し、`src/assets/carbine-surface-atlas.png` の金属・樹脂・ゴム画像を表面に貼り付ける。部品別の擦れと光沢・凹凸を組み合わせて質感を表現する。参照に写っていない部分と局所的な傷は近似である。
 
-開発サーバー起動中は、カービン4方向、全資産、クレーター、ゲーム内ボットのレビュー画像を再生成できる。コマンドは [how-to-update.md](how-to-update.md) を参照。
+開発サーバー起動中は、カービン6方向、全資産、クレーター、ゲーム内ボットのレビュー画像を再生成できる。`/test/model-review.html?interactive=1` では回転・拡大・分解表示・部品選択でモデルを確認できる。コマンドは [how-to-update.md](how-to-update.md) を参照。
 
 ## ライセンス
 

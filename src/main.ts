@@ -150,7 +150,9 @@ reloadHand.visible = false;
 gun.add(reloadHand);
 camera.add(gun);
 scene.add(camera);
-const gunBasePosition = new THREE.Vector3(0.22, -0.24, -0.62);
+// Shoulder placement: the stock extends behind the eye, while the optic and
+// receiver remain in front. Moving the entire rifle far forward exposes its butt.
+const gunBasePosition = new THREE.Vector3(0.18, -0.18, -0.32);
 const magazineBaseY = gunMagazine.position.y;
 gun.position.copy(gunBasePosition);
 gun.scale.setScalar(0.28);
@@ -159,7 +161,7 @@ const aimCameraFov = 60;
 const gunAimPosition = new THREE.Vector3(
   -carbine.aimSocket.position.x * gun.scale.x,
   -carbine.aimSocket.position.y * gun.scale.y,
-  -0.55 - carbine.aimSocket.position.z * gun.scale.z
+  -0.32 - carbine.aimSocket.position.z * gun.scale.z
 );
 
 const shieldDevice = createPickupModel("shield");
@@ -686,6 +688,23 @@ initBots(
 );
 
 window.__game = {
+  debugAimOcclusion(): string[] {
+    const reticle = gun.getObjectByName("red-dot-reticle");
+    if (!reticle) return ["missing-reticle"];
+    camera.updateMatrixWorld(true);
+    const origin = camera.getWorldPosition(new THREE.Vector3());
+    const target = reticle.getWorldPosition(new THREE.Vector3());
+    const distance = origin.distanceTo(target);
+    const sightRay = new THREE.Raycaster(origin, target.sub(origin).normalize(), 0, distance - 0.002);
+    return sightRay
+      .intersectObject(gun, true)
+      .filter((hit) => {
+        if (!(hit.object instanceof THREE.Mesh)) return false;
+        const materials = Array.isArray(hit.object.material) ? hit.object.material : [hit.object.material];
+        return materials.some((material) => !material.transparent || material.opacity >= 0.5);
+      })
+      .map((hit) => hit.object.name);
+  },
   get player() {
     return player;
   },
