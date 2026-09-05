@@ -8,6 +8,7 @@ import {
   type PbrTextureSet,
 } from "./textures";
 import { createPalmTreeModel, createStarfishModel } from "./models/game-models";
+import { createBroadleafTreeModel } from "./models/broadleaf-tree";
 import { boxObstacle, supportsRealtimeShadows } from "./world-helpers";
 import { mulberry32 } from "./random";
 import { createBeachWaveSystem } from "./beach-waves";
@@ -296,37 +297,11 @@ function buildCityEnv(): EnvBuild {
     obs.push(boxObstacle(x, z, 2.4, 2.9, 2.4));
   }
 
-  function makeTree(scale: number): THREE.Group {
-    const g = new THREE.Group();
-    const trunkH = 1.7 * scale;
-    const trunk = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.16 * scale, 0.3 * scale, trunkH, 8),
-      new THREE.MeshStandardMaterial({ color: 0x63452c, roughness: 1 })
-    );
-    trunk.position.y = trunkH / 2;
-    g.add(trunk);
-    let y = trunkH * 0.8;
-    for (let i = 0; i < 3; i++) {
-      const r = (1.6 - i * 0.42) * scale;
-      const ch = (2.0 - i * 0.35) * scale;
-      const cone = new THREE.Mesh(
-        new THREE.ConeGeometry(r, ch, 9),
-        new THREE.MeshStandardMaterial({
-          color: new THREE.Color().setHSL(0.33, 0.45, 0.18 + rng() * 0.09),
-          roughness: 1,
-        })
-      );
-      cone.position.y = y + ch / 2;
-      cone.rotation.y = rng() * Math.PI;
-      g.add(cone);
-      y += ch * 0.55;
-    }
-    return g;
-  }
-
   for (let i = 0; i < 60; i++) {
     const s = 0.8 + rng() * 0.9;
-    const t = makeTree(s);
+    // Preserve the city layout: the original crown consumed six random values.
+    for (let sample = 0; sample < 6; sample++) rng();
+    const t = createBroadleafTreeModel(s, 17000 + i * 97);
     let x: number;
     let z: number;
     let ok: boolean;

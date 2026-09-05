@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>樹木モデル確認</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import * as THREE from "three";
+      import { createBroadleafTreeModel } from "/src/models/broadleaf-tree.ts";
+      import { createPalmTreeModel } from "/src/models/game-models.ts";
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xc3d1da);
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      document.body.append(renderer.domElement);
+      const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 100);
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(200, 200),
+        new THREE.MeshStandardMaterial({ color: 0x92917b, roughness: 1 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      scene.add(ground, new THREE.HemisphereLight(0xdceeff, 0x4f563c, 2));
+      const sun = new THREE.DirectionalLight(0xffe7c4, 3);
+      sun.position.set(-5, 10, 6);
+      sun.castShadow = true;
+      sun.shadow.mapSize.set(2048, 2048);
+      Object.assign(sun.shadow.camera, { left: -10, right: 10, top: 10, bottom: -10 });
+      sun.shadow.bias = -0.0002;
+      scene.add(sun);
+      const trees = [
+        createBroadleafTreeModel(1, 17000),
+        createBroadleafTreeModel(0.83, 18001),
+        createPalmTreeModel(4.8, 12345),
+      ];
+      trees.forEach((tree, index) => {
+        tree.position.x = (index - 1) * 4.2;
+        scene.add(tree);
+      });
+      window.reviewTrees = (angle = 0) => {
+        camera.position.set(Math.sin(angle) * 17, 5.5, Math.cos(angle) * 17);
+        camera.lookAt(0, 2.4, 0);
+        renderer.render(scene, camera);
+        return {
+          calls: renderer.info.render.calls,
+          triangles: renderer.info.render.triangles,
+          trees: trees.map((tree) => ({
+            name: tree.name,
+            meshes: tree.children.length,
+            height: new THREE.Box3().setFromObject(tree).getSize(new THREE.Vector3()).y,
+          })),
+        };
+      };
+      window.reviewTrees();
+    </script>
+  </body>
+</html>

@@ -15,4 +15,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ## Environment
 
-<必要に応じて適宜書き足すこと。>
+- 都市の樹木生成は `src/models/broadleaf-tree.ts` の `createBroadleafTreeModel`、ビーチのヤシ生成は `src/models/palm-tree.ts`。都市は `world.ts` の独立シードで形状を生成するため、樹木のディテール変更でマップ配置用乱数を消費しないこと。衝突判定は描画モデルとは別の幹半径を用いる。
+- 都市の木はユーザー指定のケヤキ・クスノキ風広葉樹。黄金角による配置、幹から枝への階層分岐、葉の間隔は視覚モデルとして扱い、生物学的な完全再現や厳密な日射最適化を主張しない。ヤシとは別の樹冠・葉形を保ち、変更時は `verification.md` の外観確認を行う。
+- 樹木の見た目は `test/tree-review.html` と `node test/capture-tree-review.js` で確認する。後者はインストール済みGoogle Chromeをヘッドレス起動し、CDPで描画情報と画像を取得する。ゲーム全体の既存E2Eは `dist/` 配信で行う。詳しくは `verification.md` を参照。
+- ソフトウェア描画のE2Eでは1フレームが1秒以上かかる場合がある。ボットの `nextThink` を長時間固定するとターゲットの視認期限（0.45秒）が切れ反撃できなくなるため、被弾直後の向きを検証した後は通常の索敵更新を許可し、発砲・移動の実際の状態変化を有限時間内で待つ（`test/game.test.js`）。

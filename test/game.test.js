@@ -330,7 +330,7 @@ check(
   longRangeTarget.ok && longRangeTarget.targetId !== -1
 );
 
-const retaliation = await page.evaluate(async () => {
+const retaliation = await page.evaluate(() => {
   const g = window.__game;
   const red = g.enemies.find((en) => en.team === "red" && en.alive);
   if (!red) return { ok: false };
@@ -340,6 +340,9 @@ const retaliation = await page.evaluate(async () => {
   red.target = null;
   red.nextThink = 10;
   red.fireT = 0;
+  red.ammo = 30;
+  red.reloading = false;
+  red.reloadT = 0;
   const shotsBefore = red.visual.shotCount;
   g.damageEnemy(red, 10);
   const targetId = red.target?.id ?? null;
@@ -349,9 +352,11 @@ const retaliation = await page.evaluate(async () => {
   const dz = g.player.pos.z - red.pos.z;
   const dist = Math.hypot(dx, dz);
   const facingDot = (-Math.sin(red.yaw) * dx + -Math.cos(red.yaw) * dz) / dist;
-  await new Promise((resolve) => setTimeout(resolve, 250));
+  // Keep the immediate damage response observable, then allow normal target refreshes.
+  red.nextThink = 0;
   return {
     ok: true,
+    botId: red.id,
     targetId,
     targetX,
     targetZ,
@@ -360,6 +365,18 @@ const retaliation = await page.evaluate(async () => {
     shotsAfter: red.visual.shotCount,
   };
 });
+if (retaliation.ok) {
+  await page.waitForFunction(
+    ({ botId, shotsBefore }) =>
+      window.__game.enemies.find((en) => en.id === botId)?.visual.shotCount > shotsBefore,
+    { botId: retaliation.botId, shotsBefore: retaliation.shotsBefore },
+    { timeout: 15000 }
+  );
+  retaliation.shotsAfter = await page.evaluate(
+    (botId) => window.__game.enemies.find((en) => en.id === botId)?.visual.shotCount ?? 0,
+    retaliation.botId
+  );
+}
 check(
   `shot enemy identifies, faces, and fires at attacker (${JSON.stringify(retaliation)})`,
   retaliation.ok &&
@@ -772,7 +789,14 @@ const colResult = await page3.evaluate(() => {
   return { ok: true, z0: bot.pos.z };
 });
 if (colResult.ok) {
-  await page3.waitForTimeout(2300);
+  await page3.waitForFunction(
+    () => {
+      const bot = window.__game.enemies.find((en) => en.team === "red");
+      return bot && Math.hypot(bot.pos.x, bot.pos.z - -12) > 3;
+    },
+    null,
+    { timeout: 15000 }
+  );
   const moved = await page3.evaluate(() => {
     const bot = window.__game.enemies.find((en) => en.team === "red");
     return {
