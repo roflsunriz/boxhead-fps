@@ -56,4 +56,6 @@ GitHub Linux runner のゲーム E2E は WebGL のソフトウェア描画が遅
 
 GitHub Windows runner のヘッドレス Chrome でもソフトウェア描画が遅く、移動・手榴弾・リロード・倒れ込みの時限判定が失敗した。次の CI 実行では隔離 runner の実デスクトップで Chrome を開き、描画経路による差を測る。ローカルの Chrome は引き続きヘッドレスで実行し、検査項目は維持する。
 
+実デスクトップ CI では冒頭の描画・銃モデル検査が成功したが、`#start-btn` の実クリック後に Playwright が存在しない文書遷移を待って30秒で失敗した。ゲーム開始は pointer lock と画面状態の変化なので、4つの開始ボタン操作に限り遷移待ちを外し、直後の状態検査は残す。
+
 大量の Dependabot PR により CI 完了より分類が遅れる場合でも、分類後の `workflow_dispatch` が現在の PR 番号と head SHA を照合して再評価する。別の作成者、古い SHA、未完了の CI はマージしない。

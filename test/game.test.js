@@ -95,7 +95,9 @@ check(
 );
 
 console.log("\n[2] Pointer lock");
-await page.click("#start-btn");
+// Starting the game changes pointer lock, not the document URL. Do not wait
+// for a navigation that never occurs on the hosted Windows desktop.
+await page.click("#start-btn", { noWaitAfter: true });
 await page.waitForTimeout(300);
 const lockedReal = await page.evaluate(() => document.pointerLockElement !== null);
 if (!lockedReal) {
@@ -803,7 +805,7 @@ try {
   );
   throw error;
 }
-await page2.click("#start-btn");
+await page2.click("#start-btn", { noWaitAfter: true });
 await page2.waitForTimeout(300);
 const y0 = await page2.evaluate(() => window.__game.player.yaw);
 for (let i = 1; i <= 15; i++) await page2.mouse.move(640 + i * 15, 360);
@@ -828,7 +830,7 @@ page3.on("console", (m) => {
 });
 await page3.goto(BASE, { waitUntil: "networkidle" });
 await page3.waitForFunction(() => window.__game !== undefined);
-await page3.click("#start-btn");
+await page3.click("#start-btn", { noWaitAfter: true });
 await page3.waitForTimeout(200);
 const wx = await page3.textContent("#weather");
 check(`atmosphere preset applied ("${wx.trim()}")`, wx.trim() !== "—" && wx.trim().length > 2);
@@ -1118,7 +1120,7 @@ console.log("\n[12] Match-ending death animation");
 const page4 = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 await page4.goto(BASE, { waitUntil: "networkidle" });
 await page4.waitForFunction(() => window.__game !== undefined);
-await page4.click("#start-btn");
+await page4.click("#start-btn", { noWaitAfter: true });
 await page4.waitForTimeout(150);
 const finalDeathStart = await page4.evaluate(() => {
   const g = window.__game;
