@@ -1165,12 +1165,20 @@ const finalDeathStart = await page4.evaluate(() => {
   return { dead: g.player.dead, over: g.gameOver };
 });
 check("match-ending death plays before the result screen", finalDeathStart.dead && !finalDeathStart.over);
-await page4.waitForTimeout(1100);
+await page4.waitForFunction(
+  () => window.__game.deathView.progress === 1 && window.__game.deathView.height < 0.4,
+  null,
+  { timeout: 120000 }
+);
 check(
   "match-ending death reaches the ground",
   await page4.evaluate(() => window.__game.deathView.progress === 1 && window.__game.deathView.height < 0.4)
 );
-await page4.waitForTimeout(2100);
+await page4.waitForFunction(
+  () => window.__game.gameOver && document.querySelector("#overlay")?.dataset.screen === "game-over",
+  null,
+  { timeout: 120000 }
+);
 check(
   "result screen appears after the death animation",
   await page4.evaluate(
