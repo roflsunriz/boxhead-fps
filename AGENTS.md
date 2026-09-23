@@ -28,3 +28,4 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - GitHub Windows runner のヘッドレス Chrome もソフトウェア描画が遅く時限判定が失敗した。ユーザー操作と隔離された CI VM に限り `GAME_TEST_HEADED=1` で実デスクトップの Chrome を試す。ローカルは原則ヘッドレスを維持し、CI でも実際のゲーム操作・期待値を省かない（`verification.md`）。
 - ゲーム開始ボタンは文書遷移せず pointer lock を開始する。Windows の実デスクトップ CI では Playwright の開始ボタンクリックが「予定された遷移の終了」を待って停止したため、`test/game.test.js` の4つの開始ボタンにだけ `noWaitAfter` を指定する。実クリック後の pointer lock と表示状態を確認し、単なる JavaScript click へ置き換えない。
 - ホスト runner ではゲームの常時描画を複数タブで並行させると次タブの初期化が遅れる。最初のゲーム検証後にスクリーンショットを保存してからそのタブを閉じ、後続のタブも使用後に閉じる。移動・リロード・死亡/復活は固定秒数ではなく実状態を待ち、リロード中間値は成立したフレームでコピーしてから検査する（`test/game.test.js`、`verification.md`）。
+- Windows runner では1フレームに数秒かかり、実時間で計った死亡演出と再出現が同じフレームで完了して倒れ込みを観測できなかった。`src/main.ts` は既存の上限付き `dt` で死亡演出と復活待ちを進める。`deathView` getter は読み取り専用とし、描画フレーム以外で状態を進めない。

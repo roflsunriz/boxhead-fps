@@ -245,7 +245,6 @@ const playerRespawnDuration = 3;
 const deathDirections: readonly DeathFallDirection[] = ["forward", "backward", "left", "right"];
 let deathFallDirection: DeathFallDirection = "forward";
 let deathFallT = 0;
-let deathStartedAt = 0;
 let deathStartHeight = 1.7;
 let deathStartYaw = 0;
 let deathStartPitch = 0;
@@ -271,7 +270,6 @@ function beginDeathAnimation(): void {
   cancelAim(true);
   deathFallDirection = deathDirections[Math.floor(Math.random() * deathDirections.length)];
   deathFallT = 0;
-  deathStartedAt = performance.now();
   deathStartHeight = camera.position.y;
   deathStartYaw = camera.rotation.y;
   deathStartPitch = camera.rotation.x;
@@ -280,8 +278,8 @@ function beginDeathAnimation(): void {
   setDeathScreen(0.35);
 }
 
-function updateDeathAnimation(): void {
-  deathFallT = Math.min(deathFallDuration, (performance.now() - deathStartedAt) / 1000);
+function updateDeathAnimation(dt: number): void {
+  deathFallT = Math.min(deathFallDuration, deathFallT + dt);
   const progress = deathFallT / deathFallDuration;
   const eased = progress * progress * (3 - 2 * progress);
   const forwardX = -Math.sin(deathStartYaw);
@@ -646,8 +644,8 @@ function animate(timestamp = performance.now()): void {
     }
 
     if (player.dead && !gameOver) {
-      updateDeathAnimation();
-      respawnT = Math.max(0, playerRespawnDuration - (performance.now() - deathStartedAt) / 1000);
+      updateDeathAnimation(dt);
+      respawnT = Math.max(0, respawnT - dt);
       if (respawnT <= 0) {
         if (pendingWinner) endMatch(pendingWinner);
         else respawnPlayer();
@@ -755,7 +753,6 @@ window.__game = {
     return pickupCount();
   },
   get deathView() {
-    if (player.dead && !gameOver) updateDeathAnimation();
     return {
       direction: deathFallDirection,
       progress: Math.min(1, deathFallT / deathFallDuration),

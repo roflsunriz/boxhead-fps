@@ -22,6 +22,8 @@
 
 ## ゲーム全体
 
+2026-09-23 の [CI 実行 35816245173](https://github.com/roflsunriz/boxhead-fps/actions/runs/35816245173) では、通常検証は成功し、Windows ゲーム E2E は死亡後の倒れ込みが観測されず失敗した。ログでは死亡状態と方向まで確認でき、実時間で進む復活が低速な描画フレームを追い越していた。死亡演出と復活待ちを上限付きフレーム時間で進める修正を加え、ローカルのビルド済みゲーム E2E は95項目成功、失敗0件だった。型検査、lint、依存監査、ビルドも成功した。GitHub の通常検証と Windows E2E は push 後に確認する。
+
 `bun run type-check`、`bun run lint`、`bun run format:check`、`bun run audit`、`bun run build` を実行する。次に開発サーバーを停止し、`bun run preview` でビルド成果物を8787番ポートに配信して `bun run test` と `node test/responsive.js` を実行する。失敗時はテスト名と実際の配信元を確認する。詳細は [更新手順](how-to-update.md) を参照。
 
 ## 樹木
