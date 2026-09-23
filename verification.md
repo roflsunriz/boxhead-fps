@@ -49,3 +49,5 @@
 実際の Dependabot PR がまだない場合、動作経路は未検証として扱う。実 PR 発生後に自動化ジョブ、CI の再試行、マージ結果を確認する。
 
 初回の GitHub CI では追加 workflow の Prettier 書式で失敗したため修正した。ローカルで同じビルド成果物を隔離 HTTP サーバーから配信し、ヘッドレス Chrome のゲームテスト 95 件が成功した。CI では build 後に一時サーバーを起動して同じテストを実行する。
+
+大量の Dependabot PR により CI 完了より分類が遅れる場合でも、分類後の `workflow_dispatch` が現在の PR 番号と head SHA を照合して再評価する。別の作成者、古い SHA、未完了の CI はマージしない。
