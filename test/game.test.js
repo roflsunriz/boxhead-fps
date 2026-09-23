@@ -1093,7 +1093,16 @@ await page3.evaluate(() => {
   window.__game.setWeather(5);
   window.__game.player.pos.set(0, 1.7, -90);
 });
-await page3.waitForTimeout(200);
+const beachPositionHandle = await page3.waitForFunction(
+  () => {
+    const player = window.__game.player;
+    return !player.dead && player.pos.z > -73 && player.pos.z < 0 ? player.pos.z : false;
+  },
+  null,
+  { timeout: 60000 }
+);
+const beachZ = await beachPositionHandle.jsonValue();
+check(`beach: player pushed out of deep water (z=${beachZ.toFixed(1)})`, beachZ > -73 && beachZ < 0);
 const waveBefore = await page3.evaluate(() => window.__game.debugBeachWaveSummary());
 await page3.screenshot({ path: "test/feature-beach-wave-a.png" });
 await page3.waitForFunction(
@@ -1110,9 +1119,7 @@ await page3.waitForFunction(
 );
 const waveAfter = await page3.evaluate(() => window.__game.debugBeachWaveSummary());
 await page3.screenshot({ path: "test/feature-beach-wave-b.png" });
-const beachZ = await page3.evaluate(() => window.__game.player.pos.z);
 const beachCover = await page3.evaluate(() => window.__game.debugCoverSummary());
-check(`beach: player pushed out of deep water (z=${beachZ.toFixed(1)})`, beachZ > -73 && beachZ < 0);
 check(
   `beach ocean has a displaced wave surface (${JSON.stringify(waveAfter)})`,
   waveAfter.active && waveAfter.vertexCount >= 3900 && waveAfter.heightRange > 1
