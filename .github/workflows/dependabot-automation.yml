@@ -17,6 +17,6 @@ jobs:
     uses: roflsunriz/myAGENTS/.github/workflows/dependabot-automation.yml@021f4942f60d406da553a483f2a398e5a58fc94c
     with:
       ci_workflows: '["CI"]'
-      autofix_command: 'bun install --lockfile-only --ignore-scripts'
+      autofix_command: "bun install --lockfile-only --ignore-scripts"
       autofix_paths: '["bun.lock"]'
       autofix_workflow_files: '["ci.yml"]'
