@@ -50,8 +50,10 @@
 
 初回の GitHub CI では追加 workflow の Prettier 書式で失敗したため修正した。ローカルで同じビルド成果物を隔離 HTTP サーバーから配信し、ヘッドレス Chrome のゲームテスト 95 件が成功した。CI では build 後に一時サーバーを起動して同じテストを実行する。
 
-GitHub Linux runner のゲーム E2E は WebGL のソフトウェア描画が遅く、手榴弾・敵 AI 等の時限判定が複数失敗したうえ、後半の言語ボタンクリックがタイムアウトした。ローカル Windows の同じ95件は成功しているため、品質条件を変えずに E2E を隔離した Windows runner のヘッドレス Chrome へ移し、Linux では lint・型・ビルド・監査を維持する。Windows CI の実結果を確認する。
+GitHub Linux runner のゲーム E2E は WebGL のソフトウェア描画が遅く、手榴弾・敵 AI 等の時限判定が複数失敗したうえ、後半の言語ボタンクリックがタイムアウトした。ローカル Windows の同じ95件は成功しているため、品質条件を変えずに E2E を隔離した Windows runner へ移し、Linux では lint・型・ビルド・監査を維持する。Windows CI の実結果を確認する。
 
 時間依存の連鎖を防ぐため、手榴弾テストはクレーターの実生成を待ってから敵 AI を操作する。言語切替はボタン中央のヒット対象を確認し、実マウス入力後に DOM の言語変更を待つ。修正後のローカル Windows ヘッドレス Chrome で 95 件すべて成功した。GitHub Windows runner の結果は別途確認する。
+
+GitHub Windows runner のヘッドレス Chrome でもソフトウェア描画が遅く、移動・手榴弾・リロード・倒れ込みの時限判定が失敗した。次の CI 実行では隔離 runner の実デスクトップで Chrome を開き、描画経路による差を測る。ローカルの Chrome は引き続きヘッドレスで実行し、検査項目は維持する。
 
 大量の Dependabot PR により CI 完了より分類が遅れる場合でも、分類後の `workflow_dispatch` が現在の PR 番号と head SHA を照合して再評価する。別の作成者、古い SHA、未完了の CI はマージしない。

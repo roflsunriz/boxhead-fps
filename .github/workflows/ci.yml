@@ -37,6 +37,7 @@ jobs:
 
   game-e2e:
     runs-on: windows-latest
+    timeout-minutes: 25
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -54,6 +55,7 @@ jobs:
         shell: pwsh
         env:
           GAME_TEST_URL: http://127.0.0.1:18787
+          GAME_TEST_HEADED: "1"
         run: |
           $server = Start-Process -FilePath python -ArgumentList '-m', 'http.server', '18787', '--bind', '127.0.0.1', '--directory', 'dist' -PassThru -WindowStyle Hidden
           try {

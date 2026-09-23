@@ -13,7 +13,10 @@ function check(name, cond, extra = "") {
   }
 }
 
-const browser = await chromium.launch({ channel: "chrome", headless: true });
+const browser = await chromium.launch({
+  channel: "chrome",
+  headless: process.env.GAME_TEST_HEADED !== "1",
+});
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 
 const consoleErrors = [];

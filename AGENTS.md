@@ -23,5 +23,6 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - 都市の木はユーザー指定のケヤキ・クスノキ風広葉樹。黄金角による配置、幹から枝への階層分岐、葉の間隔は視覚モデルとして扱い、生物学的な完全再現や厳密な日射最適化を主張しない。ヤシとは別の樹冠・葉形を保ち、変更時は `verification.md` の外観確認を行う。
 - 樹木の見た目は `test/tree-review.html` と `node test/capture-tree-review.js` で確認する。後者はインストール済みGoogle Chromeをヘッドレス起動し、CDPで描画情報と画像を取得する。ゲーム全体の既存E2Eは `dist/` 配信で行う。詳しくは `verification.md` を参照。
 - ソフトウェア描画のE2Eでは1フレームが1秒以上かかる場合がある。ボットの `nextThink` を長時間固定するとターゲットの視認期限（0.45秒）が切れ反撃できなくなるため、被弾直後の向きを検証した後は通常の索敵更新を許可し、発砲・移動の実際の状態変化を有限時間内で待つ（`test/game.test.js`）。
-- 2026-09-23 の GitHub Linux runner はゲーム E2E の WebGL 描画が遅く、時限判定が複数失敗し操作がタイムアウトした。`.github/workflows/ci.yml` は Linux で静的検査とビルド、Windows の隔離したヘッドレス Chrome で `test/game.test.js` を実行する。テストの期待値や操作経路を省かず、変更時は両ジョブを確認する（`verification.md`）。
+- 2026-09-23 の GitHub Linux runner はゲーム E2E の WebGL 描画が遅く、時限判定が複数失敗し操作がタイムアウトした。`.github/workflows/ci.yml` は Linux で静的検査とビルド、隔離した Windows runner の Chrome で `test/game.test.js` を実行する。テストの期待値や操作経路を省かず、変更時は両ジョブを確認する（`verification.md`）。
 - 遅いフレームで固定の待機秒数だけを頼りにすると、手榴弾の爆発前に敵 AI の位置変更へ進み、後続の敵テストも連鎖して失敗する。`test/game.test.js` はクレーターの実生成を待ち、言語ボタンも実ヒット位置へのマウス入力と DOM 更新を確認する。Playwright の強制クリックや期待値緩和で成功扱いにしない。
+- GitHub Windows runner のヘッドレス Chrome もソフトウェア描画が遅く時限判定が失敗した。ユーザー操作と隔離された CI VM に限り `GAME_TEST_HEADED=1` で実デスクトップの Chrome を試す。ローカルは原則ヘッドレスを維持し、CI でも実際のゲーム操作・期待値を省かない（`verification.md`）。
