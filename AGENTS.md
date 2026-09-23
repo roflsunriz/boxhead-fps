@@ -27,3 +27,4 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - 遅いフレームで固定の待機秒数だけを頼りにすると、手榴弾の爆発前に敵 AI の位置変更へ進み、後続の敵テストも連鎖して失敗する。`test/game.test.js` はクレーターの実生成を待ち、言語ボタンも実ヒット位置へのマウス入力と DOM 更新を確認する。Playwright の強制クリックや期待値緩和で成功扱いにしない。
 - GitHub Windows runner のヘッドレス Chrome もソフトウェア描画が遅く時限判定が失敗した。ユーザー操作と隔離された CI VM に限り `GAME_TEST_HEADED=1` で実デスクトップの Chrome を試す。ローカルは原則ヘッドレスを維持し、CI でも実際のゲーム操作・期待値を省かない（`verification.md`）。
 - ゲーム開始ボタンは文書遷移せず pointer lock を開始する。Windows の実デスクトップ CI では Playwright の開始ボタンクリックが「予定された遷移の終了」を待って停止したため、`test/game.test.js` の4つの開始ボタンにだけ `noWaitAfter` を指定する。実クリック後の pointer lock と表示状態を確認し、単なる JavaScript click へ置き換えない。
+- ホスト runner ではゲームの常時描画を複数タブで並行させると次タブの初期化が遅れる。最初のゲーム検証後にスクリーンショットを保存してからそのタブを閉じ、後続のタブも使用後に閉じる。移動・リロード・死亡/復活は固定秒数ではなく実状態を待ち、リロード中間値は成立したフレームでコピーしてから検査する（`test/game.test.js`、`verification.md`）。
