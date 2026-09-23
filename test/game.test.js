@@ -371,7 +371,11 @@ const grenadeResult = await page.evaluate(() => {
 });
 check("G throws and consumes one grenade", grenadeResult.grenades === 4 && grenadeResult.hud === "4");
 check(`15 random pickups spawned (${grenadeResult.pickups})`, grenadeResult.pickups === 15);
-await page.waitForTimeout(2600);
+await page.waitForFunction(
+  (before) => window.__game.persistentEffects.blastMarks.count > before,
+  grenadeResult.blastMarksBefore,
+  { timeout: 120000 }
+);
 const grenadeBlastMark = await page.evaluate(() => window.__game.persistentEffects.blastMarks);
 check(
   `grenade explosion leaves a capped persistent crater (${JSON.stringify(grenadeBlastMark)})`,
@@ -741,7 +745,18 @@ const overlayLang = await page.evaluate(() => document.documentElement.lang);
 check(`game over title localized (html lang=${overlayLang})`, ["en", "ja"].includes(overlayLang));
 const langBefore = await page.evaluate(() => document.documentElement.lang);
 const titleBeforeToggle = await page.textContent("#overlay h1");
-await page.click("#lang-btn");
+const langButton = await page.locator("#lang-btn").boundingBox();
+if (!langButton) throw new Error("Language button has no visible bounds");
+const langX = langButton.x + langButton.width / 2;
+const langY = langButton.y + langButton.height / 2;
+const hitId = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, { x: langX, y: langY });
+if (hitId !== "lang-btn") {
+  throw new Error(`Language button is covered by ${hitId || "another element"}`);
+}
+await page.mouse.click(langX, langY);
+await page.waitForFunction((before) => document.documentElement.lang !== before, langBefore, {
+  timeout: 30000,
+});
 const langAfter = await page.evaluate(() => document.documentElement.lang);
 check(
   `language toggle flips (${langBefore} -> ${langAfter})`,
