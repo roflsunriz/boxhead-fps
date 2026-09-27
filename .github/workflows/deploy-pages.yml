@@ -76,6 +76,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          notes_file="$(mktemp)"
+          awk -v version="${GITHUB_REF_NAME#v}" '
+            $0 ~ "^## \\[" version "\\]( |$)" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > "$notes_file"
+          if [[ ! -s "$notes_file" ]]; then
+            echo "CHANGELOG.md has no section for $GITHUB_REF_NAME" >&2
+            exit 1
+          fi
+
           if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "GitHub Release $GITHUB_REF_NAME already exists; skipping."
             exit 0
@@ -86,7 +97,7 @@ jobs:
             --repo "$GITHUB_REPOSITORY"
             --verify-tag
             --title "Boxhead FPS $GITHUB_REF_NAME"
-            --generate-notes
+            --notes-file "$notes_file"
           )
 
           if [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+- ]]; then
