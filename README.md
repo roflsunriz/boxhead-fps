@@ -117,4 +117,4 @@ E2E テストはビルド済み `dist/` 成果物に対して実行する。詳�
 
 ## ライセンス
 
-three.js は MIT License。その他のコードも MIT として扱う。`src/assets/spiderbench/` の画像素材は SpiderBench（© 2026 Shikhar）から許可を得て使用している。Shikhar 氏にクレジットを表記する。これらの画像素材は本リポジトリの MIT ライセンス対象に含めない。
+three.js は MIT License。その他のコードも MIT として扱う。
