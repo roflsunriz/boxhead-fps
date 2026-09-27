@@ -25,3 +25,10 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - ソフトウェア描画のE2Eでは1フレームが1秒以上かかる場合がある。ボットの `nextThink` を長時間固定するとターゲットの視認期限（0.45秒）が切れ反撃できなくなるため、被弾直後の向きを検証した後は通常の索敵更新を許可し、発砲・移動の実際の状態変化を有限時間内で待つ（`test/game.test.js`）。
 - SpiderBench由来の地表画像は `src/assets/spiderbench/` へ配置し、`src/textures.ts` からimportしてBunビルドに同梱する。元の `roof_col.png` や `walls_col.jpg` は複数材質の縦長atlasで、そのままRepeatWrappingすると異なる材質が混ざるため、地面の反復には `grass_col.png`・`sidewalk_col.png`・`ts_pavers.webp` のタイル画像を使う。素材の帰属とライセンス区分はREADMEを参照。
 - ゲーム起動時の天候・環境はランダムなので、都市素材のE2E確認では `setWeather(0)` で都市へ切り替えてから画像の読込完了を待つ（`test/game.test.js`）。地下は `setWeather(6)` で確認する。
+- 2026-09-23 の GitHub Linux runner はゲーム E2E の WebGL 描画が遅く、時限判定が複数失敗し操作がタイムアウトした。`.github/workflows/ci.yml` は Linux で静的検査とビルド、隔離した Windows runner の Chrome で `test/game.test.js` を実行する。テストの期待値や操作経路を省かず、変更時は両ジョブを確認する（`verification.md`）。
+- 遅いフレームで固定の待機秒数だけを頼りにすると、手榴弾の爆発前に敵 AI の位置変更へ進み、後続の敵テストも連鎖して失敗する。`test/game.test.js` はクレーターの実生成を待ち、言語ボタンも実ヒット位置へのマウス入力と DOM 更新を確認する。Playwright の強制クリックや期待値緩和で成功扱いにしない。
+- GitHub Windows runner のヘッドレス Chrome もソフトウェア描画が遅く時限判定が失敗した。ユーザー操作と隔離された CI VM に限り `GAME_TEST_HEADED=1` で実デスクトップの Chrome を試す。ローカルは原則ヘッドレスを維持し、CI でも実際のゲーム操作・期待値を省かない（`verification.md`）。
+- ゲーム開始ボタンは文書遷移せず pointer lock を開始する。Windows の実デスクトップ CI では Playwright の開始ボタンクリックが「予定された遷移の終了」を待って停止したため、`test/game.test.js` の4つの開始ボタンにだけ `noWaitAfter` を指定する。実クリック後の pointer lock と表示状態を確認し、単なる JavaScript click へ置き換えない。
+- ホスト runner ではゲームの常時描画を複数タブで並行させると次タブの初期化が遅れる。最初のゲーム検証後にスクリーンショットを保存してからそのタブを閉じ、後続のタブも使用後に閉じる。移動・リロード・死亡/復活は固定秒数ではなく実状態を待ち、リロード中間値は成立したフレームでコピーしてから検査する（`test/game.test.js`、`verification.md`）。
+- Windows runner では1フレームに数秒かかり、実時間で計った死亡演出と再出現が同じフレームで完了して倒れ込みを観測できなかった。`src/main.ts` は既存の上限付き `dt` で死亡演出と復活待ちを進める。`deathView` getter は読み取り専用とし、描画フレーム以外で状態を進めない。試合終了時のテストは固定秒数ではなく、倒れ込みと結果画面の成立を期限付きで待つ。
+- 海岸の深水域への衝突検査は、波のスクリーンショットを長く待つ前に衝突後の位置を記録する。後から読むと復活後のスポーン位置を誤って衝突位置として扱う（`test/game.test.js`）。

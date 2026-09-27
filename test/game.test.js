@@ -13,7 +13,10 @@ function check(name, cond, extra = "") {
   }
 }
 
-const browser = await chromium.launch({ channel: "chrome", headless: true });
+const browser = await chromium.launch({
+  channel: "chrome",
+  headless: process.env.GAME_TEST_HEADED !== "1",
+});
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 
 const consoleErrors = [];
@@ -128,7 +131,9 @@ check(
 );
 
 console.log("\n[2] Pointer lock");
-await page.click("#start-btn");
+// Starting the game changes pointer lock, not the document URL. Do not wait
+// for a navigation that never occurs on the hosted Windows desktop.
+await page.click("#start-btn", { noWaitAfter: true });
 await page.waitForTimeout(300);
 const lockedReal = await page.evaluate(() => document.pointerLockElement !== null);
 if (!lockedReal) {
@@ -150,8 +155,15 @@ await page.waitForTimeout(150);
 console.log("\n[3] Movement & collision");
 const p0 = await page.evaluate(() => ({ x: window.__game.player.pos.x, z: window.__game.player.pos.z }));
 await page.keyboard.down("KeyW");
-await page.waitForTimeout(600);
-await page.keyboard.up("KeyW");
+try {
+  await page.waitForFunction(
+    (start) => Math.hypot(window.__game.player.pos.x - start.x, window.__game.player.pos.z - start.z) > 1,
+    p0,
+    { timeout: 30000 }
+  );
+} finally {
+  await page.keyboard.up("KeyW");
+}
 const p1 = await page.evaluate(() => ({ x: window.__game.player.pos.x, z: window.__game.player.pos.z }));
 const moved = Math.hypot(p1.x - p0.x, p1.z - p0.z);
 check(`W moves player (d=${moved.toFixed(2)})`, moved > 1);
@@ -169,8 +181,11 @@ await page.evaluate(() => {
   g.player.pitch = 0;
 });
 await page.keyboard.down("KeyW");
-await page.waitForTimeout(2500);
-await page.keyboard.up("KeyW");
+try {
+  await page.waitForFunction(() => window.__game.player.pos.z < 3, null, { timeout: 30000 });
+} finally {
+  await page.keyboard.up("KeyW");
+}
 const pInCrate = await page.evaluate(() => window.__game.player.pos.z);
 check(
   `player blocked by crate face z=1.5 + radius 0.5 (stopped at ${pInCrate.toFixed(2)})`,
@@ -185,13 +200,23 @@ await page.evaluate(() => {
 });
 const sx0 = await page.evaluate(() => window.__game.player.pos.x);
 await page.keyboard.down("KeyD");
-await page.waitForTimeout(400);
-await page.keyboard.up("KeyD");
+try {
+  await page.waitForFunction((startX) => window.__game.player.pos.x - startX > 1, sx0, {
+    timeout: 30000,
+  });
+} finally {
+  await page.keyboard.up("KeyD");
+}
 const sx1 = await page.evaluate(() => window.__game.player.pos.x);
 check(`D strafes RIGHT (+x with yaw=0): ${sx0.toFixed(2)} -> ${sx1.toFixed(2)}`, sx1 - sx0 > 1);
 await page.keyboard.down("KeyA");
-await page.waitForTimeout(800);
-await page.keyboard.up("KeyA");
+try {
+  await page.waitForFunction((startX) => window.__game.player.pos.x < startX, sx0, {
+    timeout: 30000,
+  });
+} finally {
+  await page.keyboard.up("KeyA");
+}
 const sx2 = await page.evaluate(() => window.__game.player.pos.x);
 check(`A strafes LEFT (back past start): ${sx2.toFixed(2)}`, sx2 < sx0);
 
@@ -407,7 +432,11 @@ const grenadeResult = await page.evaluate(() => {
 });
 check("G throws and consumes one grenade", grenadeResult.grenades === 4 && grenadeResult.hud === "4");
 check(`15 random pickups spawned (${grenadeResult.pickups})`, grenadeResult.pickups === 15);
-await page.waitForTimeout(2600);
+await page.waitForFunction(
+  (before) => window.__game.persistentEffects.blastMarks.count > before,
+  grenadeResult.blastMarksBefore,
+  { timeout: 120000 }
+);
 const grenadeBlastMark = await page.evaluate(() => window.__game.persistentEffects.blastMarks);
 check(
   `grenade explosion leaves a capped persistent crater (${JSON.stringify(grenadeBlastMark)})`,
@@ -593,21 +622,21 @@ const ra0 = await page.evaluate(() => window.__game.ammo);
 await page.evaluate(() => window.__game.reload());
 check("reload flag set", await page.evaluate(() => window.__game.reloading === true));
 check("reload cancels ADS", await page.evaluate(() => window.__game.aiming === false));
-await page.waitForFunction(
+const reloadViewHandle = await page.waitForFunction(
   () => {
     const view = window.__game.reloadView;
-    return (
+    const visible =
       view.progress > 0.2 &&
       view.progress < 0.7 &&
       view.handVisible &&
       (view.magazineY < -0.3 || !view.magazineVisible) &&
-      view.gunY < -0.22
-    );
+      view.gunY < -0.22;
+    return visible ? { ...view } : false;
   },
   null,
   { timeout: 15000 }
 );
-const reloadView = await page.evaluate(() => window.__game.reloadView);
+const reloadView = await reloadViewHandle.jsonValue();
 check(
   `reload visibly removes the magazine (${JSON.stringify(reloadView)})`,
   reloadView.progress > 0.2 &&
@@ -617,22 +646,22 @@ check(
     reloadView.gunY < -0.22
 );
 await page.screenshot({ path: "test/feature-magazine-reload.png" });
-await page.waitForFunction(
+const reloadInsertHandle = await page.waitForFunction(
   () => {
     const view = window.__game.reloadView;
-    return (
+    const visible =
       view.progress > 0.5 &&
       view.progress < 0.99 &&
       view.magazineVisible &&
       view.magazineY > -0.47 &&
       view.magazineY <= -0.129 &&
-      view.handVisible
-    );
+      view.handVisible;
+    return visible ? { ...view } : false;
   },
   null,
   { timeout: 15000 }
 );
-const reloadInsertView = await page.evaluate(() => window.__game.reloadView);
+const reloadInsertView = await reloadInsertHandle.jsonValue();
 check(
   `reload inserts the replacement magazine (${JSON.stringify(reloadInsertView)})`,
   reloadInsertView.progress > 0.5 &&
@@ -719,33 +748,44 @@ check(
   `death selects one of four fall directions (${deathState.direction})`,
   ["forward", "backward", "left", "right"].includes(deathState.direction)
 );
-await page.waitForTimeout(1100);
-const fallenView = await page.evaluate(() => {
-  const view = window.__game.deathView;
-  const red = Number(document.querySelector("#death-screen")?.style.opacity ?? 0);
-  const angleMatches =
-    (view.direction === "forward" && view.pitch < -1.2) ||
-    (view.direction === "backward" && view.pitch > 1.2) ||
-    (view.direction === "left" && view.roll > 1.2) ||
-    (view.direction === "right" && view.roll < -1.2);
-  return { ...view, red, angleMatches };
-});
+const fallenHandle = await page.waitForFunction(
+  () => {
+    const view = window.__game.deathView;
+    const red = Number(document.querySelector("#death-screen")?.style.opacity ?? 0);
+    const angleMatches =
+      (view.direction === "forward" && view.pitch < -1.2) ||
+      (view.direction === "backward" && view.pitch > 1.2) ||
+      (view.direction === "left" && view.roll > 1.2) ||
+      (view.direction === "right" && view.roll < -1.2);
+    return view.progress === 1 && view.height < 0.4 && angleMatches && red >= 0.85
+      ? { ...view, red, angleMatches }
+      : false;
+  },
+  null,
+  { timeout: 60000 }
+);
+const fallenView = await fallenHandle.jsonValue();
 check(
   `camera falls to the ground (${JSON.stringify(fallenView)})`,
   fallenView.progress === 1 && fallenView.height < 0.4 && fallenView.angleMatches
 );
 check(`death screen turns deep red (opacity=${fallenView.red})`, fallenView.red >= 0.85);
 await page.screenshot({ path: "test/feature-death-fall.png" });
-const respawned = await page.evaluate(async () => {
-  await new Promise((r) => setTimeout(r, 2400));
-  const g = window.__game;
-  return {
-    dead: g.player.dead,
-    hp: g.player.hp,
-    roll: g.deathView.roll,
-    red: Number(document.querySelector("#death-screen")?.style.opacity ?? 0),
-  };
-});
+const respawnHandle = await page.waitForFunction(
+  () => {
+    const g = window.__game;
+    const state = {
+      dead: g.player.dead,
+      hp: g.player.hp,
+      roll: g.deathView.roll,
+      red: Number(document.querySelector("#death-screen")?.style.opacity ?? 0),
+    };
+    return !state.dead && state.hp === 100 && Math.abs(state.roll) < 0.01 && state.red === 0 ? state : false;
+  },
+  null,
+  { timeout: 60000 }
+);
+const respawned = await respawnHandle.jsonValue();
 check(
   `player respawns with full hp (${JSON.stringify(respawned)})`,
   respawned.dead === false && respawned.hp === 100
@@ -777,7 +817,18 @@ const overlayLang = await page.evaluate(() => document.documentElement.lang);
 check(`game over title localized (html lang=${overlayLang})`, ["en", "ja"].includes(overlayLang));
 const langBefore = await page.evaluate(() => document.documentElement.lang);
 const titleBeforeToggle = await page.textContent("#overlay h1");
-await page.click("#lang-btn");
+const langButton = await page.locator("#lang-btn").boundingBox();
+if (!langButton) throw new Error("Language button has no visible bounds");
+const langX = langButton.x + langButton.width / 2;
+const langY = langButton.y + langButton.height / 2;
+const hitId = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, { x: langX, y: langY });
+if (hitId !== "lang-btn") {
+  throw new Error(`Language button is covered by ${hitId || "another element"}`);
+}
+await page.mouse.click(langX, langY);
+await page.waitForFunction((before) => document.documentElement.lang !== before, langBefore, {
+  timeout: 30000,
+});
 const langAfter = await page.evaluate(() => document.documentElement.lang);
 check(
   `language toggle flips (${langBefore} -> ${langAfter})`,
@@ -796,6 +847,10 @@ check(
   consoleErrors.length === 0,
   JSON.stringify(consoleErrors.slice(0, 5))
 );
+await page.screenshot({ path: "test/screenshot.png" });
+// Stop the first 3D render loop before opening another full game tab. A hosted
+// software renderer otherwise starves the next page's boot and input events.
+await page.close();
 
 console.log("\n[9] Fallback look mode (pointer lock unavailable)");
 const page2 = await browser.newPage({ viewport: { width: 1280, height: 720 } });
@@ -821,7 +876,7 @@ try {
   );
   throw error;
 }
-await page2.click("#start-btn");
+await page2.click("#start-btn", { noWaitAfter: true });
 await page2.waitForTimeout(300);
 const y0 = await page2.evaluate(() => window.__game.player.yaw);
 for (let i = 1; i <= 15; i++) await page2.mouse.move(640 + i * 15, 360);
@@ -846,7 +901,7 @@ page3.on("console", (m) => {
 });
 await page3.goto(BASE, { waitUntil: "networkidle" });
 await page3.waitForFunction(() => window.__game !== undefined);
-await page3.click("#start-btn");
+await page3.click("#start-btn", { noWaitAfter: true });
 await page3.waitForTimeout(200);
 const wx = await page3.textContent("#weather");
 check(`atmosphere preset applied ("${wx.trim()}")`, wx.trim() !== "—" && wx.trim().length > 2);
@@ -1074,7 +1129,16 @@ await page3.evaluate(() => {
   window.__game.setWeather(5);
   window.__game.player.pos.set(0, 1.7, -90);
 });
-await page3.waitForTimeout(200);
+const beachPositionHandle = await page3.waitForFunction(
+  () => {
+    const player = window.__game.player;
+    return !player.dead && player.pos.z > -73 && player.pos.z < 0 ? player.pos.z : false;
+  },
+  null,
+  { timeout: 60000 }
+);
+const beachZ = await beachPositionHandle.jsonValue();
+check(`beach: player pushed out of deep water (z=${beachZ.toFixed(1)})`, beachZ > -73 && beachZ < 0);
 const waveBefore = await page3.evaluate(() => window.__game.debugBeachWaveSummary());
 await page3.screenshot({ path: "test/feature-beach-wave-a.png" });
 await page3.waitForFunction(
@@ -1091,9 +1155,7 @@ await page3.waitForFunction(
 );
 const waveAfter = await page3.evaluate(() => window.__game.debugBeachWaveSummary());
 await page3.screenshot({ path: "test/feature-beach-wave-b.png" });
-const beachZ = await page3.evaluate(() => window.__game.player.pos.z);
 const beachCover = await page3.evaluate(() => window.__game.debugCoverSummary());
-check(`beach: player pushed out of deep water (z=${beachZ.toFixed(1)})`, beachZ > -73 && beachZ < 0);
 check(
   `beach ocean has a displaced wave surface (${JSON.stringify(waveAfter)})`,
   waveAfter.active && waveAfter.vertexCount >= 3900 && waveAfter.heightRange > 1
@@ -1152,7 +1214,7 @@ console.log("\n[12] Match-ending death animation");
 const page4 = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 await page4.goto(BASE, { waitUntil: "networkidle" });
 await page4.waitForFunction(() => window.__game !== undefined);
-await page4.click("#start-btn");
+await page4.click("#start-btn", { noWaitAfter: true });
 await page4.waitForTimeout(150);
 const finalDeathStart = await page4.evaluate(() => {
   const g = window.__game;
@@ -1162,12 +1224,20 @@ const finalDeathStart = await page4.evaluate(() => {
   return { dead: g.player.dead, over: g.gameOver };
 });
 check("match-ending death plays before the result screen", finalDeathStart.dead && !finalDeathStart.over);
-await page4.waitForTimeout(1100);
+await page4.waitForFunction(
+  () => window.__game.deathView.progress === 1 && window.__game.deathView.height < 0.4,
+  null,
+  { timeout: 120000 }
+);
 check(
   "match-ending death reaches the ground",
   await page4.evaluate(() => window.__game.deathView.progress === 1 && window.__game.deathView.height < 0.4)
 );
-await page4.waitForTimeout(2100);
+await page4.waitForFunction(
+  () => window.__game.gameOver && document.querySelector("#overlay")?.dataset.screen === "game-over",
+  null,
+  { timeout: 120000 }
+);
 check(
   "result screen appears after the death animation",
   await page4.evaluate(
@@ -1176,7 +1246,6 @@ check(
 );
 await page4.close();
 
-await page.screenshot({ path: "test/screenshot.png" });
 await browser.close();
 
 console.log(`\n${passed} passed, ${failed} failed`);

@@ -120,3 +120,13 @@ node test/export-carbine-parts.js
 - typescript-eslint は TS 7 未対応のため、`typescript` は 6.x に固定している。TS 7 対応後の更新時は `typescript-eslint` の対応状況を先に確認すること。
 - テストが失敗した場合はまず `test/run.log` の失敗項目名と、8787 ポートで `dist/` が配信されているかを確認すること。UI 文言関連の失敗時は、言語設定(ja/en)の違いが原因ではないかを確認すること。
 - PagesデプロイまたはGitHub Release公開が失敗した場合はActionsの `Release SemVer tag` を確認し、PagesのSourceが `GitHub Actions` か、タグが正しいSemVerか、`github-pages` environmentの保護ルールがタグを許可しているか、ワークフローの`contents: write`権限が許可されているかを確認すること。
+
+## Dependabot PR の更新
+
+前提は `.github/dependabot.yml` と PR 用 CI（CI）です。更新 PR の head SHA と `gh pr checks <PR番号>` の結果を確認してください。patch／minor は全チェック成功後に自動取り込みされます。初回 CI 失敗は failed jobs のみを 1 回再実行し、再失敗時は指定した lockfile を再生成し、CI を再実行します。
+
+設定を変えたときは `actionlint .github/workflows/dependabot-automation.yml` と実際の PR の Actions 結果を確認します。問題があれば呼び出し先の共通 workflow SHA を直前の検証済み値へ戻すコミットを push します。取り込まれた依存更新に問題があれば通常の revert コミットで復旧します。
+
+ゲームの操作検証は隔離した Windows runner の Chrome で、build 済み `dist/` を一時 HTTP サーバーから配信して実行します。ローカルではヘッドレスを既定とします。Linux の CI ジョブは lint・型・ビルド・依存監査を確認します。実行環境を変えるときもゲーム E2E の95件を省かず、`verification.md` の時間依存の注意を確認してください。
+
+CI 完了より Dependabot の分類が遅れる場合は、`callback_workflow_file` が指す呼び出し側 workflow を `workflow_dispatch` し、同じ PR 番号・head SHA・全チェックを再確認する。呼び出し側のファイル名を変える際はこの入力も一緒に更新する。
