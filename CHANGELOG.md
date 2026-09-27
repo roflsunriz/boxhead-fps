@@ -2,6 +2,12 @@
 
 すべての変更はこのファイルに記録する。形式は Keep a Changelog に従う。
 
+## [Unreleased]
+
+### Fixed
+
+- SemVerタグのGitHub Release公開で変更履歴を読めるよう、公開ジョブでもタグ付きソースをcheckoutする。
+
 ## [1.3.1] - 2026-09-27
 
 ### Changed

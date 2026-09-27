@@ -72,6 +72,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}

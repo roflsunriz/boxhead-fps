@@ -31,7 +31,9 @@
 
 ## ゲーム全体
 
-2026-09-27 の v1.3.1 リリース候補では、Three.js 0.186.1、`@types/three` 0.186.0、ESLint 10.11.0、globals 17.12.0、Playwright 1.63.0、Prettier 3.9.9、typescript-eslint 8.70.1、Vite 8.3.1へ更新後に、format、lint、型検査、ビルド、依存監査を実行した。TypeScript 6.0.3 は現行 typescript-eslint の `>=4.8.4 <6.1.0` 要件の範囲内。ビルド済み `dist/` のE2Eは97件成功、失敗0件、レスポンシブ検証は4ビューポートすべて成功、`bun audit` は142パッケージに脆弱性なし。タグ公開後はGitHub Actionsの品質検査とPagesデプロイも確認する。
+2026-09-28 に v1.3.1 のGitHub Releaseを公開した。タグ時のビルド・依存監査・型検査・lintとGitHub Pagesデプロイは成功したが、Releaseジョブは`CHANGELOG.md`を読むためのcheckoutがなく失敗したため、同じ変更履歴を使ってReleaseを手動公開し、次回からの失敗を防ぐcheckoutをmainへ追加した。
+
+2026-09-27 の v1.3.1 リリース候補では、Three.js 0.186.1、`@types/three` 0.186.0、ESLint 10.11.0、globals 17.12.0、Playwright 1.63.0、Prettier 3.9.9、typescript-eslint 8.70.1、Vite 8.3.1へ更新後に、format、lint、型検査、ビルド、依存監査を実行した。TypeScript 6.0.3 は現行 typescript-eslint の `>=4.8.4 <6.1.0` 要件の範囲内。ビルド済み `dist/` のE2Eは97件成功、失敗0件、レスポンシブ検証は4ビューポートすべて成功、`bun audit` は142パッケージに脆弱性なし。[GitHub Actions CI](https://github.com/roflsunriz/boxhead-fps/actions/runs/36327567284) もLinux品質検査とWindowsゲームE2Eが成功し、E2Eは20分4秒で完了した。
 
 2026-09-23 の [CI 実行 35816245173](https://github.com/roflsunriz/boxhead-fps/actions/runs/35816245173) では、通常検証は成功し、Windows ゲーム E2E は死亡後の倒れ込みが観測されず失敗した。ログでは死亡状態と方向まで確認でき、実時間で進む復活が低速な描画フレームを追い越していた。死亡演出と復活待ちを上限付きフレーム時間で進める修正を加え、ローカルのビルド済みゲーム E2E は95項目成功、失敗0件だった。型検査、lint、依存監査、ビルドも成功した。GitHub の通常検証と Windows E2E は push 後に確認する。
 
