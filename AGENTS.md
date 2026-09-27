@@ -23,3 +23,5 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - 都市の木はユーザー指定のケヤキ・クスノキ風広葉樹。黄金角による配置、幹から枝への階層分岐、葉の間隔は視覚モデルとして扱い、生物学的な完全再現や厳密な日射最適化を主張しない。ヤシとは別の樹冠・葉形を保ち、変更時は `verification.md` の外観確認を行う。
 - 樹木の見た目は `test/tree-review.html` と `node test/capture-tree-review.js` で確認する。後者はインストール済みGoogle Chromeをヘッドレス起動し、CDPで描画情報と画像を取得する。ゲーム全体の既存E2Eは `dist/` 配信で行う。詳しくは `verification.md` を参照。
 - ソフトウェア描画のE2Eでは1フレームが1秒以上かかる場合がある。ボットの `nextThink` を長時間固定するとターゲットの視認期限（0.45秒）が切れ反撃できなくなるため、被弾直後の向きを検証した後は通常の索敵更新を許可し、発砲・移動の実際の状態変化を有限時間内で待つ（`test/game.test.js`）。
+- SpiderBench由来の地表画像は `src/assets/spiderbench/` へ配置し、`src/textures.ts` からimportしてBunビルドに同梱する。元の `roof_col.png` や `walls_col.jpg` は複数材質の縦長atlasで、そのままRepeatWrappingすると異なる材質が混ざるため、地面の反復には `grass_col.png`・`sidewalk_col.png`・`ts_pavers.webp` のタイル画像を使う。素材の帰属とライセンス区分はREADMEを参照。
+- ゲーム起動時の天候・環境はランダムなので、都市素材のE2E確認では `setWeather(0)` で都市へ切り替えてから画像の読込完了を待つ（`test/game.test.js`）。地下は `setWeather(6)` で確認する。

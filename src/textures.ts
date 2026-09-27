@@ -1,10 +1,72 @@
 import * as THREE from "three";
+import grassColorUrl from "./assets/spiderbench/grass_col.png";
+import grassNormalUrl from "./assets/spiderbench/grass_nrm.png";
+import sidewalkColorUrl from "./assets/spiderbench/sidewalk_col.png";
+import sidewalkNormalUrl from "./assets/spiderbench/sidewalk_nrm.png";
+import paverColorUrl from "./assets/spiderbench/ts_pavers.webp";
+import paverNormalUrl from "./assets/spiderbench/ts_pavers_n.webp";
+import paverRoughnessUrl from "./assets/spiderbench/ts_pavers_r.webp";
 
 export interface PbrTextureSet {
   map: THREE.CanvasTexture;
   roughnessMap: THREE.CanvasTexture;
   normalMap: THREE.CanvasTexture;
   aoMap: THREE.CanvasTexture;
+}
+
+export interface SurfaceTextureSet {
+  map: THREE.Texture;
+  normalMap?: THREE.Texture;
+  roughnessMap?: THREE.Texture;
+  aoMap?: THREE.Texture;
+}
+
+const importedSurfaces = new Map<string, SurfaceTextureSet>();
+
+function importedTexture(url: string, repeat: number, color: boolean): THREE.Texture {
+  const texture = new THREE.TextureLoader().load(url);
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.setScalar(repeat);
+  texture.colorSpace = color ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+  texture.anisotropy = 8;
+  return texture;
+}
+
+export function cityGrassTextureSet(): SurfaceTextureSet {
+  let surface = importedSurfaces.get("grass");
+  if (!surface) {
+    surface = {
+      map: importedTexture(grassColorUrl, 80, true),
+      normalMap: importedTexture(grassNormalUrl, 80, false),
+    };
+    importedSurfaces.set("grass", surface);
+  }
+  return surface;
+}
+
+export function undergroundFloorTextureSet(): SurfaceTextureSet {
+  let surface = importedSurfaces.get("sidewalk");
+  if (!surface) {
+    surface = {
+      map: importedTexture(sidewalkColorUrl, 100, true),
+      normalMap: importedTexture(sidewalkNormalUrl, 100, false),
+    };
+    importedSurfaces.set("sidewalk", surface);
+  }
+  return surface;
+}
+
+export function cityPaverTextureSet(): SurfaceTextureSet {
+  let surface = importedSurfaces.get("pavers");
+  if (!surface) {
+    surface = {
+      map: importedTexture(paverColorUrl, 1, true),
+      normalMap: importedTexture(paverNormalUrl, 1, false),
+      roughnessMap: importedTexture(paverRoughnessUrl, 1, false),
+    };
+    importedSurfaces.set("pavers", surface);
+  }
+  return surface;
 }
 
 type SurfaceProfile = "gunmetal" | "polymer" | "rubber" | "sand" | "concrete" | "bark";

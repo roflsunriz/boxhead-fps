@@ -91,6 +91,42 @@ check(
     carbineTextureState.separateRoughness
 );
 
+await page.evaluate(() => window.__game.setWeather(0));
+await page.waitForFunction(() => {
+  let scene = window.__game.enemies[0].group;
+  while (scene.parent) scene = scene.parent;
+  const aprons = [];
+  scene.traverse((object) => {
+    if (object.geometry?.type === "PlaneGeometry" && object.material?.roughnessMap) aprons.push(object);
+  });
+  return aprons.length >= 15 && aprons.every((apron) => apron.material.map?.image?.naturalWidth > 0);
+});
+const citySurfaceState = await page.evaluate(() => {
+  let scene = window.__game.enemies[0].group;
+  while (scene.parent) scene = scene.parent;
+  const ground = scene.children.find((child) => child.geometry?.parameters?.width === 400);
+  const grass = ground?.material;
+  const aprons = [];
+  scene.traverse((object) => {
+    if (object.geometry?.type === "PlaneGeometry" && object.material?.roughnessMap) aprons.push(object);
+  });
+  return {
+    grassLoaded: grass?.map?.image?.naturalWidth > 0,
+    grassNormalLoaded: grass?.normalMap?.image?.naturalWidth > 0,
+    paverCount: aprons.length,
+    paverLoaded: aprons.every((apron) => apron.material.map?.image?.naturalWidth > 0),
+    paverNormal: aprons.every((apron) => apron.material.normalMap?.image?.naturalWidth > 0),
+  };
+});
+check(
+  `city grass and building pavers use loaded image textures (${JSON.stringify(citySurfaceState)})`,
+  citySurfaceState.grassLoaded &&
+    citySurfaceState.grassNormalLoaded &&
+    citySurfaceState.paverCount >= 15 &&
+    citySurfaceState.paverLoaded &&
+    citySurfaceState.paverNormal
+);
+
 console.log("\n[2] Pointer lock");
 await page.click("#start-btn");
 await page.waitForTimeout(300);
@@ -1081,6 +1117,22 @@ await page3.evaluate(() => {
 await page3.waitForTimeout(200);
 const ugZ = await page3.evaluate(() => window.__game.player.pos.z);
 const undergroundCover = await page3.evaluate(() => window.__game.debugCoverSummary());
+const undergroundFloorState = await page3.evaluate(() => {
+  let scene = window.__game.enemies[0].group;
+  while (scene.parent) scene = scene.parent;
+  const floor = scene.children.find((child) => child.geometry?.parameters?.width === 400);
+  return {
+    mapLoaded: floor?.material?.map?.image?.naturalWidth > 0,
+    normalLoaded: floor?.material?.normalMap?.image?.naturalWidth > 0,
+    repeats: floor?.material?.map?.repeat?.x,
+  };
+});
+check(
+  `underground floor uses loaded stone paving (${JSON.stringify(undergroundFloorState)})`,
+  undergroundFloorState.mapLoaded &&
+    undergroundFloorState.normalLoaded &&
+    undergroundFloorState.repeats === 100
+);
 check(`underground: player kept inside bunker walls (z=${ugZ.toFixed(1)})`, Math.abs(ugZ) <= 93.5);
 check(
   `underground has dense face-high cover (${JSON.stringify(undergroundCover)})`,

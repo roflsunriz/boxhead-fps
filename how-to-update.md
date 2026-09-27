@@ -72,7 +72,8 @@ node test/responsive.js   # 4 ビューポートのレイアウト検証(ALL VIE
 
 - 製品モデルの公開APIは `src/models/game-models.ts`。カービンは `src/models/carbine-model.ts`、画像テクスチャの割当・部品別UV塗装は `src/models/carbine-materials.ts` で管理する。`src/assets/carbine-surface-atlas.png` はBunがビルド成果物へ同梱するため、ソース側だけでなく `dist/` の画像取得も確認する。
 - 樹木は `src/models/broadleaf-tree.ts`（都市のケヤキ・クスノキ風広葉樹）と `src/models/palm-tree.ts`（ヤシ）を編集する。広葉樹は幹から大枝・小枝へ分岐する形と、枝先の葉の間隔を確認する。黄金角を使った配置は、方向の偏りや葉の重なりを抑えるための視覚表現であり、生物学的な成長や日射の最適化を厳密に計算するものではない。確認項目は [verification.md](verification.md) を参照。
-- 地表、建物、金属、樹脂、ゴム、樹皮のテクスチャ生成元は `src/textures.ts`。albedoはsRGB、roughness・normal・AOはlinear dataとして別キャンバスへ生成し、同じ画像を複数チャンネルへ使い回さない。
+- 手続き型の砂、コンクリート、建物、金属、樹脂、ゴム、樹皮のテクスチャ生成元は `src/textures.ts`。albedoはsRGB、roughness・normal・AOはlinear dataとして別キャンバスへ生成し、同じ画像を複数チャンネルへ使い回さない。
+- 都市草地、建物入口の舗装、地下床の画像は `src/assets/spiderbench/` に保存し、`src/textures.ts` から読み込む。素材の差し替え時は色画像と対応するnormal・roughness画像を同じ組として更新し、`bun run build` 後に `dist/` からの画像取得、都市と地下の外観、`bun run test` を確認する。素材のクレジットはREADMEに維持する。
 - カービンの参照画像とプロンプトは `art/references/`、`img2threejs` の分析・spec・クロップ・PBRエビデンス・レビュー履歴は `art/img2threejs/carbine/` に置く。単一画像から見えない右側面・下面・内部機構と傷位置は近似であり、追加画像なしに完全一致を主張しない。
 
 Vite開発サーバーを8787番で起動した状態で、見た目のエビデンスを再生成する。
