@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 内部レビュー用のPR書式と案内を整え、現在の受付方針を明確にした。 READMEは既存の意味と手順を保ち、実装と異なる説明や読みにくい表現を修正した。
+
 ### Fixed
 
 - SemVerタグのGitHub Release公開で変更履歴を読めるよう、公開ジョブでもタグ付きソースをcheckoutする。
