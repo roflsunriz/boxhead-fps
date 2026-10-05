@@ -94,3 +94,5 @@ GitHub Windows runner のヘッドレス Chrome でもソフトウェア描画�
 - CIと同じBun 1.3.14で `install --frozen-lockfile` と `audit` が成功（既知脆弱性0件）。
 - brace-expansionを親依存と同じ5系の修正版5.0.12へ固定し、同じBunでlockを再生成。監査・CI・製品テストの条件は維持。
 - ローカルでformat:check・lint・type-check・build、ビルド済みゲームの隔離HTTP配信とheadless Google Chrome E2E（97 passed、0 failed）が成功。GitHubの修復headと最終main SHAのCIは公開後に別途確認する。
+
+- 現設定でIssues有効をAPIから確認。SUPPORTの旧無効説明を訂正し、2フォームのYAML構造・ID一意性・プロジェクト固有の環境項目を検証。the-toolsの外部受付不可方針は維持し管理者用の記録と明示。
