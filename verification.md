@@ -88,3 +88,9 @@ GitHub Windows runner のヘッドレス Chrome でもソフトウェア描画�
 - 既存の固有質問・入力例・必須条件を原文と照合。READMEのリンク・画像・コマンド・条件を確認し、裏付けがある誤記だけを訂正した。
 - 既存のCI、Dependabot、labeler、ライセンスのファイル内容は比較元から変更していない。
 - 製品のビルド・インストール・実機操作、GitHub上のフォーム表示、公開後CIは今回の静的検証に含めない。公開後に実際の受付表示と必要ラベルの適用を確認する。
+
+## 2026-10-05: 開発依存監査の修復
+
+- CIと同じBun 1.3.14で `install --frozen-lockfile` と `audit` が成功（既知脆弱性0件）。
+- brace-expansionを親依存と同じ5系の修正版5.0.12へ固定し、同じBunでlockを再生成。監査・CI・製品テストの条件は維持。
+- ローカルでformat:check・lint・type-check・build、ビルド済みゲームの隔離HTTP配信とheadless Google Chrome E2E（97 passed、0 failed）が成功。GitHubの修復headと最終main SHAのCIは公開後に別途確認する。
