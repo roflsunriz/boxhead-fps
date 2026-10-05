@@ -36,3 +36,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 ## 開発依存監査の注意（2026-10-05）
 
 - brace-expansion の3件のAdvisoryに対し、5系は5.0.12で該当範囲を外れる。既存親依存の5系範囲を保ち、package.jsonのoverrideとbun.lockを同時に更新する。監査の省略や閾値緩和で対応せず、CIと同じBunで固定install・監査・既存品質確認を行う。詳細はverification.md。
+
+## ミニマップの幾何fixture（2026-10-05）
+
+- player(0,0)は都市の中央障害物内で、通常プレイ中は衝突処理で押し出される。botもAIで移動するため、固定座標の幾何検査はブラウザの実pointer lock解除（fallbackはEscape）による既存ポーズ経路を使い、paused表示を待ってから入力を設定する。ポーズ中もminimapは描画される。2描画frameを有限期限付きで待ち、元の方向・3pixel未満の許容値を維持する。finallyで実再開ボタンを押し、後続の移動・衝突・AI検査を省かない。headlessの合成Escapeだけではnative pointer lockが解除されない場合がある。

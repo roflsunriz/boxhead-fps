@@ -915,30 +915,80 @@ check(
     cityCover.faceCoverCount === cityCover.obstacleCount
 );
 await page3.screenshot({ path: "test/feature-cover-city.png" });
-const minimapState = await page3.evaluate(async () => {
-  const g = window.__game;
-  g.player.pos.set(0, 1.7, 0);
-  g.player.yaw = 0;
-  g.enemies.forEach((bot, index) => bot.pos.set(150 + index * 3, 0, 150));
-  const ally = g.enemies.find((bot) => bot.team === "blue");
-  const enemy = g.enemies.find((bot) => bot.team === "red");
-  ally.pos.set(10, 0, 0);
-  enemy.pos.set(0, 0, -10);
-  await new Promise((resolve) => setTimeout(resolve, 100));
-  return g.minimapState;
-});
-const allyMarker = minimapState.markers.find((marker) => marker.team === "blue" && !marker.clamped);
-const enemyMarker = minimapState.markers.find((marker) => marker.team === "red" && !marker.clamped);
-check(
-  `minimap keeps the player centered and rotates nearby teams (${JSON.stringify(minimapState)})`,
-  minimapState.centerX > 0 &&
-    minimapState.centerX === minimapState.centerY &&
-    allyMarker?.x > minimapState.centerX &&
-    Math.abs(allyMarker.y - minimapState.centerY) < 3 &&
-    enemyMarker?.y < minimapState.centerY &&
-    Math.abs(enemyMarker.x - minimapState.centerX) < 3
-);
-await page3.screenshot({ path: "test/feature-minimap-crosshair.png" });
+// Use the browser unlock event, or Escape in fallback mode, to pause this fixture.
+if (await page3.evaluate(() => document.pointerLockElement !== null)) {
+  await page3.evaluate(() => document.exitPointerLock());
+} else {
+  await page3.keyboard.press("Escape");
+}
+try {
+  await page3.waitForFunction(
+    () =>
+      document.querySelector("#overlay")?.dataset.screen === "paused" &&
+      !document.querySelector("#overlay").classList.contains("hidden"),
+    null,
+    { timeout: 15000 }
+  );
+  const minimapState = await page3.evaluate(async () => {
+    const g = window.__game;
+    g.player.pos.set(0, 1.7, 0);
+    g.player.yaw = 0;
+    g.enemies.forEach((bot, index) => bot.pos.set(150 + index * 3, 0, 150));
+    const ally = g.enemies.find((bot) => bot.team === "blue");
+    const enemy = g.enemies.find((bot) => bot.team === "red");
+    ally.pos.set(10, 0, 0);
+    enemy.pos.set(0, 0, -10);
+    await new Promise((resolve, reject) => {
+      const deadline = setTimeout(() => reject(new Error("Minimap fixture did not render")), 15000);
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          clearTimeout(deadline);
+          resolve();
+        })
+      );
+    });
+    return g.minimapState;
+  });
+  function matchesMinimapFixture(state) {
+    const allyMarker = state.markers.find((marker) => marker.team === "blue" && !marker.clamped);
+    const enemyMarker = state.markers.find((marker) => marker.team === "red" && !marker.clamped);
+    return (
+      state.centerX > 0 &&
+      state.centerX === state.centerY &&
+      allyMarker?.x > state.centerX &&
+      Math.abs(allyMarker.y - state.centerY) < 3 &&
+      enemyMarker?.y < state.centerY &&
+      Math.abs(enemyMarker.x - state.centerX) < 3
+    );
+  }
+  check(
+    `minimap keeps the player centered and rotates nearby teams (${JSON.stringify(minimapState)})`,
+    matchesMinimapFixture(minimapState)
+  );
+  for (const fault of ["ally position", "enemy direction", "nearby clamp"]) {
+    const corrupted = structuredClone(minimapState);
+    const ally = corrupted.markers.find((marker) => marker.team === "blue" && !marker.clamped);
+    const enemy = corrupted.markers.find((marker) => marker.team === "red" && !marker.clamped);
+    if (fault === "ally position" && ally) ally.x = corrupted.centerX - 10;
+    if (fault === "enemy direction" && enemy) enemy.y = corrupted.centerY + 10;
+    if (fault === "nearby clamp" && enemy) enemy.clamped = true;
+    check(`minimap fixture rejects incorrect ${fault}`, !matchesMinimapFixture(corrupted));
+  }
+  await page3.screenshot({ path: "test/feature-minimap-crosshair.png" });
+} finally {
+  if (
+    await page3.evaluate(
+      () =>
+        document.querySelector("#overlay")?.dataset.screen === "paused" &&
+        !document.querySelector("#overlay").classList.contains("hidden")
+    )
+  ) {
+    await page3.click("#start-btn", { noWaitAfter: true });
+  }
+  await page3.waitForFunction(() => document.querySelector("#overlay")?.classList.contains("hidden"), null, {
+    timeout: 15000,
+  });
+}
 const allyOutlineState = await page3.evaluate(async () => {
   const g = window.__game;
   const ally = g.enemies.find((en) => en.team === "blue");
