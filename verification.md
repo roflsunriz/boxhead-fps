@@ -96,3 +96,13 @@ GitHub Windows runner のヘッドレス Chrome でもソフトウェア描画�
 - ローカルでformat:check・lint・type-check・build、ビルド済みゲームの隔離HTTP配信とheadless Google Chrome E2E（97 passed、0 failed）が成功。GitHubの修復headと最終main SHAのCIは公開後に別途確認する。
 
 - 現設定でIssues有効をAPIから確認。SUPPORTの旧無効説明を訂正し、2フォームのYAML構造・ID一意性・プロジェクト固有の環境項目を検証。the-toolsの外部受付不可方針は維持し管理者用の記録と明示。
+
+## 2026-10-05: ミニマップの検査fixtureを修復
+
+- main `2dbca42` の[ゲームCI](https://github.com/roflsunriz/boxhead-fps/actions/runs/37386790905/job/112021903165)は96項目成功・1項目失敗。元の3pixel未満の条件に対し赤markerの中心との差が3.247pixelになった。同じ製品・検査コードのPR実行では0.194pixelで97項目成功していた。CIは画像artifactを保存していないため、この実行の映像を確認したとは記録しない。
+- 検査はplayerを都市の障害物内(0,0)へ、botを固定座標へ移した後100ms待っていたが、その間にplayer衝突処理とbot AIが入力を変えていた。製品の既存pointerlockchange/fallback Escapeによるポーズ経路で幾何入力を固定し、2描画frameを15秒の期限付きで待つ。元の中心・青右・赤上・3pixel未満・非clamp条件は変えず、finallyで実再開操作と非表示を確認する。
+- 実Chromeから得たsnapshotに青位置反転・赤方向反転・近距離clampの3破損を注入し、元predicateがすべて拒否する検査を追加した。製品source、workflow、監査閾値、依存更新、後続の移動・衝突・AI検査は維持する。
+- 初回のローカル検証は合成Escapeがheadless Chromeの実pointer lockを解除せずpaused待ちで失敗した。実ブラウザAPIによる解除イベントを使って修正し、隔離headless Chromeの全100項目成功を確認した。CIの無根拠な再実行はしていない。
+- 既存DependabotのESLint更新を保全した最新main `f3f9366` を基準に、CI同版Bun1.3.14の固定install・全依存監査・format・lint・型・buildと全100項目（失敗0）の成功を確認した。新PRとmerge後のmain CIは別途確認する。
+
+- 固定timerへ1500msの配達遅延を加えた隔離Chromeのstressでは、通常進行中はplayerが(-2,0)へ押し出されbotも移動し元predicateが失敗、pause中の同fixtureは指定座標を保って成功した。これは競合を観察する負荷条件で、実CI環境の完全再現とは区別する。
