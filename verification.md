@@ -3,7 +3,7 @@
 ## 2026-10-12: Dependabot PR の監査失敗
 
 - PR #9・#10・#11 の Linux `verify` は、Vite → PostCSS → source-map-js@1.2.1 の GHSA-68fv-2mgg-jv7q を `bun audit` が検出して失敗した。Windows のゲーム E2E は各 PR で成功していた。
-- `bun audit fix` で既存の PostCSS の許容範囲内にある source-map-js@1.2.2 へ lockfile だけを更新し、Bun 1.4.0 の `bun audit` で脆弱性 0 件を確認した。CI と同じ Bun 1.3.14 の固定インストールと監査は CI で確認する。
+- `bun audit fix` で既存の PostCSS の許容範囲内にある source-map-js@1.2.2 へ lockfile だけを更新し、Bun 1.4.0 の `bun audit` で脆弱性 0 件を確認した。[修正後の main CI](https://github.com/roflsunriz/boxhead-fps/actions/runs/38172558610) では Bun 1.3.14 の固定インストール・監査・品質検査と Windows ゲーム E2E が成功した。
 - ローカルで固定インストール、lint、型検査、ビルド、隔離したヘッドレス Chrome によるゲーム E2E（100件成功、失敗0件）を確認した。Windows の既存作業ツリーでは8ファイルが CRLF で展開されるため、`format:check` はそれらを指摘する。Prettier で LF に直すと Git の内容差分は生じないため、CI の Linux チェックで正本を確認する。
 
 ## SpiderBench地表画像の確認結果（2026-09-27）

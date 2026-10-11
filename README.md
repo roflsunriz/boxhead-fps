@@ -4,7 +4,7 @@ Three.js 製のブラウザ向け FPS ゲーム。TypeScriptで実装し、開�
 
 **[GitHub PagesでBoxhead FPSをプレイ](https://roflsunriz.github.io/boxhead-fps/)**
 
-公開バージョン: **1.2.0**
+公開バージョン: **1.3.1**
 
 ## ゲーム内容
 
@@ -43,7 +43,7 @@ bun install
 bunx playwright install chromium
 ```
 
-必要環境: Node.js 26.x または Bun 1.3.x
+必要環境: Bun（CI は 1.3.14、ローカルは 1.4.0 で確認）。E2E 検証には Node.js 26.x と Google Chrome も必要。
 
 ## 開発
 
@@ -66,11 +66,11 @@ bun run preview   # dist/ を 8787 番ポートで配信
 その後、SemVer形式のタグをpushすると、型検査・lint・依存監査・Pages用ビルドを通過した成果物が自動デプロイされ、GitHub Releasesにも自動掲載される。
 
 ```powershell
-git tag -a v1.2.0 -m "v1.2.0"
-git push origin v1.2.0
+git tag -a v1.3.2 -m "v1.3.2"
+git push origin v1.3.2
 ```
 
-`v1.2.3`、`v1.2.3-rc.1`、`v1.2.3+build.4`などを受け付ける。不正な形式のタグはデプロイ前に失敗する。Pagesのベースパスはリポジトリ設定から自動取得するため、プロジェクトサイトとカスタムドメインの両方に対応する。安定版はLatest Release、`-rc.1`などはプレリリースとして自動公開される。
+上のタグは次の未使用バージョンの例です。実行前に `git tag --list` で既存タグを確認し、`CHANGELOG.md` に同じバージョンの節を作成してください。`v1.3.2`、`v1.3.2-rc.1`、`v1.3.2+build.4`などを受け付ける。不正な形式のタグはデプロイ前に失敗する。Pagesのベースパスはリポジトリ設定から自動取得するため、プロジェクトサイトとカスタムドメインの両方に対応する。安定版はLatest Release、`-rc.1`などはプレリリースとして自動公開される。
 
 ## 検証
 
