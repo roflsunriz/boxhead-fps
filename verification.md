@@ -1,5 +1,20 @@
 # 検証手順
 
+## 2026-10-12: Dependabot PR の監査失敗
+
+- PR #9・#10・#11 の Linux `verify` は、Vite → PostCSS → source-map-js@1.2.1 の GHSA-68fv-2mgg-jv7q を `bun audit` が検出して失敗した。Windows のゲーム E2E は各 PR で成功していた。
+- `bun audit fix` で既存の PostCSS の許容範囲内にある source-map-js@1.2.2 へ lockfile だけを更新し、Bun 1.4.0 の `bun audit` で脆弱性 0 件を確認した。CI と同じ Bun 1.3.14 の固定インストールと監査は CI で確認する。
+- ローカルで固定インストール、lint、型検査、ビルド、隔離したヘッドレス Chrome によるゲーム E2E（100件成功、失敗0件）を確認した。Windows の既存作業ツリーでは8ファイルが CRLF で展開されるため、`format:check` はそれらを指摘する。Prettier で LF に直すと Git の内容差分は生じないため、CI の Linux チェックで正本を確認する。
+
+## SpiderBench地表画像の確認結果（2026-09-27）
+
+- `bun run format`、`bun run type-check`、`bun run lint`、`bun run build`、`bun run audit` に成功。Bunビルドに草地、歩道、石畳の色・法線・粗さ画像が含まれ、依存135パッケージに脆弱性検出なし。
+- `dist/` 配信の `bun run test` は97項目成功、失敗0。都市の草地と建物入口18か所の舗装、地下床の画像と法線が読み込まれ、都市・ビーチ・地下の移動・衝突判定が維持されることを確認。
+- `node test/responsive.js` は1920×1080、1366×768、768×1024、390×844の全サイズで成功。
+- `GAME_TEST_URL` を指定して `node test/capture-surface-review.js` を実行し、`test/spiderbench-city.png` と `test/spiderbench-underground.png` を目視。都市の石畳と草地の境界、地下床の目地、両環境で武器・HUDの視認性を確認した。地下床は照明の強い中心部が明るく、周辺部は暗く見える。
+
+再確認時は、起動時の環境がランダムなため都市へ切り替えてから素材の読み込みを待つ。画像の見た目は照明、天候、ディスプレイ環境で変わるため、読み込み成功だけを外観の合格としない。
+
 ## カービン更新の確認結果（2026-09-06）
 
 - 型検査、lint、整形、Bunビルド、依存監査に合格。脆弱性検出なし。
@@ -21,6 +36,16 @@
 - 広葉樹2個体とヤシを2方向から目視確認。ビルド済みゲームに都市の広葉樹60本・ビーチのヤシ22本が接続されていることと、各ゲームシーンの外観を確認。
 
 ## ゲーム全体
+
+2026-09-28 に v1.3.1 のGitHub Releaseを公開した。タグ時のビルド・依存監査・型検査・lintとGitHub Pagesデプロイは成功したが、Releaseジョブは`CHANGELOG.md`を読むためのcheckoutがなく失敗したため、同じ変更履歴を使ってReleaseを手動公開し、次回からの失敗を防ぐcheckoutをmainへ追加した。
+
+2026-09-27 の v1.3.1 リリース候補では、Three.js 0.186.1、`@types/three` 0.186.0、ESLint 10.11.0、globals 17.12.0、Playwright 1.63.0、Prettier 3.9.9、typescript-eslint 8.70.1、Vite 8.3.1へ更新後に、format、lint、型検査、ビルド、依存監査を実行した。TypeScript 6.0.3 は現行 typescript-eslint の `>=4.8.4 <6.1.0` 要件の範囲内。ビルド済み `dist/` のE2Eは97件成功、失敗0件、レスポンシブ検証は4ビューポートすべて成功、`bun audit` は142パッケージに脆弱性なし。[GitHub Actions CI](https://github.com/roflsunriz/boxhead-fps/actions/runs/36327567284) もLinux品質検査とWindowsゲームE2Eが成功し、E2Eは20分4秒で完了した。
+
+2026-09-23 の [CI 実行 35816245173](https://github.com/roflsunriz/boxhead-fps/actions/runs/35816245173) では、通常検証は成功し、Windows ゲーム E2E は死亡後の倒れ込みが観測されず失敗した。ログでは死亡状態と方向まで確認でき、実時間で進む復活が低速な描画フレームを追い越していた。死亡演出と復活待ちを上限付きフレーム時間で進める修正を加え、ローカルのビルド済みゲーム E2E は95項目成功、失敗0件だった。型検査、lint、依存監査、ビルドも成功した。GitHub の通常検証と Windows E2E は push 後に確認する。
+
+[次の CI 実行 35817524088](https://github.com/roflsunriz/boxhead-fps/actions/runs/35817524088) では、前回失敗した倒れ込み・赤い画面・復活を含め93項目が成功した。最後の試合終了時 E2E だけが固定1.1秒と2.1秒の待機で早く判定され2項目失敗したため、描画フレームで進む倒れ込みと結果画面の成立を待つよう修正した。ローカルのビルド済みゲームで再度95項目成功、失敗0件を確認した。
+
+[さらに次の CI 実行 35819108842](https://github.com/roflsunriz/boxhead-fps/actions/runs/35819108842) では、試合終了時の2項目も成功し、95項目中94項目が通った。海岸の衝突検査1項目だけは、波の描画撮影を待つ間にプレイヤーが死亡・復活して z=73 のスポーン位置を読んでいた。海岸へ移した直後の衝突後位置を期限付きで記録し、波の検査と撮影はその後に行うようにした。ローカルのビルド済みゲーム E2E は再度95項目成功、失敗0件を確認した。
 
 `bun run type-check`、`bun run lint`、`bun run format:check`、`bun run audit`、`bun run build` を実行する。次に開発サーバーを停止し、`bun run preview` でビルド成果物を8787番ポートに配信して `bun run test` と `node test/responsive.js` を実行する。失敗時はテスト名と実際の配信元を確認する。詳細は [更新手順](how-to-update.md) を参照。
 
@@ -47,3 +72,43 @@
 `.github/workflows/dependabot-automation.yml` を actionlint で検査し、PR 用 workflow 名（CI）と一致することを確認する。Dependabot の patch／minor かつ全 PR チェック成功の場合だけ取り込み、major・古い SHA・再失敗は残す。
 
 実際の Dependabot PR がまだない場合、動作経路は未検証として扱う。実 PR 発生後に自動化ジョブ、CI の再試行、マージ結果を確認する。
+
+初回の GitHub CI では追加 workflow の Prettier 書式で失敗したため修正した。ローカルで同じビルド成果物を隔離 HTTP サーバーから配信し、ヘッドレス Chrome のゲームテスト 95 件が成功した。CI では build 後に一時サーバーを起動して同じテストを実行する。
+
+GitHub Linux runner のゲーム E2E は WebGL のソフトウェア描画が遅く、手榴弾・敵 AI 等の時限判定が複数失敗したうえ、後半の言語ボタンクリックがタイムアウトした。ローカル Windows の同じ95件は成功しているため、品質条件を変えずに E2E を隔離した Windows runner へ移し、Linux では lint・型・ビルド・監査を維持する。Windows CI の実結果を確認する。
+
+時間依存の連鎖を防ぐため、手榴弾テストはクレーターの実生成を待ってから敵 AI を操作する。言語切替はボタン中央のヒット対象を確認し、実マウス入力後に DOM の言語変更を待つ。修正後のローカル Windows ヘッドレス Chrome で 95 件すべて成功した。GitHub Windows runner の結果は別途確認する。
+
+GitHub Windows runner のヘッドレス Chrome でもソフトウェア描画が遅く、移動・手榴弾・リロード・倒れ込みの時限判定が失敗した。次の CI 実行では隔離 runner の実デスクトップで Chrome を開き、描画経路による差を測る。ローカルの Chrome は引き続きヘッドレスで実行し、検査項目は維持する。
+
+実デスクトップ CI では冒頭の描画・銃モデル検査が成功したが、`#start-btn` の実クリック後に Playwright が存在しない文書遷移を待って30秒で失敗した。ゲーム開始は pointer lock と画面状態の変化なので、4つの開始ボタン操作に限り遷移待ちを外し、直後の状態検査は残す。
+
+クリック修正後の Windows CI ではゲーム後半まで進んだが、低速フレームで移動・リロード途中の検査が固定時間から外れ、最初の3Dタブを残したまま開いた次のタブの初期化がタイムアウトした。移動は実位置、リロードは条件成立フレームの値、倒れ込み・復活は実状態を待つようにし、次のタブ前に最初のレンダリングを閉じる。ローカル Windows ヘッドレス Chrome で修正後の95件が成功した。CI の結果は再確認する。
+
+大量の Dependabot PR により CI 完了より分類が遅れる場合でも、分類後の `workflow_dispatch` が現在の PR 番号と head SHA を照合して再評価する。別の作成者、古い SHA、未完了の CI はマージしない。
+
+## 2026-10-05: GitHub受付・READMEの整備（公開前）
+
+- 比較元: `c3e67e33ed14fe313d256e70addf186aeee21fc1`（`main`）。
+- 受付フォーム 0 件のYAML構造、重複キー・ID、入力型、選択肢、予約ファイル名を一括検査し、エラー0件。
+- 既存の固有質問・入力例・必須条件を原文と照合。READMEのリンク・画像・コマンド・条件を確認し、裏付けがある誤記だけを訂正した。
+- 既存のCI、Dependabot、labeler、ライセンスのファイル内容は比較元から変更していない。
+- 製品のビルド・インストール・実機操作、GitHub上のフォーム表示、公開後CIは今回の静的検証に含めない。公開後に実際の受付表示と必要ラベルの適用を確認する。
+
+## 2026-10-05: 開発依存監査の修復
+
+- CIと同じBun 1.3.14で `install --frozen-lockfile` と `audit` が成功（既知脆弱性0件）。
+- brace-expansionを親依存と同じ5系の修正版5.0.12へ固定し、同じBunでlockを再生成。監査・CI・製品テストの条件は維持。
+- ローカルでformat:check・lint・type-check・build、ビルド済みゲームの隔離HTTP配信とheadless Google Chrome E2E（97 passed、0 failed）が成功。GitHubの修復headと最終main SHAのCIは公開後に別途確認する。
+
+- 現設定でIssues有効をAPIから確認。SUPPORTの旧無効説明を訂正し、2フォームのYAML構造・ID一意性・プロジェクト固有の環境項目を検証。the-toolsの外部受付不可方針は維持し管理者用の記録と明示。
+
+## 2026-10-05: ミニマップの検査fixtureを修復
+
+- main `2dbca42` の[ゲームCI](https://github.com/roflsunriz/boxhead-fps/actions/runs/37386790905/job/112021903165)は96項目成功・1項目失敗。元の3pixel未満の条件に対し赤markerの中心との差が3.247pixelになった。同じ製品・検査コードのPR実行では0.194pixelで97項目成功していた。CIは画像artifactを保存していないため、この実行の映像を確認したとは記録しない。
+- 検査はplayerを都市の障害物内(0,0)へ、botを固定座標へ移した後100ms待っていたが、その間にplayer衝突処理とbot AIが入力を変えていた。製品の既存pointerlockchange/fallback Escapeによるポーズ経路で幾何入力を固定し、2描画frameを15秒の期限付きで待つ。元の中心・青右・赤上・3pixel未満・非clamp条件は変えず、finallyで実再開操作と非表示を確認する。
+- 実Chromeから得たsnapshotに青位置反転・赤方向反転・近距離clampの3破損を注入し、元predicateがすべて拒否する検査を追加した。製品source、workflow、監査閾値、依存更新、後続の移動・衝突・AI検査は維持する。
+- 初回のローカル検証は合成Escapeがheadless Chromeの実pointer lockを解除せずpaused待ちで失敗した。実ブラウザAPIによる解除イベントを使って修正し、隔離headless Chromeの全100項目成功を確認した。CIの無根拠な再実行はしていない。
+- 既存DependabotのESLint更新を保全した最新main `f3f9366` を基準に、CI同版Bun1.3.14の固定install・全依存監査・format・lint・型・buildと全100項目（失敗0）の成功を確認した。新PRとmerge後のmain CIは別途確認する。
+
+- 固定timerへ1500msの配達遅延を加えた隔離Chromeのstressでは、通常進行中はplayerが(-2,0)へ押し出されbotも移動し元predicateが失敗、pause中の同fixtureは指定座標を保って成功した。これは競合を観察する負荷条件で、実CI環境の完全再現とは区別する。

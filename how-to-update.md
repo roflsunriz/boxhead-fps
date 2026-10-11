@@ -72,7 +72,8 @@ node test/responsive.js   # 4 ビューポートのレイアウト検証(ALL VIE
 
 - 製品モデルの公開APIは `src/models/game-models.ts`。カービンは `src/models/carbine-model.ts`、画像テクスチャの割当・部品別UV塗装は `src/models/carbine-materials.ts` で管理する。`src/assets/carbine-surface-atlas.png` はBunがビルド成果物へ同梱するため、ソース側だけでなく `dist/` の画像取得も確認する。
 - 樹木は `src/models/broadleaf-tree.ts`（都市のケヤキ・クスノキ風広葉樹）と `src/models/palm-tree.ts`（ヤシ）を編集する。広葉樹は幹から大枝・小枝へ分岐する形と、枝先の葉の間隔を確認する。黄金角を使った配置は、方向の偏りや葉の重なりを抑えるための視覚表現であり、生物学的な成長や日射の最適化を厳密に計算するものではない。確認項目は [verification.md](verification.md) を参照。
-- 地表、建物、金属、樹脂、ゴム、樹皮のテクスチャ生成元は `src/textures.ts`。albedoはsRGB、roughness・normal・AOはlinear dataとして別キャンバスへ生成し、同じ画像を複数チャンネルへ使い回さない。
+- 手続き型の砂、コンクリート、建物、金属、樹脂、ゴム、樹皮のテクスチャ生成元は `src/textures.ts`。albedoはsRGB、roughness・normal・AOはlinear dataとして別キャンバスへ生成し、同じ画像を複数チャンネルへ使い回さない。
+- 都市草地、建物入口の舗装、地下床の画像は `src/assets/spiderbench/` に保存し、`src/textures.ts` から読み込む。素材の差し替え時は色画像と対応するnormal・roughness画像を同じ組として更新し、`bun run build` 後に `dist/` からの画像取得、都市と地下の外観、`bun run test` を確認する。素材のクレジットはREADMEに維持する。
 - カービンの参照画像とプロンプトは `art/references/`、`img2threejs` の分析・spec・クロップ・PBRエビデンス・レビュー履歴は `art/img2threejs/carbine/` に置く。単一画像から見えない右側面・下面・内部機構と傷位置は近似であり、追加画像なしに完全一致を主張しない。
 
 Vite開発サーバーを8787番で起動した状態で、見た目のエビデンスを再生成する。
@@ -125,3 +126,7 @@ node test/export-carbine-parts.js
 前提は `.github/dependabot.yml` と PR 用 CI（CI）です。更新 PR の head SHA と `gh pr checks <PR番号>` の結果を確認してください。patch／minor は全チェック成功後に自動取り込みされます。初回 CI 失敗は failed jobs のみを 1 回再実行し、再失敗時は指定した lockfile を再生成し、CI を再実行します。
 
 設定を変えたときは `actionlint .github/workflows/dependabot-automation.yml` と実際の PR の Actions 結果を確認します。問題があれば呼び出し先の共通 workflow SHA を直前の検証済み値へ戻すコミットを push します。取り込まれた依存更新に問題があれば通常の revert コミットで復旧します。
+
+ゲームの操作検証は隔離した Windows runner の Chrome で、build 済み `dist/` を一時 HTTP サーバーから配信して実行します。ローカルではヘッドレスを既定とします。Linux の CI ジョブは lint・型・ビルド・依存監査を確認します。実行環境を変えるときもゲーム E2E の95件を省かず、`verification.md` の時間依存の注意を確認してください。
+
+CI 完了より Dependabot の分類が遅れる場合は、`callback_workflow_file` が指す呼び出し側 workflow を `workflow_dispatch` し、同じ PR 番号・head SHA・全チェックを再確認する。呼び出し側のファイル名を変える際はこの入力も一緒に更新する。

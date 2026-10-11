@@ -1,11 +1,12 @@
 import * as THREE from "three";
 import {
   facadeTextureSet,
-  makeCanvasTexture,
   sandTextureSet,
-  concreteTextureSet,
   concreteWallTextureSet,
-  type PbrTextureSet,
+  cityGrassTextureSet,
+  cityPaverTextureSet,
+  undergroundFloorTextureSet,
+  type SurfaceTextureSet,
 } from "./textures";
 import { createPalmTreeModel, createStarfishModel } from "./models/game-models";
 import { createBroadleafTreeModel } from "./models/broadleaf-tree";
@@ -49,45 +50,23 @@ sun.shadow.camera.top = 70;
 sun.shadow.camera.bottom = -70;
 scene.add(sun);
 
-const groundTextures: Partial<Record<EnvVariant, THREE.Texture>> = {};
-const groundPbrTextures: Partial<Record<EnvVariant, PbrTextureSet>> = {};
-function getGroundPbrTextures(variant: EnvVariant): PbrTextureSet | undefined {
-  if (variant === "city") return undefined;
+const groundPbrTextures: Partial<Record<EnvVariant, SurfaceTextureSet>> = {};
+function getGroundPbrTextures(variant: EnvVariant): SurfaceTextureSet {
   let textures = groundPbrTextures[variant];
   if (!textures) {
-    textures = variant === "beach" ? sandTextureSet() : concreteTextureSet();
+    textures =
+      variant === "city"
+        ? cityGrassTextureSet()
+        : variant === "beach"
+          ? sandTextureSet()
+          : undergroundFloorTextureSet();
     groundPbrTextures[variant] = textures;
   }
   return textures;
 }
-function getGroundTexture(variant: EnvVariant): THREE.Texture {
-  let tex = groundTextures[variant];
-  if (tex) return tex;
-  if (variant !== "city") {
-    const textures = getGroundPbrTextures(variant);
-    if (!textures) throw new Error(`Missing ground textures for ${variant}`);
-    tex = textures.map;
-  } else {
-    tex = makeCanvasTexture(
-      256,
-      (ctx, s) => {
-        ctx.fillStyle = "#57753f";
-        ctx.fillRect(0, 0, s, s);
-        for (let i = 0; i < 3500; i++) {
-          const g = 95 + Math.random() * 60;
-          ctx.fillStyle = `rgb(${(g * 0.68) | 0},${g | 0},${(g * 0.42) | 0})`;
-          ctx.fillRect(Math.random() * s, Math.random() * s, 2, 2);
-        }
-      },
-      48
-    );
-  }
-  groundTextures[variant] = tex;
-  return tex;
-}
 
 const groundMat = new THREE.MeshStandardMaterial({ roughness: 1 });
-groundMat.map = getGroundTexture("city");
+groundMat.map = getGroundPbrTextures("city").map;
 export const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), groundMat);
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
@@ -129,6 +108,14 @@ function buildCityEnv(): EnvBuild {
   const trees: TreeCollider[] = [];
 
   const roofMat = new THREE.MeshStandardMaterial({ color: 0x3a3e44, roughness: 0.95 });
+  const pavers = cityPaverTextureSet();
+  const apronMat = new THREE.MeshStandardMaterial({
+    map: pavers.map,
+    normalMap: pavers.normalMap,
+    roughnessMap: pavers.roughnessMap,
+    normalScale: new THREE.Vector2(0.35, 0.35),
+    roughness: 0.95,
+  });
   const facadeMaterials = new Map<string, THREE.MeshStandardMaterial>();
   function wallMat(tw: number, th: number, base: string): THREE.MeshStandardMaterial {
     const cached = facadeMaterials.get(base);
@@ -147,6 +134,17 @@ function buildCityEnv(): EnvBuild {
     return material;
   }
   function addBuilding(x: number, z: number, w: number, h: number, d: number, base: string): void {
+    const apronWidth = Math.min(w + 1.2, 10);
+    const apronDepth = 1.8;
+    const apronGeometry = new THREE.PlaneGeometry(apronWidth, apronDepth);
+    const uv = apronGeometry.getAttribute("uv");
+    for (let i = 0; i < uv.count; i++)
+      uv.setXY(i, (uv.getX(i) * apronWidth) / 4, (uv.getY(i) * apronDepth) / 4);
+    const apron = new THREE.Mesh(apronGeometry, apronMat);
+    apron.rotation.x = -Math.PI / 2;
+    apron.position.set(x, 0.025, z + d / 2 + 0.65);
+    apron.receiveShadow = true;
+    group.add(apron);
     const mx = wallMat(d, h, base);
     const mz = wallMat(w, h, base);
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), [mx, mx, roofMat, roofMat, mz, mz]);
@@ -819,8 +817,9 @@ export function applyEnvironment(variant: EnvVariant): void {
   obstacles = build.obstacles;
   treeColliders = build.treeColliders;
   grid.visible = variant === "city";
-  groundMat.map = getGroundTexture(variant);
   const groundPbr = getGroundPbrTextures(variant);
+  groundMat.color.setHex(variant === "underground" ? 0x858585 : 0xffffff);
+  groundMat.map = groundPbr.map;
   groundMat.roughnessMap = groundPbr?.roughnessMap ?? null;
   groundMat.normalMap = groundPbr?.normalMap ?? null;
   groundMat.normalScale.set(variant === "beach" ? 0.75 : 0.5, variant === "beach" ? 0.75 : 0.5);

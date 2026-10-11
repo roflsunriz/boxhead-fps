@@ -2,4 +2,4 @@
 
 起動・更新は [README](README.md) と [更新手順](how-to-update.md) を確認してください。
 
-不具合はこのリポジトリのGitHub Issuesへ、ブラウザとOS、ゲームのバージョン、操作手順、期待する動作と実際の動作を添えて報告してください。画面やログを添える際は個人情報を取り除いてください。セキュリティ上の問題は [SECURITY.md](SECURITY.md) に従ってください。
+不具合や改善提案は [GitHub Issues](https://github.com/roflsunriz/boxhead-fps/issues/new/choose) のフォームを使ってください。GitHub Discussionsは無効です。不具合を確認する際は、ブラウザとOS、ゲームのバージョン、操作手順、期待する動作と実際の動作を記録してください。画面やログを添える際は個人情報を取り除いてください。セキュリティ上の問題は [SECURITY.md](SECURITY.md) に従ってください。
