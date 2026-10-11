@@ -36,6 +36,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 ## 開発依存監査の注意（2026-10-05）
 
 - brace-expansion の3件のAdvisoryに対し、5系は5.0.12で該当範囲を外れる。既存親依存の5系範囲を保ち、package.jsonのoverrideとbun.lockを同時に更新する。監査の省略や閾値緩和で対応せず、CIと同じBunで固定install・監査・既存品質確認を行う。詳細はverification.md。
+- 2026-10-12 の Dependabot PR #9・#10・#11 の Linux `verify` 失敗は、PR自体の更新ではなく共通の source-map-js@1.2.1 脆弱性（GHSA-68fv-2mgg-jv7q）が原因。PostCSS の `^1.2.1` 範囲内で bun.lock を 1.2.2 へ更新できる。PRを処理する前に main の監査と固定installを確認する（`verification.md`）。
 
 ## ミニマップの幾何fixture（2026-10-05）
 
