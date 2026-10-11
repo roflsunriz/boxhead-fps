@@ -16,7 +16,7 @@
 
 ### Changed
 
-- Dependabot の更新を安全に取り込むため、globals と typescript-eslint を更新し、リリース用ワークフローの checkout を CI と同じ v7.0.1 に統一した。
+- Dependabot の更新を安全に取り込むため、globals・typescript-eslint・Vite を更新し、開発と検証に使う Playwright・Prettier も確認時点の最新版へ上げた。リリース用ワークフローの checkout は CI と同じ v7.0.1 に統一した。
 - 内部レビュー用のPR書式と案内を整え、現在の受付方針を明確にした。 READMEは既存の意味と手順を保ち、実装と異なる説明や読みにくい表現を修正した。
 
 ### Fixed
