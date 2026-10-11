@@ -904,6 +904,7 @@ page3.on("console", (m) => {
 await page3.goto(BASE, { waitUntil: "networkidle" });
 await page3.waitForFunction(() => window.__game !== undefined);
 await page3.click("#start-btn", { noWaitAfter: true });
+await page3.evaluate(() => window.__game.setKillTarget(999));
 await page3.waitForTimeout(200);
 const wx = await page3.textContent("#weather");
 check(`atmosphere preset applied ("${wx.trim()}")`, wx.trim() !== "—" && wx.trim().length > 2);
@@ -1177,18 +1178,46 @@ if (colResult.ok) {
 }
 
 console.log("\n[11] Environment variants (beach / underground)");
-await page3.evaluate(() => {
-  window.__game.setWeather(5);
-  window.__game.player.pos.set(0, 1.7, -90);
-});
-const beachPositionHandle = await page3.waitForFunction(
-  () => {
-    const player = window.__game.player;
-    return !player.dead && player.pos.z > -73 && player.pos.z < 0 ? player.pos.z : false;
-  },
-  null,
-  { timeout: 60000 }
+const beachPaused = await page3.evaluate(
+  () =>
+    document.querySelector("#overlay")?.dataset.screen === "paused" &&
+    !document.querySelector("#overlay").classList.contains("hidden")
 );
+if (beachPaused) {
+  await page3.click("#start-btn", { noWaitAfter: true });
+  await page3.waitForFunction(() => document.querySelector("#overlay")?.classList.contains("hidden"), null, {
+    timeout: 15000,
+  });
+}
+await page3.waitForFunction(() => !window.__game.player.dead && !window.__game.gameOver, null, {
+  timeout: 60000,
+});
+await page3.evaluate(() => {
+  const game = window.__game;
+  game.setWeather(5);
+  game.enemies.forEach((bot, index) => bot.pos.set(150 + index * 3, 0, 150));
+  game.player.pos.set(0, 1.7, -90);
+});
+const beachPositionHandle = await page3
+  .waitForFunction(
+    () => {
+      const player = window.__game.player;
+      return !player.dead && player.pos.z > -73 && player.pos.z < 0 ? player.pos.z : false;
+    },
+    null,
+    { timeout: 60000 }
+  )
+  .catch(async (cause) => {
+    const state = await page3.evaluate(() => ({
+      z: window.__game.player.pos.z,
+      dead: window.__game.player.dead,
+      gameOver: window.__game.gameOver,
+      overlay: document.querySelector("#overlay")?.dataset.screen,
+      overlayHidden: document.querySelector("#overlay")?.classList.contains("hidden"),
+      variant: window.__game.debugEnvSummary().variant,
+    }));
+    throw new Error(`Beach collision did not settle: ${JSON.stringify(state)}`, { cause });
+  });
 const beachZ = await beachPositionHandle.jsonValue();
 check(`beach: player pushed out of deep water (z=${beachZ.toFixed(1)})`, beachZ > -73 && beachZ < 0);
 const waveBefore = await page3.evaluate(() => window.__game.debugBeachWaveSummary());
@@ -1228,8 +1257,15 @@ await page3.evaluate(() => {
   window.__game.setWeather(6);
   window.__game.player.pos.set(0, 1.7, 140);
 });
-await page3.waitForTimeout(200);
-const ugZ = await page3.evaluate(() => window.__game.player.pos.z);
+const ugPositionHandle = await page3.waitForFunction(
+  () => {
+    const z = window.__game.player.pos.z;
+    return Math.abs(z) <= 93.5 ? z : false;
+  },
+  null,
+  { timeout: 60000 }
+);
+const ugZ = await ugPositionHandle.jsonValue();
 const undergroundCover = await page3.evaluate(() => window.__game.debugCoverSummary());
 const undergroundFloorState = await page3.evaluate(() => {
   let scene = window.__game.enemies[0].group;
@@ -1254,10 +1290,18 @@ check(
     undergroundCover.minHeight >= 2 &&
     undergroundCover.faceCoverCount === undergroundCover.obstacleCount
 );
-const ugBack = await page3.evaluate(() => {
+await page3.evaluate(() => {
   window.__game.player.pos.set(0, 1.7, -140);
-  return new Promise((resolve) => setTimeout(() => resolve(window.__game.player.pos.z), 200));
 });
+const ugBackHandle = await page3.waitForFunction(
+  () => {
+    const z = window.__game.player.pos.z;
+    return Math.abs(z) <= 93.5 ? z : false;
+  },
+  null,
+  { timeout: 60000 }
+);
+const ugBack = await ugBackHandle.jsonValue();
 check(`underground: opposite wall also solid (z=${ugBack.toFixed(1)})`, Math.abs(ugBack) <= 93.5);
 check("environment switching produces no runtime errors", errs3.length === 0, JSON.stringify(errs3));
 await page3.close();

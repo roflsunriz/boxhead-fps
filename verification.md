@@ -9,6 +9,7 @@
 - この待機順序の修正後、ローカルの隔離したヘッドレス Chrome でゲーム E2E 100件が成功し、失敗は0件だった。
 - 2026-10-12 の `bun outdated` で確認した Playwright 1.64.0、Prettier 3.9.10、Vite 8.3.4 をPR #10へ追加した。Viteは開発サーバ、PlaywrightはE2E、Prettierは整形に使い、製品の実行時依存は変更しない。既存の依存と同じcaret範囲を保ち、lockfileも更新した。Bun 1.4.0 の固定インストール・監査（脆弱性0件）・lint・型検査・ビルドと、隔離したヘッドレス Chrome のゲーム E2E 100件成功を確認した。TypeScript 7.0.2 は typescript-eslint 8.71.1 の peer 範囲 `>=4.8.4 <6.1.0` を外れるため更新しない。
 - PR #1・#9・#11と、最後に[PR #10のCI](https://github.com/roflsunriz/boxhead-fps/actions/runs/38175483307)がLinux `verify`・Windows `game-e2e` とも成功してからmainへマージされた。最終マージコミット `c574731` は、マージ直後の `gh run list --commit` ではmain CI実行が見つからなかったため、最終main SHAの両ジョブを別途確認する。
+- [最終main CI](https://github.com/roflsunriz/boxhead-fps/actions/runs/38176868598) のWindowsジョブは、長時間実行した3番目のゲームタブで海岸の深水衝突待機が60秒でタイムアウトした。ログにはその時点の死亡・ポーズ・試合終了状態がなく、どれが起きたかは断定できない。検査コードは座標を死亡中にも設定し得て、復活による上書きやポーズによる衝突停止を避けられなかったため、試合目標を環境検査タブの開始時に固定し、実再開・生存を確認後、AI検査を終えたボットを遠ざけて深水へ配置する。地下壁も固定200msの経過ではなく実際の押し出しを待つ。元の位置条件は維持し、海岸の再発時には状態を出力する。修正後のローカル全100件E2Eは成功、失敗0件だった。
 
 ## SpiderBench地表画像の確認結果（2026-09-27）
 
