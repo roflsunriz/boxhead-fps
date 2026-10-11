@@ -5,6 +5,8 @@
 - PR #9・#10・#11 の Linux `verify` は、Vite → PostCSS → source-map-js@1.2.1 の GHSA-68fv-2mgg-jv7q を `bun audit` が検出して失敗した。Windows のゲーム E2E は各 PR で成功していた。
 - `bun audit fix` で既存の PostCSS の許容範囲内にある source-map-js@1.2.2 へ lockfile だけを更新し、Bun 1.4.0 の `bun audit` で脆弱性 0 件を確認した。[修正後の main CI](https://github.com/roflsunriz/boxhead-fps/actions/runs/38172558610) では Bun 1.3.14 の固定インストール・監査・品質検査と Windows ゲーム E2E が成功した。
 - ローカルで固定インストール、lint、型検査、ビルド、隔離したヘッドレス Chrome によるゲーム E2E（100件成功、失敗0件）を確認した。Windows の既存作業ツリーでは8ファイルが CRLF で展開されるため、`format:check` はそれらを指摘する。Prettier で LF に直すと Git の内容差分は生じないため、CI の Linux チェックで正本を確認する。
+- PR #10 の更新後の Windows CI 初回試行では、弾倉抜去姿勢は成立した一方、抜去スクリーンショットの完了後に登録した挿入姿勢の待機が15秒でタイムアウトした（`test/game.test.js` の挿入状態検査）。撮影中に中間状態を見逃し得るため、挿入姿勢の待機と抜去スクリーンショットを同時に開始する。弾倉の可視性・位置・進行率の条件は変えない。
+- この待機順序の修正後、ローカルの隔離したヘッドレス Chrome でゲーム E2E 100件が成功し、失敗は0件だった。
 
 ## SpiderBench地表画像の確認結果（2026-09-27）
 

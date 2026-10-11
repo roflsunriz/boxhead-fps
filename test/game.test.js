@@ -645,22 +645,24 @@ check(
     (reloadView.magazineY < -0.3 || !reloadView.magazineVisible) &&
     reloadView.gunY < -0.22
 );
-await page.screenshot({ path: "test/feature-magazine-reload.png" });
-const reloadInsertHandle = await page.waitForFunction(
-  () => {
-    const view = window.__game.reloadView;
-    const visible =
-      view.progress > 0.5 &&
-      view.progress < 0.99 &&
-      view.magazineVisible &&
-      view.magazineY > -0.47 &&
-      view.magazineY <= -0.129 &&
-      view.handVisible;
-    return visible ? { ...view } : false;
-  },
-  null,
-  { timeout: 15000 }
-);
+const [reloadInsertHandle] = await Promise.all([
+  page.waitForFunction(
+    () => {
+      const view = window.__game.reloadView;
+      const visible =
+        view.progress > 0.5 &&
+        view.progress < 0.99 &&
+        view.magazineVisible &&
+        view.magazineY > -0.47 &&
+        view.magazineY <= -0.129 &&
+        view.handVisible;
+      return visible ? { ...view } : false;
+    },
+    null,
+    { timeout: 15000 }
+  ),
+  page.screenshot({ path: "test/feature-magazine-reload.png" }),
+]);
 const reloadInsertView = await reloadInsertHandle.jsonValue();
 check(
   `reload inserts the replacement magazine (${JSON.stringify(reloadInsertView)})`,
