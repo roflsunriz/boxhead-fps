@@ -26,6 +26,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - SpiderBench由来の地表画像は `src/assets/spiderbench/` へ配置し、`src/textures.ts` からimportしてBunビルドに同梱する。元の `roof_col.png` や `walls_col.jpg` は複数材質の縦長atlasで、そのままRepeatWrappingすると異なる材質が混ざるため、地面の反復には `grass_col.png`・`sidewalk_col.png`・`ts_pavers.webp` のタイル画像を使う。素材の帰属とライセンス区分はREADMEを参照。
 - ゲーム起動時の天候・環境はランダムなので、都市素材のE2E確認では `setWeather(0)` で都市へ切り替えてから画像の読込完了を待つ（`test/game.test.js`）。地下は `setWeather(6)` で確認する。
 - 2026-09-23 の GitHub Linux runner はゲーム E2E の WebGL 描画が遅く、時限判定が複数失敗し操作がタイムアウトした。`.github/workflows/ci.yml` は Linux で静的検査とビルド、隔離した Windows runner の Chrome で `test/game.test.js` を実行する。テストの期待値や操作経路を省かず、変更時は両ジョブを確認する（`verification.md`）。
+- 2026-10-12 の Dependabot 自動マージでは、PR側のCI成功後も最終mainコミット `c574731` のCI実行がマージ直後の `gh run list --commit` で見つからなかった。最終mainの検証が必要な場合は、実行一覧とhead SHAを確認し、実行がなければ `gh workflow run ci.yml --ref main` で起動してLinux `verify` とWindows `game-e2e` の結果を確認する（`verification.md`）。
 - 遅いフレームで固定の待機秒数だけを頼りにすると、手榴弾の爆発前に敵 AI の位置変更へ進み、後続の敵テストも連鎖して失敗する。`test/game.test.js` はクレーターの実生成を待ち、言語ボタンも実ヒット位置へのマウス入力と DOM 更新を確認する。Playwright の強制クリックや期待値緩和で成功扱いにしない。
 - GitHub Windows runner のヘッドレス Chrome もソフトウェア描画が遅く時限判定が失敗した。ユーザー操作と隔離された CI VM に限り `GAME_TEST_HEADED=1` で実デスクトップの Chrome を試す。ローカルは原則ヘッドレスを維持し、CI でも実際のゲーム操作・期待値を省かない（`verification.md`）。
 - ゲーム開始ボタンは文書遷移せず pointer lock を開始する。Windows の実デスクトップ CI では Playwright の開始ボタンクリックが「予定された遷移の終了」を待って停止したため、`test/game.test.js` の4つの開始ボタンにだけ `noWaitAfter` を指定する。実クリック後の pointer lock と表示状態を確認し、単なる JavaScript click へ置き換えない。

@@ -130,3 +130,5 @@ node test/export-carbine-parts.js
 ゲームの操作検証は隔離した Windows runner の Chrome で、build 済み `dist/` を一時 HTTP サーバーから配信して実行します。ローカルではヘッドレスを既定とします。Linux の CI ジョブは lint・型・ビルド・依存監査を確認します。実行環境を変えるときもゲーム E2E の全項目を省かず、`verification.md` の時間依存の注意を確認してください。
 
 CI 完了より Dependabot の分類が遅れる場合は、`callback_workflow_file` が指す呼び出し側 workflow を `workflow_dispatch` し、同じ PR 番号・head SHA・全チェックを再確認する。呼び出し側のファイル名を変える際はこの入力も一緒に更新する。
+
+自動マージ後はmainのhead SHAと `gh run list --commit <SHA>` を照合する。最終コミットのCIが起動していなければ `gh workflow run ci.yml --ref main` を実行し、Linux `verify` とWindows `game-e2e` の両方が成功したことを確認する。
