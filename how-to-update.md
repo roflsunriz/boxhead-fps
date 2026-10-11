@@ -2,7 +2,7 @@
 
 ## 前提
 
-- Node.js 26.x または Bun 1.3.x がインストールされていること
+- Bun がインストールされていること（CI は 1.3.14、ローカルは 1.4.0 で確認）。E2E 検証には Node.js 26.x と Google Chrome も必要
 - 初回のみ依存関係をインストールする: `bun install`
 - Playwright のブラウザが必要な場合: `bunx playwright install chromium`
 
@@ -40,17 +40,17 @@ GitHubのリポジトリで Settings → Pages → Build and deployment → Sour
 
 ### デプロイ
 
-リリース対象をコミットしてmainへpushした後、同じコミットへSemVer形式の注釈付きタグを作成してpushする。
+`CHANGELOG.md` の未リリース項目を公開するバージョンの節に移し、リリース対象をコミットしてmainへpushした後、同じコミットへSemVer形式の注釈付きタグを作成してpushする。
 
 ```powershell
-bun run validate:release-tag -- v1.2.3
-git tag -a v1.2.3 -m "v1.2.3"
-git push origin v1.2.3
+bun run validate:release-tag -- v1.3.2
+git tag -a v1.3.2 -m "v1.3.2"
+git push origin v1.3.2
 ```
 
 `.github/workflows/deploy-pages.yml` がタグ形式を再検証し、依存インストール、型検査、lint、脆弱性監査、Pagesのベースパスを使ったBunビルド、成果物アップロード、デプロイ、GitHub Release公開を順番に実行する。安定版タグはLatest Release、`v1.2.3-rc.1`のようなタグはプレリリースとして掲載される。Actionsを再実行した場合は既存Releaseを検出して重複作成しない。
 
-タグは公開履歴なので、失敗時も削除・付け替えを行わない。修正コミットを作成し、パッチ番号を上げた新しいタグ（例: `v1.2.4`）で再デプロイする。
+上の `v1.3.2` は次の未使用バージョンの例であり、実行前に `git tag --list` で確認する。タグは公開履歴なので、失敗時も削除・付け替えを行わない。修正コミットを作成し、パッチ番号を上げた新しいタグで再デプロイする。
 
 ## 検証方法
 
@@ -61,7 +61,7 @@ bun run type-check   # tsc --noEmit、any 禁止・strict
 bun run lint         # ESLint (typescript-eslint flat config、src/ と test/ 両方)
 bun run format       # Prettier 整形
 bun run audit        # bun audit による依存脆弱性スキャン
-bun run validate:release-tag -- v1.2.3  # SemVerタグの検証
+bun run validate:release-tag -- v1.3.2  # SemVerタグの検証例
 bun run test         # Playwright E2E、全項目 PASS すること
 node test/responsive.js   # 4 ビューポートのレイアウト検証(ALL VIEWPORTS OK が出ること)
 ```
@@ -127,6 +127,6 @@ node test/export-carbine-parts.js
 
 設定を変えたときは `actionlint .github/workflows/dependabot-automation.yml` と実際の PR の Actions 結果を確認します。問題があれば呼び出し先の共通 workflow SHA を直前の検証済み値へ戻すコミットを push します。取り込まれた依存更新に問題があれば通常の revert コミットで復旧します。
 
-ゲームの操作検証は隔離した Windows runner の Chrome で、build 済み `dist/` を一時 HTTP サーバーから配信して実行します。ローカルではヘッドレスを既定とします。Linux の CI ジョブは lint・型・ビルド・依存監査を確認します。実行環境を変えるときもゲーム E2E の95件を省かず、`verification.md` の時間依存の注意を確認してください。
+ゲームの操作検証は隔離した Windows runner の Chrome で、build 済み `dist/` を一時 HTTP サーバーから配信して実行します。ローカルではヘッドレスを既定とします。Linux の CI ジョブは lint・型・ビルド・依存監査を確認します。実行環境を変えるときもゲーム E2E の全項目を省かず、`verification.md` の時間依存の注意を確認してください。
 
 CI 完了より Dependabot の分類が遅れる場合は、`callback_workflow_file` が指す呼び出し側 workflow を `workflow_dispatch` し、同じ PR 番号・head SHA・全チェックを再確認する。呼び出し側のファイル名を変える際はこの入力も一緒に更新する。
