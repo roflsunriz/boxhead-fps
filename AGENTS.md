@@ -13,32 +13,8 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 4. 全文を読了するまで、ローカル `AGENTS.md` だけを根拠に作業を続けてはならない。読了後は `COMMON-AGENTS.md` を最優先の指針とし、読了直後の最初の進捗報告で全文を読了したことを明示する。
    このファイルでは `boxhead-fps` 固有の補足だけを記載する。
 
-## Environment
+## プロジェクト固有の実現手段と知見
 
-- カービンの公開APIは `game-models.ts`、実形状は `src/models/carbine-model.ts`、画像atlasと部品別UV塗装は `carbine-materials.ts`。profileは前方u/上方yで記述し、ゲームの前方 `-Z` へ変換する。生成画像は `src/assets/` からimportしBunへ同梱させる。`art/` の画像だけを変更してもゲームには反映されない。
-- カービンの目視確認では `test/capture-model-review.js`（6方向）とゲームの `test/feature-red-dot-ads.png` を確認する。赤点の投影座標だけではサイト本体による遮蔽を検出できないので、`debugAimOcclusion()` の実交差結果も検証する。撮影は `carbineTexturesReady` を待ってから行う。
-- 一人称の銃は肩付けが前提。`main.ts` のカメラ相対位置を前へ押し出すとストック後端が画面を覆う。腰だめ・ADS両方でストックの大部分が視点後方にあることを画像確認し、発射原点は固定距離ではなく実muzzle socketとの一致を検証する。
-- 8787番でIPv4/IPv6とも `EACCES` の場合、別ポートでViteを起動し `MODEL_REVIEW_URL` を渡す。E2E/レスポンシブ検証には `GAME_TEST_URL` で別途distのURLを渡せる。2026-09-06は18787/18887で確認。詳細は更新手順。
-- 都市の樹木生成は `src/models/broadleaf-tree.ts` の `createBroadleafTreeModel`、ビーチのヤシ生成は `src/models/palm-tree.ts`。都市は `world.ts` の独立シードで形状を生成するため、樹木のディテール変更でマップ配置用乱数を消費しないこと。衝突判定は描画モデルとは別の幹半径を用いる。
-- 都市の木はユーザー指定のケヤキ・クスノキ風広葉樹。黄金角による配置、幹から枝への階層分岐、葉の間隔は視覚モデルとして扱い、生物学的な完全再現や厳密な日射最適化を主張しない。ヤシとは別の樹冠・葉形を保ち、変更時は `verification.md` の外観確認を行う。
-- 樹木の見た目は `test/tree-review.html` と `node test/capture-tree-review.js` で確認する。後者はインストール済みGoogle Chromeをヘッドレス起動し、CDPで描画情報と画像を取得する。ゲーム全体の既存E2Eは `dist/` 配信で行う。詳しくは `verification.md` を参照。
-- ソフトウェア描画のE2Eでは1フレームが1秒以上かかる場合がある。ボットの `nextThink` を長時間固定するとターゲットの視認期限（0.45秒）が切れ反撃できなくなるため、被弾直後の向きを検証した後は通常の索敵更新を許可し、発砲・移動の実際の状態変化を有限時間内で待つ（`test/game.test.js`）。
-- SpiderBench由来の地表画像は `src/assets/spiderbench/` へ配置し、`src/textures.ts` からimportしてBunビルドに同梱する。元の `roof_col.png` や `walls_col.jpg` は複数材質の縦長atlasで、そのままRepeatWrappingすると異なる材質が混ざるため、地面の反復には `grass_col.png`・`sidewalk_col.png`・`ts_pavers.webp` のタイル画像を使う。素材の帰属とライセンス区分はREADMEを参照。
-- ゲーム起動時の天候・環境はランダムなので、都市素材のE2E確認では `setWeather(0)` で都市へ切り替えてから画像の読込完了を待つ（`test/game.test.js`）。地下は `setWeather(6)` で確認する。
-- 2026-09-23 の GitHub Linux runner はゲーム E2E の WebGL 描画が遅く、時限判定が複数失敗し操作がタイムアウトした。`.github/workflows/ci.yml` は Linux で静的検査とビルド、隔離した Windows runner の Chrome で `test/game.test.js` を実行する。テストの期待値や操作経路を省かず、変更時は両ジョブを確認する（`verification.md`）。
-- 2026-10-12 の Dependabot 自動マージでは、PR側のCI成功後も最終mainコミット `c574731` のCI実行がマージ直後の `gh run list --commit` で見つからなかった。最終mainの検証が必要な場合は、実行一覧とhead SHAを確認し、実行がなければ `gh workflow run ci.yml --ref main` で起動してLinux `verify` とWindows `game-e2e` の結果を確認する（`verification.md`）。
-- 遅いフレームで固定の待機秒数だけを頼りにすると、手榴弾の爆発前に敵 AI の位置変更へ進み、後続の敵テストも連鎖して失敗する。`test/game.test.js` はクレーターの実生成を待ち、言語ボタンも実ヒット位置へのマウス入力と DOM 更新を確認する。Playwright の強制クリックや期待値緩和で成功扱いにしない。
-- GitHub Windows runner のヘッドレス Chrome もソフトウェア描画が遅く時限判定が失敗した。ユーザー操作と隔離された CI VM に限り `GAME_TEST_HEADED=1` で実デスクトップの Chrome を試す。ローカルは原則ヘッドレスを維持し、CI でも実際のゲーム操作・期待値を省かない（`verification.md`）。
-- ゲーム開始ボタンは文書遷移せず pointer lock を開始する。Windows の実デスクトップ CI では Playwright の開始ボタンクリックが「予定された遷移の終了」を待って停止したため、`test/game.test.js` の4つの開始ボタンにだけ `noWaitAfter` を指定する。実クリック後の pointer lock と表示状態を確認し、単なる JavaScript click へ置き換えない。
-- ホスト runner ではゲームの常時描画を複数タブで並行させると次タブの初期化が遅れる。最初のゲーム検証後にスクリーンショットを保存してからそのタブを閉じ、後続のタブも使用後に閉じる。移動・リロード・死亡/復活は固定秒数ではなく実状態を待ち、リロード中間値は成立したフレームでコピーしてから検査する。2026-10-12 の Windows CI では弾倉抜去撮影の完了後に挿入姿勢の待機を登録すると中間状態を見逃したため、待機を撮影と並行して開始する（`test/game.test.js`、`verification.md`）。
-- Windows runner では1フレームに数秒かかり、実時間で計った死亡演出と再出現が同じフレームで完了して倒れ込みを観測できなかった。`src/main.ts` は既存の上限付き `dt` で死亡演出と復活待ちを進める。`deathView` getter は読み取り専用とし、描画フレーム以外で状態を進めない。試合終了時のテストは固定秒数ではなく、倒れ込みと結果画面の成立を期限付きで待つ。
-- 海岸の深水域への衝突検査は、波のスクリーンショットを長く待つ前に衝突後の位置を記録する。後から読むと復活後のスポーン位置を誤って衝突位置として扱う。2026-10-12 の長時間Windows CIでは、検査前に死亡・ポーズ・試合終了状態が競合し得るため、環境検査タブの開始時に試合目標を高く設定し、深水へ配置する前に実再開経路と生存を確認して、先行するAI検査後のボットを遠ざける。元の深水衝突位置を確認し、失敗時は状態を出力する。地下壁も固定秒数ではなく実際の押し出しを待つ（`test/game.test.js`、`verification.md`）。
-
-## 開発依存監査の注意（2026-10-05）
-
-- brace-expansion の3件のAdvisoryに対し、5系は5.0.12で該当範囲を外れる。既存親依存の5系範囲を保ち、package.jsonのoverrideとbun.lockを同時に更新する。監査の省略や閾値緩和で対応せず、CIと同じBunで固定install・監査・既存品質確認を行う。詳細はverification.md。
-- 2026-10-12 の Dependabot PR #9・#10・#11 の Linux `verify` 失敗は、PR自体の更新ではなく共通の source-map-js@1.2.1 脆弱性（GHSA-68fv-2mgg-jv7q）が原因。PostCSS の `^1.2.1` 範囲内で bun.lock を 1.2.2 へ更新できる。PRを処理する前に main の監査と固定installを確認する（`verification.md`）。
-
-## ミニマップの幾何fixture（2026-10-05）
-
-- player(0,0)は都市の中央障害物内で、通常プレイ中は衝突処理で押し出される。botもAIで移動するため、固定座標の幾何検査はブラウザの実pointer lock解除（fallbackはEscape）による既存ポーズ経路を使い、paused表示を待ってから入力を設定する。ポーズ中もminimapは描画される。2描画frameを有限期限付きで待ち、元の方向・3pixel未満の許容値を維持する。finallyで実再開ボタンを押し、後続の移動・衝突・AI検査を省かない。headlessの合成Escapeだけではnative pointer lockが解除されない場合がある。
+- 作業開始前に [COMMON-AGENTS.md](COMMON-AGENTS.md) と [findings.md](findings.md) を先頭から末尾まで全文読む。
+- ファイル配置、使用ツール、実行コマンド、対応環境、文書構成、共通方針の例外と調査知見は `findings.md` に記録する。
+- ユーザーの指示、変更禁止、秘密情報の保護、検証・変更履歴を残す義務は共通指針に従い維持する。

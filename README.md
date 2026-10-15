@@ -62,58 +62,19 @@ bun run preview   # dist/ を 8787 番ポートで配信
 
 ## GitHub PagesとReleasesへのリリース
 
-リポジトリの Settings → Pages → Build and deployment → Source を、初回だけ `GitHub Actions` に設定する。
-その後、SemVer形式のタグをpushすると、型検査・lint・依存監査・Pages用ビルドを通過した成果物が自動デプロイされ、GitHub Releasesにも自動掲載される。
-
-```powershell
-git tag -a v1.3.2 -m "v1.3.2"
-git push origin v1.3.2
-```
-
-上のタグは次の未使用バージョンの例です。実行前に `git tag --list` で既存タグを確認し、`CHANGELOG.md` に同じバージョンの節を作成してください。`v1.3.2`、`v1.3.2-rc.1`、`v1.3.2+build.4`などを受け付ける。不正な形式のタグはデプロイ前に失敗する。Pagesのベースパスはリポジトリ設定から自動取得するため、プロジェクトサイトとカスタムドメインの両方に対応する。安定版はLatest Release、`-rc.1`などはプレリリースとして自動公開される。
+この内容は [findings.md](findings.md#readme-1) にまとめています。
 
 ## 検証
 
-`bun run preview` で `dist/` を配信した状態で、次を実行する。
-
-```powershell
-bun run type-check   # tsc --noEmit (strict, any 禁止)
-bun run lint         # ESLint (typescript-eslint flat config)
-bun run format       # Prettier 整形
-bun run audit        # bun audit による依存脆弱性スキャン
-bun run validate:release-tag -- v1.2.3  # リリースタグ形式の確認
-bun run test         # Playwright E2E
-node test/responsive.js   # 複数ビューポートでのレイアウト検証
-```
-
-E2E テストはビルド済み `dist/` 成果物に対して実行する。詳細は [how-to-update.md](how-to-update.md) を参照。
+この内容は [findings.md](findings.md#readme-2) にまとめています。
 
 ## 構成
 
-| ファイル                                                          | 責務                                                                 |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `src/main.ts`                                                     | 入力・射撃・姿勢・バリア・マッチ進行・メインループ                   |
-| `src/items.ts`                                                    | ランダムアイテム、取得処理、グレネード物理・爆発                     |
-| `src/persistent-effects.ts`                                       | 弾倉・弾痕・死体の生成、物理、上限付き保持                           |
-| `src/minimap.ts`                                                  | プレイヤー中心の回転式ミニマップ描画と座標変換                       |
-| `src/beach-waves.ts`                                              | ビーチの立体海面、動的法線、岸へ進む白波                             |
-| `src/world.ts`                                                    | シーン・カメラ・ライティング・3 環境の生成・衝突判定・ウェイポイント |
-| `src/weather.ts`                                                  | 大気プリセット・雨・雷・星空                                         |
-| `src/enemies.ts`                                                  | ボット AI(経路探索・視覚・戦闘・スキルランク)                        |
-| `src/ui.ts`                                                       | HUD・オーバーレイの DOM 操作                                         |
-| `src/i18n.ts`                                                     | 日本語 / 英語文字列辞書                                              |
-| `src/textures.ts`                                                 | 手続きテクスチャ生成と画像素材の読み込み                             |
-| `src/models/game-models.ts`                                       | カービン、グレネード、回復物資、ヒトデとヤシ生成API                  |
-| `src/models/carbine-model.ts` / `src/models/carbine-materials.ts` | カービンの立体形状、部品別UV・画像テクスチャ・材質                   |
-| `src/models/broadleaf-tree.ts` / `src/models/palm-tree.ts`        | 都市の広葉樹とビーチのヤシの手続き型モデル                           |
-| `src/audio.ts`                                                    | Web Audio API によるゲーム効果音                                     |
-| `src/types.ts` / `src/dom.ts` / `src/random.ts`                   | 共有型・DOM ヘルパー・シード固定 RNG                                 |
+この内容は [findings.md](findings.md#readme-3) にまとめています。
 
 ## 3Dアート参照と検証
 
-オリジナルのカービン参照画像、生成プロンプト、`img2threejs` の分析・spec・PBR抽出・比較結果は `art/` に保存している。カービンは `src/models/carbine-model.ts` で編集可能なThree.js階層として構築し、`src/assets/carbine-surface-atlas.png` の金属・樹脂・ゴム画像を表面に貼り付ける。部品別の擦れと光沢・凹凸を組み合わせて質感を表現する。参照に写っていない部分と局所的な傷は近似である。
-
-開発サーバー起動中は、カービン6方向、全資産、クレーター、ゲーム内ボットのレビュー画像を再生成できる。`/test/model-review.html?interactive=1` では回転・拡大・分解表示・部品選択でモデルを確認できる。コマンドは [how-to-update.md](how-to-update.md) を参照。
+この内容は [findings.md](findings.md#readme-4) にまとめています。
 
 ## ライセンス
 
@@ -121,4 +82,8 @@ three.js は MIT License。その他のコードも MIT として扱う。
 
 ## 依存更新の自動処理
 
-Dependabot は対象の依存関係を毎週確認します。patch／minor 更新は PR のチェック（CI）が成功した後に自動で squash merge されます。CI の失敗ジョブは 1 回だけ再実行します。再失敗時は指定した lockfile を再生成し、CI を再実行します。major 更新は手動で確認します。
+この内容は [findings.md](findings.md#readme-5) にまとめています。
+
+## 開発時の参照先
+
+プロジェクト固有の構成・環境・調査知見は [findings.md](findings.md)、作業規範は [AGENTS.md](AGENTS.md)、検証記録は [verification.md](verification.md) を参照してください。
