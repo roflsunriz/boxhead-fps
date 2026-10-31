@@ -1,5 +1,9 @@
 # 検証手順
 
+## 2026-10-31: Dependabot 更新と依存監査
+
+- Vite 8.3.5 と `minimatch` 11.0.1 の組み合わせで Bun 1.4.0 の `bun audit`、整形、lint、型検査、ビルドに成功した。ゲーム E2E は更新後の GitHub Actions で確認する。
+
 ## 2026-10-19: CI高速化
 
 - 変更したGitHub Actionsをactionlint 1.7.12で検査し、エラー0件を確認した。
