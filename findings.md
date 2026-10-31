@@ -1,5 +1,6 @@
 # 調査知見
 
+- 開発依存の `minimatch` には GHSA-g3hv-75wg-m249 の修正版 11.0.1 を override で指定する。ESLint と typescript-eslint の利用経路は lint・型検査で確認し、上流依存が修正版を許容したら固定の見直しを行う。
 - 実ゲームのassetは `src/assets` からimportしてbundleへ含める。`art/` だけの画像変更は反映されない。複数材質atlasをRepeatWrappingせず、地面には単材質tileを使う。
 - model profileの前方u/上方yはゲームの前方 `-Z` へ変換する。銃をcamera前へ押すとstockが画面を覆うため、腰だめ/ADSでstockを視点後方に置き、発射原点は実muzzle socketへ合わせる。
 - procedural treeはmap配置とは独立seedで形状を生成し、detail変更で配置用乱数を消費しない。描画modelとcollision幹半径も別管理。
